@@ -1,0 +1,23 @@
+#!/usr/bin/env php
+<?php
+
+##################################################
+# Config
+##################################################
+
+define('ERRORS', true);
+define('PACKAGED', false);
+
+# Path to pcon console_abstract.php
+define('CONSOLE_ABSTRACT_PATH', '{{console_abstract_path}}');
+
+# Paths to other includes
+$src_includes = array(
+    __DIR__ . DS . 'src' . DS . '{{tool_shortname}}.php',
+);
+
+##################################################
+
+require_once CONSOLE_ABSTRACT_PATH;
+
+# vim: syntax=php
