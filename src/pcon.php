@@ -43,6 +43,11 @@ Class PCon extends Console_Abstract
             $tool_name = $this->input("Enter name of tool to create", null, true);
         }
 
+        $tool_name = trim($tool_name);
+
+        $tool_shortname = strtolower($tool_name);
+        $tool_shortname = preg_replace('/[^0-9a-z]+/i', '-', $tool_shortname);
+
         if (is_null($tool_folder))
         {
             $tool_folder = $this->input("Enter name of folder for tool", $tool_name);
@@ -99,6 +104,7 @@ Class PCon extends Console_Abstract
 
         $this->output('Details Summary:');
         $this->output('Name: ' . $tool_name);
+        $this->output('Short Name: ' . $tool_shortname);
         $this->output('Full Path: ' . $tool_path);
 
         $this->hrl();
@@ -107,13 +113,41 @@ Class PCon extends Console_Abstract
 
         $this->log('Copying over template files');
 
+        // Copy primary executable sample
+        $tool_exec_path = $tool_path . DS . $tool_shortname;
+        copy(__DIR__ . DS . 'sample', $tool_exec_path);
+        chmod($tool_exec_path, 0755);
+
         // Create src directory
         mkdir($tool_path . DS . 'src', 0755, true);
-        copy(__DIR__ . DS . 'sample.php', $tool_path . DS . $tool_shortname . '.php');
+
+        // Copy Sample class
+        $tool_src_path = $tool_path . DS . 'src' . DS . $tool_shortname . '.php';
+        copy(__DIR__ . DS . 'sample.php', $tool_src_path);
+
+        $created = $this->exec('ls -halR "' . $tool_path . '"');
 
         $this->log('Updating details in template files');
 
-        $created = $this->exec('ls -halR "' . $tool_path . '"');
+        $class_name = preg_replace('/[^0-9a-z]+/i', ' ', $tool_shortname);
+        $class_name = ucwords($class_name);
+        $class_name = str_replace(' ', '_', $class_name);
+
+        $template_vars = [
+            'class_name' => $class_name,
+            'console_abstract_path' => $this->console_abstract_path,
+            'tool_name' => $tool_name,
+            'tool_shortname' => $tool_shortname,
+        ];
+
+        foreach ([$tool_exec_path, $tool_src_path] as $file)
+        {
+            $contents = file_get_contents($file);
+            foreach ($template_vars as $search => $replace) {
+                $contents = str_replace('{{'.$search.'}}', $replace, $contents);
+            }
+            file_put_contents($file, $contents);
+        }
 
         $this->hr();
         $this->output('Finished:');
@@ -121,7 +155,7 @@ Class PCon extends Console_Abstract
     }
 
     protected $___package = [
-        "Package a PHP console tool for distribution - interactive, or specify options",
+        "Package a PHP console tool - interactive, or specify options",
         ["Path to tool folder", "string"],
     ];
     public function package($_tool_path=null)
@@ -134,7 +168,7 @@ Class PCon extends Console_Abstract
         $tool_path = null;
         while (is_null($tool_path))
         {
-            // Any argument passed/
+            // Any argument passed
             if (is_null($_tool_path))
             {
                 $tool_path = $this->input("Enter path to console tool to package", null, true);

@@ -13,7 +13,7 @@ define('CONSOLE_ABSTRACT_PATH', '{{console_abstract_path}}');
 
 # Paths to other includes
 $src_includes = array(
-    __DIR__ . DS . 'src' . DS . '{{tool_shortname}}.php',
+    __DIR__ . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . '{{tool_shortname}}.php',
 );
 
 ##################################################

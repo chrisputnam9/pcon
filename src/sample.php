@@ -38,7 +38,7 @@ Class {{class_name}} extends Console_Abstract
             }
         }
 
-        $this->output($this->test_message);
+        $this->output($message);
     }
 }
 

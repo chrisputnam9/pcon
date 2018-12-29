@@ -3,15 +3,17 @@ PCon - PHP Console - is an abstract that you can extend to create your own PHP c
 
 ## Why Create Console Tools in PHP?
 Great question.  Some people would say "Don't" - and depending on your situation, I might tell you
-the same.  Hee are some of the reasons I reach for PHP:
+the same.  Here are some of the reasons I do reach for PHP:
 
  - It's the language I currently work with the most (and can therefore write quickly in it)
  - It's the language most of my teammates work with the most (and can therefore contribute easily)
- - It allows me to practice and build many re-usable techniques and methods in PHP
+ - It allows me to practice and build many re-usable techniques and methods in PHP for re-use in
+   other projects
  - I and my team generally have it installed on our workstations already
- - Most systems I work with use the LAMP stack, and therefore most have PHP available in shell
+ - Most systems I work with use the LAMP stack, and therefore most have PHP available in shell by
+   default
  - It's good enough for most of my use-cases.  If I need a compilable, faster,
-   multi-platform, multi-threading for a particular case, I'd probably use [Go](http://golang.org).
+   multi-platform, multi-threading language for a particular use case, I'll probably use [Go](http://golang.org).
 
 # Getting Started
 OK, so your situation also seems like a good use-case for a PHP console tool?  Here we go then!
@@ -19,17 +21,18 @@ OK, so your situation also seems like a good use-case for a PHP console tool?  H
 ## Install PCon
 (if you don't already have it installed)
 
- 1. Clone this repository to the directory of your choice.  This directory can be kept for
+ 1. Clone this repository to the directory of your choice.  This directory can be kept and updated for
     future use, and will have a special tool to help you create and managed console tools that you
-    build.  We'll call it "dev/pcon"
+    build.  We'll call the directory "~/dev/pcon"
 
 ## Create a New Console Tool
- 1. CD to your local pcon folder (cd dev/pcon)
+ 1. CD to your local pcon folder (cd ~/dev/pcon)
  2. Run `./pcon create` (optionally, run `./pcon help create` to see arguments)
- 3. Follow prompts to specify deails
+ 3. Follow prompts to specify details
+ 4. Program your functionality
 
 ## Package a Console Tool
- 1. CD to your local pcon folder (cd dev/pcon)
+ 1. CD to your local pcon folder (cd ~/dev/pcon)
  2. Run `./pcon package` (optionally, run `./pcon help package` to see arguments)
  3. Follow prompts to specify deails
 
