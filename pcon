@@ -13,7 +13,7 @@ define('CONSOLE_ABSTRACT_PATH', __DIR__ . '/src/console_abstract.php');
 
 # Paths to other includes
 $src_includes = array(
-    __DIR__ . '/src/pcon.php',
+    __DIR__ . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'pcon.php',
 );
 
 ##################################################

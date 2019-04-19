@@ -171,7 +171,7 @@ Class PCon extends Console_Abstract
             // Any argument passed
             if (is_null($_tool_path))
             {
-                $tool_path = $this->input("Enter path to console tool to package", null, true);
+                $tool_path = $this->input("Enter path to primary file of console tool to package", null, true);
                 $tool_path = $this->prepArg($tool_path, null);
             }
             else
@@ -185,18 +185,32 @@ Class PCon extends Console_Abstract
                 $tool_path = rtrim($tool_path, '/');
             }
 
-            if (!is_dir($tool_path))
+            if (!is_file($tool_path))
             {
-                $this->warn("This folder doesn't exist ($tool_path) - please specify an existing tool directory");
+                $this->warn("This file doesn't exist ($tool_path) - please specify the executable script an existing tool");
+                $tool_path = null;
             }
         }
 
+        $tool_dir = dirname($tool_path);
+
         $this->output('Details Summary:');
-        $this->output('Full Path: ' . $tool_path);
+        $this->output('Tool to Package: ' . $tool_path);
+        $this->output('Tool Directory: ' . $tool_dir);
 
         $this->log('Creating dist folder');
+        $dist_dir = $tool_dir . DS . 'dist';
+        if (!is_dir($dist_dir))
+        {
+            mkdir($dist_dir, 0755);
+        }
+        
         $this->log('Creating script file');
+        // Start with basic template, hashbang
+        // Add console abstract
+
         $this->log('Loading requirements into script file');
+
         $this->log('Making script file executable');
 
     }

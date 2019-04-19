@@ -755,7 +755,6 @@ class Console_Abstract
             CURLOPT_URL => $url,
             CURLOPT_HEADER => false,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HEADER => true,
             CURLOPT_CONNECTTIMEOUT => 0,
             CURLOPT_TIMEOUT => 180,
             CURLOPT_FOLLOWLOCATION => true,
