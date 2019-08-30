@@ -5,11 +5,11 @@
 # Config
 ##################################################
 
-define('ERRORS', true);
-define('PACKAGED', false);
+if (!defined('ERRORS')) define('ERRORS', true);
+if (!defined('PACKAGED')) define('PACKAGED', false);
 
 # Path to pcon console_abstract.php
-define('CONSOLE_ABSTRACT_PATH', '{{console_abstract_path}}');
+if (!defined('CONSOLE_ABSTRACT_PATH')) define('CONSOLE_ABSTRACT_PATH', '{{console_abstract_path}}');
 
 # Paths to other includes
 $src_includes = array(
@@ -18,6 +18,9 @@ $src_includes = array(
 
 ##################################################
 
-require_once CONSOLE_ABSTRACT_PATH;
+if (empty($_PACKAGING)) // defined when loading file to do packaging
+{
+    require_once CONSOLE_ABSTRACT_PATH;
+}
 
 # vim: syntax=php

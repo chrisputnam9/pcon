@@ -193,10 +193,12 @@ Class PCon extends Console_Abstract
         }
 
         $tool_dir = dirname($tool_path);
+        $tool_file = basename($tool_path);
 
         $this->output('Details Summary:');
-        $this->output('Tool to Package: ' . $tool_path);
-        $this->output('Tool Directory: ' . $tool_dir);
+        $this->output(' - Tool to Package: ' . $tool_path);
+        $this->output(' - Tool Directory: ' . $tool_dir);
+        $this->output(' - Tool Directory: ' . $tool_dir);
 
         $this->log('Creating dist folder');
         $dist_dir = $tool_dir . DS . 'dist';
@@ -204,15 +206,33 @@ Class PCon extends Console_Abstract
         {
             mkdir($dist_dir, 0755);
         }
+        $tool_exec_path = $dist_dir . DS . $tool_file;
         
-        $this->log('Creating script file');
+        $this->log('Creating script file at: ' . $tool_exec_path);
+        $tool_exec_handle = fopen($tool_exec_path, 'w');
+
         // Start with basic template, hashbang
+        $package_template_src = file_get_contents(__DIR__ . DS . 'package_template');
+        fwrite($tool_exec_handle, $package_template_src);
+
         // Add console abstract
+        $console_abstract_src = file_get_contents(__DIR__ . DS . 'console_abstract.php');
+        fwrite($tool_exec_handle, $console_abstract_src);
 
         $this->log('Loading requirements into script file');
+        $_PACKAGING=true;
+        require_once($tool_path);
+        foreach ($src_includes as $src_include)
+        {
+            $include_src = file_get_contents($src_include);
+            fwrite($tool_exec_handle, $include_src);
+        }
+        $_PACKAGING=false;
 
         $this->log('Making script file executable');
+        chmod($tool_exec_path, 0755);
 
+        $this->log('Packaging complete to: ' . $tool_exec_path);
     }
 }
 
