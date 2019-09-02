@@ -39,17 +39,32 @@ class Console_Abstract
 	/**
 	 * Config/option defaults
 	 */
+    protected $__install_path = "Install path of this tool";
+	public $install_path = "/usr/local/bin/";
+
     protected $__stamp_lines = "Stamp output lines";
 	public $stamp_lines = false;
 
     protected $__step = "Enable stepping points";
 	public $step = false;
 
-    protected $__verbose = "Enable verbose output";
-	public $verbose = false;
-
     protected $__timezone = ["Timezone - from http://php.net/manual/en/timezones.", "string"];
     public $timezone = "US/Eastern";
+
+    /* Default: 24 hrs
+        24 * 60 * 60 = 86400
+    */
+    protected $__update_auto = "How often to automatically check for an update (seconds, 0 to disable)";
+	public $update_auto = 86400;
+
+    protected $__update_last_check = "Formatted timestap of last update check (UTC)";
+	public $update_last_check = false;
+
+    protected $__update_version_url = "URL to check for latest version number info";
+	public $update_version_url = false;
+
+    protected $__verbose = "Enable verbose output";
+	public $verbose = false;
 
     /**
      * Config paths
