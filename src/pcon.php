@@ -234,6 +234,7 @@ Class PCon extends Console_Abstract
 
         $this->log('Packaging complete to: ' . $tool_exec_path);
     }
+
 }
 
 // Kick it all off

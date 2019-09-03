@@ -75,6 +75,7 @@ class Console_Abstract
     /**
      * Stuff
      */
+    protected $config_initialized = false;
     protected $dt = null;
     protected $run_stamp = '';
 
@@ -333,6 +334,21 @@ class Console_Abstract
 
             return $param;
         }
+
+    protected $___install = [
+        "Self-install a packaged PHP console tool - interactive, or specify options",
+        ["Install path", "string"],
+    ];
+    public function install($_install_path=null)
+    {
+        $_install_path = $this->prepArg($_install_path, null);
+
+        if (!defined('PACKAGED') or !PACKAGED)
+        {
+            $this->error('Only packaged tools may be installed - package first using PCon.');
+        }
+
+    }
 
 
     /**
@@ -621,17 +637,11 @@ class Console_Abstract
      */
     public function initConfig()
     {
-        $config_dir = $this->getConfigDir();
         $config_file = $this->getConfigFile();
 
         try
         {
-            if (!is_dir($config_dir))
-            {
-                // $this->log("Creating directory - $config_dir");
-                mkdir($config_dir, 0755);
-            }
-
+            // Loading specific config values from file
             if (is_file($config_file))
             {
                 // $this->log("Loading config file - $config_file");
@@ -646,14 +656,44 @@ class Console_Abstract
                     $this->configure($key, $value);
                 }
             }
-            else
+
+            $this->config_initialized = true;
+            $this->saveConfig();
+        }
+        catch (Exception $e)
+        {
+            // Notify user
+            $this->output('NOTICE: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Save config values to file on demand
+     */
+    public function saveConfig()
+    {
+        if (!$this->config_initialized)
+        {
+            $this->output('WARNING: Config not initiazlied, refusing to save and risk overwrite');
+            return false;
+        }
+
+        $config_dir = $this->getConfigDir();
+        $config_file = $this->getConfigFile();
+
+        try
+        {
+            // Loading default config values
+            $config = [];
+            foreach ($this->getPublicProperties() as $property)
             {
-                // $this->log("Creating default config file - $config_file");
-                $config = [];
-                foreach ($this->getPublicProperties() as $property)
-                {
-                    $config[$property] = $this->$property;
-                }
+                $config[$property] = $this->$property;
+            }
+
+            if (!is_dir($config_dir))
+            {
+                // $this->log("Creating directory - $config_dir");
+                mkdir($config_dir, 0755);
             }
 
             // Rewrite config - pretty print
