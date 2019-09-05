@@ -34,6 +34,7 @@ class Console_Abstract
      */
     protected static $METHODS = [
         'help',
+        'install',
     ];
 
 	/**
@@ -214,7 +215,7 @@ class Console_Abstract
 
             $specific = str_replace('-', '_', $specific);
 
-            if (is_callable(array($this, $specific)))
+            if (is_callable([$this, $specific]))
             {
                 // Method Usage
                 $help_text = array_shift($help);
@@ -339,15 +340,43 @@ class Console_Abstract
         "Self-install a packaged PHP console tool - interactive, or specify options",
         ["Install path", "string"],
     ];
-    public function install($_install_path=null)
+    public function install($install_path=null)
     {
-        $_install_path = $this->prepArg($_install_path, null);
-
         if (!defined('PACKAGED') or !PACKAGED)
         {
-            $this->error('Only packaged tools may be installed - package first using PCon.');
+            $this->error('Only packaged tools may be installed - package first using PCon (https://cmp.onl/tjNJ)');
         }
 
+        $install_path = $this->prepArg($install_path, null);
+
+        if (empty($install_path))
+        {
+            $install_path = $this->install_path;
+        }
+
+        if (!is_dir($install_path))
+        {
+            $this->warn("Install path ($install_path) does not exist and will be created", true);
+
+            $success = mkdir($install_path, 0755);
+
+            if (!$success) $this->error("Failed to create install path ($install_path) - may need higher privileges (eg. sudo)");
+        }
+
+        $tool_path = __FILE__;
+        $filename = basename($tool_path);
+        $install_tool_path = $install_path . DS . $filename;
+
+        if (file_exists($install_tool_path))
+        {
+            $this->warn("This will overwrite the existing executable ($install_tool_path)", true);
+        }
+
+        $success = rename($tool_path, $install_tool_path);
+
+        if (!$success) $this->error("Install failed - may need higher privileges (eg. sudo)");
+
+        $this->log("Install completed with no errors");
     }
 
 
@@ -373,6 +402,10 @@ class Console_Abstract
 
 	/**
 	 * Error output
+     * 
+     * Code Guidelines:
+     *  - 100 - expected error - eg. aborted due to user input
+     *  - 500 - misc. error
 	 */
 	public function error($data, $code=500)
 	{
@@ -388,13 +421,25 @@ class Console_Abstract
 
 	/**
 	 * Warn output
+     * @param $data to output as warning
+     * @param $prompt_to_continue - whether to prompt with Continue? y/n
 	 */
-	public function warn($data)
+	public function warn($data, $prompt_to_continue=false)
 	{
         $this->hr('*');
 		$this->output('WARNING: ', false);
 		$this->output($data, true, false);
         $this->hr('*');
+
+        if ($prompt_to_continue)
+        {
+            $this->input("Continue? (y/n)", 'n', false, true);
+            if (!in_array($yn, ['y', 'Y']))
+            {
+                $this->error('Aborted', 100);
+            }
+        }
+
 	}
 
     /**
@@ -555,6 +600,8 @@ class Console_Abstract
      * Get input from CLI
      * @param $message to show - prompt
      * @param $default if no input
+     * @param $required - wether input is required
+     * @param $single - prompt for single character (vs waiting for enter key)
      * @return input text or default
      */
     public function input($message=false, $default=null, $required=false, $single=false)
@@ -769,7 +816,7 @@ class Console_Abstract
 
         if ($force_type == 'boolean')
         {
-            $value = in_array($value, array(true, 'true', 'yes', '1', 1));
+            $value = in_array($value, [true, 'true', 'yes', '1', 1]);
         }
 
         return $value;
