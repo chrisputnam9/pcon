@@ -10,7 +10,7 @@ echodiv
 if [ ! -f "$TEST_SCRIPT" ]; then
     echo "Test script 'usage_create.sh' must be run first - we will run that now.  Ready?"
     pced "Running usage_create.sh..."
-    "$DIR/usage_create.sh"
+    "$DIR/usage_create.sh" --no-use-test
 
     pced "Ready to begin Packaging tests"
     echodiv
@@ -21,19 +21,21 @@ if [ -d "$TEST_DIR/dist" ]; then
     rm -rf "$TEST_DIR/dist"
 fi
 
-echo "Packaging _test tool"
+echo "Packaging test tool"
 "$PCON" package "$TEST_SCRIPT"
 
-pced "Testing help output:"
-"$TEST_SCRIPT_PACKAGED" help
+if [ "$1" != "--no-use-test" ]; then
+    pced "Testing help output:"
+    "$TEST_SCRIPT_PACKAGED" help
 
-pced "Testing help output for 'test' method:"
-"$TEST_SCRIPT_PACKAGED" help test
+    pced "Testing help output for 'test' method:"
+    "$TEST_SCRIPT_PACKAGED" help test
 
-pced "Testing 'test' method:"
-"$TEST_SCRIPT_PACKAGED" test
+    pced "Testing 'test' method:"
+    "$TEST_SCRIPT_PACKAGED" test
 
-pced "Testing 'test' method with custom message and verbose stamped output:"
-"$TEST_SCRIPT_PACKAGED" test "Custom Message" --verbose --stamp-lines
+    pced "Testing 'test' method with custom message and verbose stamped output:"
+    "$TEST_SCRIPT_PACKAGED" test "Custom Message" --verbose --stamp-lines
 
-pced "Usage - Package - Tests Complete"
+    pced "Usage - Package - Tests Complete"
+fi

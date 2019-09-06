@@ -41,7 +41,7 @@ class Console_Abstract
 	 * Config/option defaults
 	 */
     protected $__install_path = "Install path of this tool";
-	public $install_path = "/usr/local/bin/";
+	public $install_path = "/usr/local/bin";
 
     protected $__stamp_lines = "Stamp output lines";
 	public $stamp_lines = false;
@@ -376,7 +376,10 @@ class Console_Abstract
 
         if (!$success) $this->error("Install failed - may need higher privileges (eg. sudo)");
 
-        $this->log("Install completed with no errors");
+        $this->install_path = $install_path;
+        $this->saveConfig();
+
+        $this->log("Install completed to $install_tool_path with no errors");
     }
 
 

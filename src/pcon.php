@@ -220,8 +220,13 @@ Class PCon extends Console_Abstract
         fwrite($tool_exec_handle, $console_abstract_src);
 
         $this->log('Loading requirements into script file');
+
+        // Include script to get include paths, but don't output anything or run anything
         $_PACKAGING=true;
+        ob_start();
         require_once($tool_path);
+        ob_clean();
+
         foreach ($src_includes as $src_include)
         {
             $include_src = file_get_contents($src_include);
