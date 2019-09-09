@@ -436,7 +436,7 @@ class Console_Abstract
 
         if ($prompt_to_continue)
         {
-            $this->input("Continue? (y/n)", 'n', false, true);
+            $yn = $this->input("Continue? (y/n)", 'n', false, true);
             if (!in_array($yn, ['y', 'Y']))
             {
                 $this->error('Aborted', 100);
