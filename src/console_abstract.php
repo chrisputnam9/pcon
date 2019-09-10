@@ -37,11 +37,21 @@ class Console_Abstract
         'install',
     ];
 
+    /**
+     * Methods that are OK to run as root
+     */
+    protected static $ROOT_METHODS = [
+        'install',
+    ];
+
 	/**
 	 * Config/option defaults
 	 */
-    protected $__install_path = "Install path of this tool";
+    protected $__install_path = ["Install path of this tool", "string"];
 	public $install_path = "/usr/local/bin";
+
+    protected $__allow_root = "OK to run as root";
+    protected $allow_root = false;
 
     protected $__stamp_lines = "Stamp output lines";
 	public $stamp_lines = false;
@@ -55,14 +65,14 @@ class Console_Abstract
     /* Default: 24 hrs
         24 * 60 * 60 = 86400
     */
-    protected $__update_auto = "How often to automatically check for an update (seconds, 0 to disable)";
+    protected $__update_auto = ["How often to automatically check for an update (seconds, 0 to disable)", "int"];
 	public $update_auto = 86400;
 
-    protected $__update_last_check = "Formatted timestap of last update check (UTC)";
-	public $update_last_check = false;
+    protected $__update_last_check = ["Formatted timestap of last update check (UTC)", "string"];
+	public $update_last_check = "";
 
-    protected $__update_version_url = "URL to check for latest version number info";
-	public $update_version_url = false;
+    protected $__update_version_url = ["URL to check for latest version number info", "string"];
+	public $update_version_url = "";
 
     protected $__verbose = "Enable verbose output";
 	public $verbose = false;
@@ -80,6 +90,12 @@ class Console_Abstract
     protected $dt = null;
     protected $run_stamp = '';
 
+    protected $logged_in_user = '';
+    protected $current_user = '';
+
+    protected $logged_in_as_root = false;
+    protected $running_as_root = false;
+
     /**
      * Constructor - set up basics
      */
@@ -87,6 +103,20 @@ class Console_Abstract
     {
         date_default_timezone_set($this->timezone);
         $this->run_stamp = $this->stamp();
+
+        exec('logname', $logged_in_user, $return);
+        if ($return == 0 and !empty($logged_in_user))
+        {
+            $this->logged_in_user = trim(implode($logged_in_user));
+        }
+        $this->logged_in_as_root = ($this->logged_in_user == 'root');
+
+        exec('whoami', $current_user, $return);
+        if ($return == 0 and !empty($current_user))
+        {
+            $this->current_user = trim(implode($current_user));
+        }
+        $this->running_as_root = ($this->current_user == 'root');
     }
 
     /**
@@ -106,6 +136,7 @@ class Console_Abstract
             $instance->initConfig();
 
             $valid_methods = array_merge($class::$METHODS, self::$METHODS);
+
             if (!in_array($method, $valid_methods))
             {
                 $instance->help();
@@ -135,6 +166,18 @@ class Console_Abstract
             }
 
             date_default_timezone_set($instance->timezone);
+
+            // Check if running as root - if so, make sure that's OK
+            if ($instance->running_as_root and !$instance->allow_root)
+            {
+                if (!in_array($method, self::$ROOT_METHODS))
+                {
+                    if (empty($class::$ROOT_METHODS) or !in_array($method, $class::$ROOT_METHODS))
+                    {
+                        $instance->error("Cowardly refusing to run as root. Use --allow_root to bypass this error.", 200);
+                    }
+                }
+            }
 
             $call_info = "$class->$method(" . implode(",", $args) . ")";
             $instance->log("Calling $call_info");
@@ -408,6 +451,7 @@ class Console_Abstract
      * 
      * Code Guidelines:
      *  - 100 - expected error - eg. aborted due to user input
+     *  - 200 - safety / caution error (eg. running as root)
      *  - 500 - misc. error
 	 */
 	public function error($data, $code=500)
@@ -750,6 +794,21 @@ class Console_Abstract
             ksort($config);
             $json = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
             file_put_contents($config_file, $json);
+
+            // Fix permissions if needed
+            if ($this->running_as_root and !$this->logged_in_as_root)
+            {
+                $success = true;
+                $success = ($success and chown($config_dir, $this->logged_in_user));
+                $success = ($success and chown($config_file, $this->logged_in_user));
+                $success = ($success and chgrp($config_dir, $this->logged_in_user));
+                $success = ($success and chgrp($config_file, $this->logged_in_user));
+
+                if (!$success)
+                {
+                    $this->warn("There may have been an issue setting correct permissions on the config directory ($config_dir) or file ($config_file).  Review these permissions manually.", true);
+                }
+            }
         }
         catch (Exception $e)
         {
