@@ -35,6 +35,7 @@ class Console_Abstract
     protected static $METHODS = [
         'help',
         'install',
+        'upgrade',
     ];
 
     /**
@@ -42,6 +43,7 @@ class Console_Abstract
      */
     protected static $ROOT_METHODS = [
         'install',
+        'upgrade',
     ];
 
 	/**
@@ -71,6 +73,7 @@ class Console_Abstract
     protected $__update_last_check = ["Formatted timestap of last update check (UTC)", "string"];
 	public $update_last_check = "";
 
+    // Note: this is configurable, and the child class can also set a default
     protected $__update_version_url = ["URL to check for latest version number info", "string"];
 	public $update_version_url = "";
 
@@ -92,9 +95,22 @@ class Console_Abstract
 
     protected $logged_in_user = '';
     protected $current_user = '';
-
     protected $logged_in_as_root = false;
     protected $running_as_root = false;
+
+    // Child class can override these patterns if needed
+    protected $update_version_standard = "~
+        download latest version\s*
+        \(\s*
+            ([\d.]+)
+        \s*\)\s*:
+        \s*(http\S*)\s*$
+    ~ix";
+
+    // True to use standard
+    // - otherwise, specify pattern string
+    protected $update_version_pattern = [ true, 1 ];
+    protected $update_download_pattern = [ true, 2 ];
 
     /**
      * Constructor - set up basics

@@ -5,8 +5,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 source "$DIR/common.sh"
 
 clear
-echo -n "Usage - Package - Tests Starting"
-echo "$TEST_DIR"
+echo -n "Usage - Create - Tests Starting"
 
 if [ -d "$TEST_DIR" ]; then
     pced "Target directory already exists - cleanup required"

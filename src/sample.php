@@ -20,6 +20,8 @@ Class {{class_name}} extends Console_Abstract
     protected $__test_message = ["Test message - sample config to test new console tool", "string"];
     public $test_message = "Testing, testing, 0, 1, 10, 11";
 
+	public $update_version_url = "";
+
     protected $___test = [
         "Sample method to test new console tool",
         ["Mesage - defaults to value of test_message (config)", "string"],
