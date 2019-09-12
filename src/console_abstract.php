@@ -88,6 +88,7 @@ class Console_Abstract
 
     /**
      * Stuff
+     * Child class can override all as needed
      */
     protected $config_initialized = false;
     protected $dt = null;
@@ -98,20 +99,29 @@ class Console_Abstract
     protected $logged_in_as_root = false;
     protected $running_as_root = false;
 
-    // Child class can override these patterns if needed
+    // Set this to false in child class to disable updates
     protected $update_version_standard = "~
-        download latest version\s*
-        \(\s*
-            ([\d.]+)
-        \s*\)\s*:
-        \s*(http\S*)\s*$
+        download latest version \s*
+        \( \s*
+            ( [\d.]+ )
+        \s* \) \s* :
+        \s* ( http \S* ) \s*$
     ~ix";
 
-    // True to use standard
-    // - otherwise, specify pattern string
+    // Set this to false in child class to disable hash check
+    protected $hash_pattern_standard = "~
+        latest version hash \s*
+        (.*) \s* : \s*
+        (.*)
+    ~ixm";
+
+    // True to use the standard
+    // - otherwise, specify pattern string as needed
     protected $update_version_pattern = [ true, 1 ];
     protected $update_download_pattern = [ true, 2 ];
-
+    protected $update_hash_algorithm_pattern = [ true, 1 ];
+    protected $update_hash_pattern = [ true, 2 ];
+    
     /**
      * Constructor - set up basics
      */
@@ -396,7 +406,7 @@ class Console_Abstract
         }
 
     protected $___install = [
-        "Self-install a packaged PHP console tool - interactive, or specify options",
+        "Install a packaged PHP console tool",
         ["Install path", "string"],
     ];
     public function install($install_path=null)
@@ -439,6 +449,41 @@ class Console_Abstract
         $this->saveConfig();
 
         $this->log("Install completed to $install_tool_path with no errors");
+    }
+
+    protected $___update = [
+        "Update an installed PHP console tool"
+    ];
+    public function update()
+    {
+        if (!defined('PACKAGED') or !PACKAGED)
+        {
+            $this->error('Only packaged tools may be updated - package first using PCon (https://cmp.onl/tjNJ), then install');
+        }
+
+        // Check install path valid
+
+        // Make sure update is available
+
+        // Download update to temp file
+
+        // Check hash
+    }
+
+    /**
+     * Check for an update, and parse out all relevant information if one exists
+     */
+    protected function update_check()
+    {
+        if (is_null($this->update_exists))
+        {
+            $this->update_exists = false;
+            $this->update_version = "0";
+            $this->update_url = "";
+            $this->update_hash_algorithm = "";
+            $this->update_hash = "";
+        }
+        return $this->update_exists;
     }
 
 
