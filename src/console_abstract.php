@@ -121,6 +121,12 @@ class Console_Abstract
     protected $update_download_pattern = [ true, 2 ];
     protected $update_hash_algorithm_pattern = [ true, 1 ];
     protected $update_hash_pattern = [ true, 2 ];
+
+    protected $update_exists = null;
+    protected $update_version = "0";
+    protected $update_url = "";
+    protected $update_hash_algorithm = "";
+    protected $update_hash = "";
     
     /**
      * Constructor - set up basics
@@ -461,22 +467,61 @@ class Console_Abstract
             $this->error('Only packaged tools may be updated - package first using PCon (https://cmp.onl/tjNJ), then install');
         }
 
-        // Check install path valid
-
         // Make sure update is available
+        // todo
+        //
+
+        // Check install path valid
+        $config_install_tool_path = $this->install_path . DS . basename(__FILE__);
+        if ($config_install_tool_path != __FILE__)
+        {
+            $this->warn(
+                "Install path mismatch.\n" . 
+                " - Current tool path: " . __FILE__ . "\n" .
+                " - Configured install path: " . $config_install_tool_path . "\n" .
+                "Update will be installed to " . $config_install_tool_path,
+                true
+            );
+        }
+
+        // Create install path if needed
+        if (!is_dir($this->install_path))
+        {
+            $this->warn("Install path ($this->install_path) does not exist and will be created", true);
+
+            $success = mkdir($this->install_path, 0755);
+
+            if (!$success) $this->error("Failed to create install path ($this->install_path) - may need higher privileges (eg. sudo)");
+        }
 
         // Download update to temp file
+        // todo
 
         // Check hash
+        // todo
     }
 
     /**
      * Check for an update, and parse out all relevant information if one exists
      */
-    protected function update_check()
+    protected function update_check($auto=true)
     {
         if (is_null($this->update_exists))
         {
+            if ($auto)
+            {
+
+            }
+            /*
+            public $update_auto = 86400;
+            public $update_last_check = "";
+            public $update_version_url = "";
+            protected $update_version_pattern = [ true, 1 ];
+            protected $update_download_pattern = [ true, 2 ];
+            protected $update_hash_algorithm_pattern = [ true, 1 ];
+            protected $update_hash_pattern = [ true, 2 ];
+             */
+
             $this->update_exists = false;
             $this->update_version = "0";
             $this->update_url = "";
