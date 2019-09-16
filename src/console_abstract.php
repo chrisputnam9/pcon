@@ -468,8 +468,11 @@ class Console_Abstract
         }
 
         // Make sure update is available
-        // todo
-        //
+        if (!$this->update_check(false))
+        {
+            $this->output("Already at latest version (" . $this->update_version . ")");
+            return true;
+        }
 
         // Check install path valid
         $config_install_tool_path = $this->install_path . DS . basename(__FILE__);
@@ -503,24 +506,67 @@ class Console_Abstract
 
     /**
      * Check for an update, and parse out all relevant information if one exists
+     * @param $auto Whether this is an automatic check or triggered intentionally
+     * @return Boolean True if newer version exists. False if no new version or if
+     *  auto and not yet time to check.
      */
     protected function update_check($auto=true)
     {
         if (is_null($this->update_exists))
         {
+            $now = time();
+
+            // If this is an automatic check, make sure it's time to check again
             if ($auto)
             {
+                // If we haven't checked before, we'll check now
+                // Otherwise...
+                if (!empty($this->update_last_check))
+                {
+                    $last_check = strtotime($this->update_last_check);
 
+                    // Make sure last check was a valid time
+                    if (empty($last_check) or $last_check < 0)
+                    {
+                        $this->error('Issue with update_last_check value (' . $this->update_last_check . ')');
+                    }
+
+                    // Has it been long enough? If not, we'll return silently
+                    $seconds_since_last_check = $now - $last_check;
+                    if ($seconds_since_last_check < $this->update_auto)
+                    {
+                        return false;
+                    }
+                }
             }
-            /*
-            public $update_auto = 86400;
-            public $update_last_check = "";
-            public $update_version_url = "";
-            protected $update_version_pattern = [ true, 1 ];
-            protected $update_download_pattern = [ true, 2 ];
-            protected $update_hash_algorithm_pattern = [ true, 1 ];
-            protected $update_hash_pattern = [ true, 2 ];
-             */
+
+            // curl, get contents of config url
+            // $this->update_version_url
+            // todo 
+
+            // If using standard update pattern, look for that
+            // $this->update_version_standard
+            // todo
+
+            // look for version match
+            // $this->update_version_pattern = [ true, 1 ];
+            // todo
+
+            // look for download match
+            // $this->update_download_pattern = [ true, 2 ];
+            // todo
+
+            // If using standard update pattern, look for that
+            // $this->hash_pattern_standard
+            // todo
+
+            // look for hash algorithm match
+            // $this->update_hash_algorithm_pattern = [ true, 1 ];
+            // todo
+
+            // look for hash match
+            // $this->update_hash_pattern = [ true, 2 ];
+            // todo
 
             $this->update_exists = false;
             $this->update_version = "0";
