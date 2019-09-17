@@ -74,6 +74,7 @@ class Console_Abstract
 	public $update_last_check = "";
 
     // Note: this is configurable, and the child class can also set a default
+    //  - empty string = not updatable
     protected $__update_version_url = ["URL to check for latest version number info", "string"];
 	public $update_version_url = "";
 
@@ -507,11 +508,19 @@ class Console_Abstract
     /**
      * Check for an update, and parse out all relevant information if one exists
      * @param $auto Whether this is an automatic check or triggered intentionally
-     * @return Boolean True if newer version exists. False if no new version or if
-     *  auto and not yet time to check.
+     * @return Boolean True if newer version exists. False if:
+     *  - no new version or
+     *  - if auto, but auto check is disabled or
+     *  - if auto, but not yet time to check or
+     *  - if update is disabled
      */
     protected function update_check($auto=true)
     {
+        if (empty($this->update_version_url))
+        {
+            return false; // update disabled
+        }
+
         if (is_null($this->update_exists))
         {
             $now = time();
@@ -519,6 +528,12 @@ class Console_Abstract
             // If this is an automatic check, make sure it's time to check again
             if ($auto)
             {
+                // If disabled, return false
+                if ($this->update_auto == 0)
+                {
+                    return false; // auto-update disabled
+                }
+
                 // If we haven't checked before, we'll check now
                 // Otherwise...
                 if (!empty($this->update_last_check))
@@ -531,30 +546,45 @@ class Console_Abstract
                         $this->error('Issue with update_last_check value (' . $this->update_last_check . ')');
                     }
 
-                    // Has it been long enough? If not, we'll return silently
+                    // Has it been long enough? If not, we'll return false
                     $seconds_since_last_check = $now - $last_check;
                     if ($seconds_since_last_check < $this->update_auto)
                     {
-                        return false;
+                        return false; // not yet time to check
                     }
                 }
             }
 
-            // curl, get contents of config url
-            // $this->update_version_url
-            // todo 
-
-            // If using standard update pattern, look for that
-            // $this->update_version_standard
-            // todo
+            // curl, get contents at config url
+            $curl = $this->getCurl($this->update_version_url);
+            $update_contents = curl_exec($curl);
 
             // look for version match
-            // $this->update_version_pattern = [ true, 1 ];
-            // todo
+            if ($this->update_version_pattern[0] === true)
+            {
+                $this->update_version_pattern[0] = $this->update_version_standard;
+            }
+            if (!preg_match($this->update_version_pattern[0], $update_contents, $match))
+            {
+                $this->error('Issue with update version check - pattern not found at ' . $this->update_version_url);
+            }
+            $index = $this->update_version_pattern[1];
+            $this->update_version = $match[$index];
+
+            // check if remove version is newer than current
+            $this->update_exists = version_compare($class::VERSION, $this->update_version, '<');
 
             // look for download match
-            // $this->update_download_pattern = [ true, 2 ];
-            // todo
+            if ($this->update_download_pattern[0] === true)
+            {
+                $this->update_download_pattern[0] = $this->update_download_standard;
+            }
+            if (!preg_match($this->update_download_pattern[0], $update_contents, $match))
+            {
+                $this->error('Issue with update download check - pattern not found at ' . $this->update_version_url);
+            }
+            $index = $this->update_download_pattern[1];
+            $this->update_url = $match[$index];
 
             // If using standard update pattern, look for that
             // $this->hash_pattern_standard
@@ -568,9 +598,6 @@ class Console_Abstract
             // $this->update_hash_pattern = [ true, 2 ];
             // todo
 
-            $this->update_exists = false;
-            $this->update_version = "0";
-            $this->update_url = "";
             $this->update_hash_algorithm = "";
             $this->update_hash = "";
         }
