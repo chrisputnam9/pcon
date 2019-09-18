@@ -4,12 +4,18 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # shellcheck disable=SC1090
 source "$DIR/common.sh"
 
+PAUSE=true
+if [ "$2" == "--no-pause" ]; then
+    # shellcheck disable=SC2034
+    PAUSE=false
+fi
+
 clear
 echo -n "Usage - Create - Tests Starting"
 
 if [ -d "$TEST_DIR" ]; then
     pced "Target directory already exists - cleanup required"
-    "$DIR/cleanup.sh"
+    "$DIR/cleanup.sh" --no-pause
 fi
 
 pced "Creating new tool"

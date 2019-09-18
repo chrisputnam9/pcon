@@ -11,20 +11,20 @@ if [ "$2" == "--no-pause" ]; then
 fi
 
 clear
-echo "Usage - Install - Tests Starting"
+echo "Usage - Upgrade - Tests Starting"
 echodiv
 
-if [ ! -f "$TEST_SCRIPT_PACKAGED" ]; then
-    echo "Test script 'usage_package.sh' must be run first - we will run that now.  Ready?"
-    pced "Running usage_package.sh..."
-    "$DIR/usage_package.sh" --no-use-test --no-pause
+if [ ! -f "$TEST_SCRIPT_INSTALLED" ]; then
+    echo "Test script 'usage_install.sh' must be run first - we will run that now.  Ready?"
+    pced "Running usage_install.sh..."
+    "$DIR/usage_install.sh" --no-use-test --no-pause
 
-    pced "Ready to begin Install tests"
+    pced "Ready to begin Upgrade tests"
     echodiv
 fi
 
-echo "Installing test tool"
-sudo "$TEST_SCRIPT_PACKAGED" install --verbose
+echo "Running Upgrade"
+sudo "$TEST_SCRIPT_INSTALLED" upgrade --verbose
 
 if [ "$1" != "--no-use-test" ]; then
     pced "Testing help output:"
@@ -39,5 +39,5 @@ if [ "$1" != "--no-use-test" ]; then
     pced "Testing 'test' method with custom message and verbose stamped output:"
     "$TEST_SCRIPT_INSTALLED" test "Custom Message" --verbose --stamp-lines
 
-    pced "Usage - Install - Tests Complete"
+    pced "Usage - Upgrade - Tests Complete"
 fi

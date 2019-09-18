@@ -4,6 +4,12 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # shellcheck disable=SC1090
 source "$DIR/common.sh"
 
+PAUSE=true
+if [ "$2" == "--no-pause" ]; then
+    # shellcheck disable=SC2034
+    PAUSE=false
+fi
+
 clear
 echo "Usage - Package - Tests Starting"
 echodiv
@@ -11,7 +17,7 @@ echodiv
 if [ ! -f "$TEST_SCRIPT" ]; then
     echo "Test script 'usage_create.sh' must be run first - we will run that now.  Ready?"
     pced "Running usage_create.sh..."
-    "$DIR/usage_create.sh" --no-use-test
+    "$DIR/usage_create.sh" --no-use-test --no-pause
 
     pced "Ready to begin Packaging tests"
     echodiv

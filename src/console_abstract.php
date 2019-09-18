@@ -101,7 +101,7 @@ class Console_Abstract
     protected $running_as_root = false;
 
     // Set this to false in child class to disable updates
-    protected $update_version_standard = "~
+    protected $update_pattern_standard = "~
         download latest version \s*
         \( \s*
             ( [\d.]+ )
@@ -458,10 +458,10 @@ class Console_Abstract
         $this->log("Install completed to $install_tool_path with no errors");
     }
 
-    protected $___update = [
+    protected $___upgrade = [
         "Update an installed PHP console tool"
     ];
-    public function update()
+    public function upgrade()
     {
         if (!defined('PACKAGED') or !PACKAGED)
         {
@@ -469,9 +469,10 @@ class Console_Abstract
         }
 
         // Make sure update is available
-        if (!$this->update_check(false))
+        if (!$this->upgrade_check(false))
         {
-            $this->output("Already at latest version (" . $this->update_version . ")");
+            $class = get_called_class();
+            $this->output("Already at latest version (" . $class::VERSION . ")");
             return true;
         }
 
@@ -498,6 +499,8 @@ class Console_Abstract
             if (!$success) $this->error("Failed to create install path ($this->install_path) - may need higher privileges (eg. sudo)");
         }
 
+        die("<pre>".print_r($this,true)."</pre>");
+
         // Download update to temp file
         // todo
 
@@ -514,7 +517,7 @@ class Console_Abstract
      *  - if auto, but not yet time to check or
      *  - if update is disabled
      */
-    protected function update_check($auto=true)
+    protected function upgrade_check($auto=true)
     {
         if (empty($this->update_version_url))
         {
@@ -562,7 +565,7 @@ class Console_Abstract
             // look for version match
             if ($this->update_version_pattern[0] === true)
             {
-                $this->update_version_pattern[0] = $this->update_version_standard;
+                $this->update_version_pattern[0] = $this->update_pattern_standard;
             }
             if (!preg_match($this->update_version_pattern[0], $update_contents, $match))
             {
@@ -572,12 +575,13 @@ class Console_Abstract
             $this->update_version = $match[$index];
 
             // check if remove version is newer than current
+            $class = get_called_class();
             $this->update_exists = version_compare($class::VERSION, $this->update_version, '<');
 
             // look for download match
             if ($this->update_download_pattern[0] === true)
             {
-                $this->update_download_pattern[0] = $this->update_download_standard;
+                $this->update_download_pattern[0] = $this->update_pattern_standard;
             }
             if (!preg_match($this->update_download_pattern[0], $update_contents, $match))
             {
@@ -586,20 +590,29 @@ class Console_Abstract
             $index = $this->update_download_pattern[1];
             $this->update_url = $match[$index];
 
-            // If using standard update pattern, look for that
-            // $this->hash_pattern_standard
-            // todo
-
             // look for hash algorithm match
-            // $this->update_hash_algorithm_pattern = [ true, 1 ];
-            // todo
+            if ($this->update_hash_algorithm_pattern[0] === true)
+            {
+                $this->update_hash_algorithm_pattern[0] = $this->hash_pattern_standard;
+            }
+            if (!preg_match($this->update_hash_algorithm_pattern[0], $update_contents, $match))
+            {
+                $this->error('Issue with update hash algorithm check - pattern not found at ' . $this->update_version_url);
+            }
+            $index = $this->update_hash_algorithm_pattern[1];
+            $this->update_hash_algorithm = $match[$index];
 
             // look for hash match
-            // $this->update_hash_pattern = [ true, 2 ];
-            // todo
-
-            $this->update_hash_algorithm = "";
-            $this->update_hash = "";
+            if ($this->update_hash_pattern[0] === true)
+            {
+                $this->update_hash_pattern[0] = $this->hash_pattern_standard;
+            }
+            if (!preg_match($this->update_hash_pattern[0], $update_contents, $match))
+            {
+                $this->error('Issue with update hash check - pattern not found at ' . $this->update_version_url);
+            }
+            $index = $this->update_hash_pattern[1];
+            $this->update_hash = $match[$index];
         }
         return $this->update_exists;
     }

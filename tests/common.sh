@@ -5,7 +5,9 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 function pause {
     echo "[Hit enter to continue]"
-    read -r
+    if $PAUSE; then
+        read -r
+    fi
 }
 
 function echodiv {
