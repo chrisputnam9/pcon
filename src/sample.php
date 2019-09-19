@@ -20,7 +20,8 @@ Class {{class_name}} extends Console_Abstract
     protected $__test_message = ["Test message - sample config to test new console tool", "string"];
     public $test_message = "Testing, testing, 0, 1, 10, 11";
 
-	public $update_version_url = "";
+    // Update this to your update URL, or remove it to disable updates
+	public $update_version_url = "https://github.com/chrisputnam9/pcon/tree/master/tests/test-readme.md";
 
     protected $___test = [
         "Sample method to test new console tool",

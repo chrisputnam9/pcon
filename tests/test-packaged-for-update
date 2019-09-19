@@ -1,3 +1,11 @@
+#!/usr/bin/env php
+<?php
+##################################################
+# Config
+##################################################
+define('ERRORS', false);
+define('PACKAGED', true);
+?>
 <?php
 /**
  * Console Abstract to be extended by specific console tools
@@ -35,7 +43,7 @@ class Console_Abstract
     protected static $METHODS = [
         'help',
         'install',
-        'update',
+        'upgrade',
     ];
 
     /**
@@ -43,7 +51,7 @@ class Console_Abstract
      */
     protected static $ROOT_METHODS = [
         'install',
-        'update',
+        'upgrade',
     ];
 
 	/**
@@ -458,10 +466,10 @@ class Console_Abstract
         $this->log("Install completed to $install_tool_path with no errors");
     }
 
-    protected $___update = [
+    protected $___upgrade = [
         "Update an installed PHP console tool"
     ];
-    public function update()
+    public function upgrade()
     {
         if (!defined('PACKAGED') or !PACKAGED)
         {
@@ -469,8 +477,10 @@ class Console_Abstract
         }
 
         // Make sure update is available
-        if (!$this->updateCheck(false, true))
+        if (!$this->upgrade_check(false))
         {
+            $class = get_called_class();
+            $this->output("Already at latest version (" . $class::VERSION . ")");
             return true;
         }
 
@@ -515,13 +525,10 @@ class Console_Abstract
      *  - if auto, but not yet time to check or
      *  - if update is disabled
      */
-    protected function updateCheck($auto=true, $output=false)
+    protected function upgrade_check($auto=true)
     {
-        $this->log("Running update check");
-
         if (empty($this->update_version_url))
         {
-            if ($output or $this->verbose) $this->output("Update is disabled - update_version_url is empty");
             return false; // update disabled
         }
 
@@ -532,12 +539,9 @@ class Console_Abstract
             // If this is an automatic check, make sure it's time to check again
             if ($auto)
             {
-                $this->log("Designated as auto-update");
-
                 // If disabled, return false
-                if ($this->update_auto <= 0)
+                if ($this->update_auto == 0)
                 {
-                    if ($output or $this->verbose) $this->output("Auto-update is disabled - update_auto <= 0");
                     return false; // auto-update disabled
                 }
 
@@ -557,7 +561,6 @@ class Console_Abstract
                     $seconds_since_last_check = $now - $last_check;
                     if ($seconds_since_last_check < $this->update_auto)
                     {
-                        if ($output or $this->verbose) $this->output("Only $seconds_since_last_check seconds since last check.  Configured auto-update is " . $this->update_auto . " seconds");
                         return false; // not yet time to check
                     }
                 }
@@ -618,12 +621,6 @@ class Console_Abstract
             }
             $index = $this->update_hash_pattern[1];
             $this->update_hash = $match[$index];
-
-            $this->update_last_check = $now;
-            $this->saveConfig();
-
-            $class = get_called_class();
-            $this->output("Already at latest version (" . $class::VERSION . ")");
         }
         return $this->update_exists;
     }
@@ -1192,5 +1189,53 @@ if (!empty($src_includes) and is_array($src_includes))
         require_once ($src_include);
     }
 }
+
+// Note: leave this for packaging ?>
+<?php
+/**
+ * Test thing script
+ */
+Class Test_Thing_Script extends Console_Abstract
+{
+    const VERSION = 1;
+
+    // Name of script and directory to store config
+    const SHORTNAME = 'test-thing-script';
+
+    /**
+     * Callable Methods
+     */
+    protected static $METHODS = [
+        'test',
+    ];
+
+    // Config Variables
+    protected $__test_message = ["Test message - sample config to test new console tool", "string"];
+    public $test_message = "Testing, testing, 0, 1, 10, 11";
+
+    protected $___test = [
+        "Sample method to test new console tool",
+        ["Mesage - defaults to value of test_message (config)", "string"],
+    ];
+	public function test($message=null)
+    {
+        $this->prepArg($message, null);
+
+        if (is_null($message))
+        {
+            $this->log('No message specified, using configured test message');
+            $message = $this->test_message;
+            if (empty($message))
+            {
+                $this->error('Failed to load a test message');
+            }
+        }
+
+        $this->output($message);
+    }
+}
+
+// Kick it all off
+Test_Thing_Script::run($argv);
 
 // Note: leave this for packaging ?>
