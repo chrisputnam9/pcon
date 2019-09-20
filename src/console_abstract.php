@@ -75,6 +75,7 @@ class Console_Abstract
 
     // Note: this is configurable, and the child class can also set a default
     //  - empty string = not updatable
+    //  - Tip: if using Github md file, use raw URL for simpler parsing
     protected $__update_version_url = ["URL to check for latest version number info", "string"];
 	public $update_version_url = "";
 
@@ -102,16 +103,16 @@ class Console_Abstract
 
     // Set this to false in child class to disable updates
     protected $update_pattern_standard = "~
-        download latest version \s*
+        download\ latest\ version \s*
         \( \s*
             ( [\d.]+ )
         \s* \) \s* :
         \s* ( http \S* ) \s*$
-    ~ix";
+    ~ixm";
 
     // Set this to false in child class to disable hash check
     protected $hash_pattern_standard = "~
-        latest version hash \s*
+        latest\ version\ hash \s*
         (.*) \s* : \s*
         (.*)
     ~ixm";
@@ -574,6 +575,8 @@ class Console_Abstract
             }
             if (!preg_match($this->update_version_pattern[0], $update_contents, $match))
             {
+                $this->log($update_contents);
+                $this->log($this->update_version_pattern[0]);
                 $this->error('Issue with update version check - pattern not found at ' . $this->update_version_url);
             }
             $index = $this->update_version_pattern[1];

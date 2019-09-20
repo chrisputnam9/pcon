@@ -4,6 +4,12 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 # shellcheck disable=SC1090
 source "$DIR/common.sh"
 
+PAUSE=true
+if [ "$2" == "--no-pause" ]; then
+    # shellcheck disable=SC2034
+    PAUSE=false
+fi
+
 echo "$TEST_DIR will be removed and recreated"
 
 pced "Removing old test dir"

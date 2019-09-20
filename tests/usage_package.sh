@@ -31,6 +31,8 @@ fi
 echo "Packaging test tool"
 "$PCON" package "$TEST_SCRIPT"
 
+cp "$TEST_SCRIPT_PACKAGED" "$TEST_SCRIPT_DIST"
+
 if [ "$1" != "--no-use-test" ]; then
     pced "Testing help output:"
     "$TEST_SCRIPT_PACKAGED" help

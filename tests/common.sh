@@ -31,6 +31,7 @@ TEST_DIR="$TMP_DIR/_test"
 
 TEST_SCRIPT="$TEST_DIR/test-thing-script"
 TEST_SCRIPT_PACKAGED="$TEST_DIR/dist/test-thing-script"
+TEST_SCRIPT_DIST="$DIR/dist/test-thing-script"
 TEST_SCRIPT_INSTALLED="test-thing-script"
 
 TEST_SCRIPT_CONFIG_DIR="$HOME/.test-thing-script"

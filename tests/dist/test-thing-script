@@ -43,7 +43,7 @@ class Console_Abstract
     protected static $METHODS = [
         'help',
         'install',
-        'upgrade',
+        'update',
     ];
 
     /**
@@ -51,7 +51,7 @@ class Console_Abstract
      */
     protected static $ROOT_METHODS = [
         'install',
-        'upgrade',
+        'update',
     ];
 
 	/**
@@ -83,6 +83,7 @@ class Console_Abstract
 
     // Note: this is configurable, and the child class can also set a default
     //  - empty string = not updatable
+    //  - Tip: if using Github md file, use raw URL for simpler parsing
     protected $__update_version_url = ["URL to check for latest version number info", "string"];
 	public $update_version_url = "";
 
@@ -110,16 +111,16 @@ class Console_Abstract
 
     // Set this to false in child class to disable updates
     protected $update_pattern_standard = "~
-        download latest version \s*
+        download\ latest\ version \s*
         \( \s*
             ( [\d.]+ )
         \s* \) \s* :
         \s* ( http \S* ) \s*$
-    ~ix";
+    ~ixm";
 
     // Set this to false in child class to disable hash check
     protected $hash_pattern_standard = "~
-        latest version hash \s*
+        latest\ version\ hash \s*
         (.*) \s* : \s*
         (.*)
     ~ixm";
@@ -466,10 +467,10 @@ class Console_Abstract
         $this->log("Install completed to $install_tool_path with no errors");
     }
 
-    protected $___upgrade = [
+    protected $___update = [
         "Update an installed PHP console tool"
     ];
-    public function upgrade()
+    public function update()
     {
         if (!defined('PACKAGED') or !PACKAGED)
         {
@@ -477,10 +478,8 @@ class Console_Abstract
         }
 
         // Make sure update is available
-        if (!$this->upgrade_check(false))
+        if (!$this->updateCheck(false, true))
         {
-            $class = get_called_class();
-            $this->output("Already at latest version (" . $class::VERSION . ")");
             return true;
         }
 
@@ -525,10 +524,13 @@ class Console_Abstract
      *  - if auto, but not yet time to check or
      *  - if update is disabled
      */
-    protected function upgrade_check($auto=true)
+    protected function updateCheck($auto=true, $output=false)
     {
+        $this->log("Running update check");
+
         if (empty($this->update_version_url))
         {
+            if ($output or $this->verbose) $this->output("Update is disabled - update_version_url is empty");
             return false; // update disabled
         }
 
@@ -539,9 +541,12 @@ class Console_Abstract
             // If this is an automatic check, make sure it's time to check again
             if ($auto)
             {
+                $this->log("Designated as auto-update");
+
                 // If disabled, return false
-                if ($this->update_auto == 0)
+                if ($this->update_auto <= 0)
                 {
+                    if ($output or $this->verbose) $this->output("Auto-update is disabled - update_auto <= 0");
                     return false; // auto-update disabled
                 }
 
@@ -561,6 +566,7 @@ class Console_Abstract
                     $seconds_since_last_check = $now - $last_check;
                     if ($seconds_since_last_check < $this->update_auto)
                     {
+                        if ($output or $this->verbose) $this->output("Only $seconds_since_last_check seconds since last check.  Configured auto-update is " . $this->update_auto . " seconds");
                         return false; // not yet time to check
                     }
                 }
@@ -577,6 +583,8 @@ class Console_Abstract
             }
             if (!preg_match($this->update_version_pattern[0], $update_contents, $match))
             {
+                $this->log($update_contents);
+                $this->log($this->update_version_pattern[0]);
                 $this->error('Issue with update version check - pattern not found at ' . $this->update_version_url);
             }
             $index = $this->update_version_pattern[1];
@@ -621,6 +629,12 @@ class Console_Abstract
             }
             $index = $this->update_hash_pattern[1];
             $this->update_hash = $match[$index];
+
+            $this->update_last_check = $now;
+            $this->saveConfig();
+
+            $class = get_called_class();
+            $this->output("Already at latest version (" . $class::VERSION . ")");
         }
         return $this->update_exists;
     }
@@ -1212,6 +1226,9 @@ Class Test_Thing_Script extends Console_Abstract
     // Config Variables
     protected $__test_message = ["Test message - sample config to test new console tool", "string"];
     public $test_message = "Testing, testing, 0, 1, 10, 11";
+
+    // Update this to your update URL, or remove it to disable updates
+	public $update_version_url = "https://raw.githubusercontent.com/chrisputnam9/pcon/master/tests/dist/test-readme.md";
 
     protected $___test = [
         "Sample method to test new console tool",
