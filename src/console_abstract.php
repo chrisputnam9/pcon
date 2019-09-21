@@ -478,7 +478,8 @@ class Console_Abstract
         }
 
         // Check install path valid
-        $config_install_tool_path = $this->install_path . DS . basename(__FILE__);
+        $this_filename = basename(__FILE__);
+        $config_install_tool_path = $this->install_path . DS . $this_filename;
         if ($config_install_tool_path != __FILE__)
         {
             $this->warn(
@@ -501,7 +502,20 @@ class Console_Abstract
         }
 
         // Download update to temp file
-        // todo
+        $temp_dir = sys_get_temp_dir();
+        $temp_path = $temp_dir . DS . $this_filename . time();
+        if (is_file($temp_path))
+        {
+            $success = unlink($temp_path);
+            if (!$success) $this->error("Failed to delete existing temp file ($temp_path) - may need higher privileges (eg. sudo)");
+        }
+
+        $curl = $this->getCurl($this->update_url);
+        $updated_contents = curl_exec($curl);
+        if (empty($updated_contents)) $this->error("Download failed - no contents at " . $this->update_url);
+
+        $success = file_put_contents($temp_path, $updated_contents);
+        if (!$success) $this->error("Failed to write to temp file ($temp_path) - may need higher privileges (eg. sudo)");
 
         // Check hash
         // todo
