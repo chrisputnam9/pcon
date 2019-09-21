@@ -121,8 +121,10 @@ class Console_Abstract
     // Set this to false in child class to disable hash check
     protected $hash_pattern_standard = "~
         latest\ version\ hash \s*
-        (.*) \s* : \s*
-        (.*)
+        \( \s*
+            ( .+ )
+        \s* \) \s* :
+        \s* ([0-9a-f]+)
     ~ixm";
 
     // True to use the standard
@@ -478,7 +480,7 @@ class Console_Abstract
         }
 
         // Make sure update is available
-        if (!$this->updateCheck(false, true))
+        if (!$this->updateCheck(false, true)) // auto:false, output:true
         {
             return true;
         }
@@ -505,8 +507,6 @@ class Console_Abstract
 
             if (!$success) $this->error("Failed to create install path ($this->install_path) - may need higher privileges (eg. sudo)");
         }
-
-        die("<pre>".print_r($this,true)."</pre>");
 
         // Download update to temp file
         // todo
@@ -590,9 +590,21 @@ class Console_Abstract
             $index = $this->update_version_pattern[1];
             $this->update_version = $match[$index];
 
-            // check if remove version is newer than current
+            // check if remote version is newer than installed
             $class = get_called_class();
             $this->update_exists = version_compare($class::VERSION, $this->update_version, '<');
+
+            if ($output or $this->verbose)
+            {
+                if ($this->update_exists)
+                {
+                    $this->output("Update exists, version " . $this->update_version . " (installed is " . $class::VERSION . ")");
+                }
+                else
+                {
+                    $this->output("Already at latest version (" . $class::VERSION . ")");
+                }
+            }
 
             // look for download match
             if ($this->update_download_pattern[0] === true)
@@ -632,10 +644,14 @@ class Console_Abstract
 
             $this->update_last_check = $now;
             $this->saveConfig();
-
-            $class = get_called_class();
-            $this->output("Already at latest version (" . $class::VERSION . ")");
         }
+
+        $this->log(" -- update_exists: " . $this->update_exists);
+        $this->log(" -- update_version: " . $this->update_version);
+        $this->log(" -- update_url: " . $this->update_url);
+        $this->log(" -- update_hash_algorithm: " . $this->update_hash_algorithm);
+        $this->log(" -- update_hash: " . $this->update_hash);
+
         return $this->update_exists;
     }
 
