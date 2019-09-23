@@ -79,6 +79,10 @@ class Console_Abstract
     protected $__update_version_url = ["URL to check for latest version number info", "string"];
 	public $update_version_url = "";
 
+    // Note: this is configurable, and the child class can also set a default
+    protected $__update_check_hash = ["Whether to check hash of download when updating", "binary"];
+	public $update_check_hash = true;
+
     protected $__verbose = "Enable verbose output";
 	public $verbose = false;
 
@@ -129,7 +133,11 @@ class Console_Abstract
     protected $update_exists = null;
     protected $update_version = "0";
     protected $update_url = "";
-    protected $update_hash_algorithm = "";
+
+    // This is used when packaging via pcon, for convenience,
+    //  but will be read dynamically from the download page
+    //  to check the downloaded file
+    protected $update_hash_algorithm = "md5";
     protected $update_hash = "";
     
     /**
@@ -501,7 +509,7 @@ class Console_Abstract
             if (!$success) $this->error("Failed to create install path ($this->install_path) - may need higher privileges (eg. sudo)");
         }
 
-        // Download update to temp file
+        $this->log('Downloading update to temp file, from ' . $this->update_url);
         $temp_dir = sys_get_temp_dir();
         $temp_path = $temp_dir . DS . $this_filename . time();
         if (is_file($temp_path))
@@ -517,8 +525,18 @@ class Console_Abstract
         $success = file_put_contents($temp_path, $updated_contents);
         if (!$success) $this->error("Failed to write to temp file ($temp_path) - may need higher privileges (eg. sudo)");
 
-        // Check hash
-        // todo
+        if ($this->update_check_hash)
+        {
+            $this->log('Checking hash of downloaded file ('.$this->update_hash_algorithm.')');
+            $download_hash = hash_file($this->update_hash_algorithm, $temp_path);
+            if ($download_hash != $this->update_hash)
+            {
+                $this->log('Download Hash: ' . $download_hash);
+                $this->log('Update Hash: ' . $this->update_hash);
+                unlink($temp_path);
+                $this->error("Hash of downloaded file is incorrect; check download source");
+            }
+        }
     }
 
     /**
@@ -624,29 +642,32 @@ class Console_Abstract
             $index = $this->update_download_pattern[1];
             $this->update_url = $match[$index];
 
-            // look for hash algorithm match
-            if ($this->update_hash_algorithm_pattern[0] === true)
+            if ($this->update_check_hash)
             {
-                $this->update_hash_algorithm_pattern[0] = $this->hash_pattern_standard;
-            }
-            if (!preg_match($this->update_hash_algorithm_pattern[0], $update_contents, $match))
-            {
-                $this->error('Issue with update hash algorithm check - pattern not found at ' . $this->update_version_url);
-            }
-            $index = $this->update_hash_algorithm_pattern[1];
-            $this->update_hash_algorithm = $match[$index];
+                // look for hash algorithm match
+                if ($this->update_hash_algorithm_pattern[0] === true)
+                {
+                    $this->update_hash_algorithm_pattern[0] = $this->hash_pattern_standard;
+                }
+                if (!preg_match($this->update_hash_algorithm_pattern[0], $update_contents, $match))
+                {
+                    $this->error('Issue with update hash algorithm check - pattern not found at ' . $this->update_version_url);
+                }
+                $index = $this->update_hash_algorithm_pattern[1];
+                $this->update_hash_algorithm = $match[$index];
 
-            // look for hash match
-            if ($this->update_hash_pattern[0] === true)
-            {
-                $this->update_hash_pattern[0] = $this->hash_pattern_standard;
+                // look for hash match
+                if ($this->update_hash_pattern[0] === true)
+                {
+                    $this->update_hash_pattern[0] = $this->hash_pattern_standard;
+                }
+                if (!preg_match($this->update_hash_pattern[0], $update_contents, $match))
+                {
+                    $this->error('Issue with update hash check - pattern not found at ' . $this->update_version_url);
+                }
+                $index = $this->update_hash_pattern[1];
+                $this->update_hash = $match[$index];
             }
-            if (!preg_match($this->update_hash_pattern[0], $update_contents, $match))
-            {
-                $this->error('Issue with update hash check - pattern not found at ' . $this->update_version_url);
-            }
-            $index = $this->update_hash_pattern[1];
-            $this->update_hash = $match[$index];
 
             $this->update_last_check = $now;
             $this->saveConfig();

@@ -5,8 +5,8 @@
  */
 Class PCon extends Console_Abstract
 {
-    const VERSION = 1;
 
+    const VERSION = 1;
     // Name of script and directory to store config
     const SHORTNAME = 'pcon';
 
@@ -237,7 +237,11 @@ Class PCon extends Console_Abstract
         $this->log('Making script file executable');
         chmod($tool_exec_path, 0755);
 
-        $this->log('Packaging complete to: ' . $tool_exec_path);
+        $package_hash = hash_file($this->update_hash_algorithm, $tool_exec_path);
+
+        $this->output('Packaging complete to: ' . $tool_exec_path);
+        $this->output('Package hash ('.$this->update_hash_algorithm.'): ' . $package_hash);
+
     }
 
 }

@@ -29,7 +29,7 @@ if [ -d "$TEST_DIR/dist" ]; then
 fi
 
 echo "Packaging test tool"
-"$PCON" package "$TEST_SCRIPT"
+"$PCON" package "$TEST_SCRIPT" --verbose
 
 cp "$TEST_SCRIPT_PACKAGED" "$TEST_SCRIPT_DIST"
 
