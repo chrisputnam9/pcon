@@ -545,6 +545,13 @@ class Console_Abstract
                 $this->error("Hash of downloaded file is incorrect; check download source");
             }
         }
+
+        //todo move downloaded file to replace this one
+        $this->log('Installing downloaded file');
+        $success = rename($temp_path, $config_install_tool_path);
+        if (!$success) $this->error("Update failed - may need higher privileges (eg. sudo)");
+
+        $this->output('Update complete');
     }
 
     /**
