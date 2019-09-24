@@ -44,14 +44,17 @@ class Console_Abstract
         'help',
         'install',
         'update',
+        'version',
     ];
 
     /**
-     * Methods that are OK to run as root
+     * Methods that are OK to run as root without warning
      */
     protected static $ROOT_METHODS = [
+        'help',
         'install',
         'update',
+        'version',
     ];
 
 	/**
@@ -552,6 +555,15 @@ class Console_Abstract
         if (!$success) $this->error("Update failed - may need higher privileges (eg. sudo)");
 
         $this->output('Update complete');
+    }
+
+    protected $___version = [
+        "Output version information"
+    ];
+    public function version()
+    {
+        $class = get_called_class();
+        $this->output($class::SHORTNAME . ' version ' . $class::VERSION);
     }
 
     /**

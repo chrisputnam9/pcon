@@ -17,7 +17,7 @@ echodiv
 if [ ! -f "$TEST_SCRIPT" ]; then
     echo "Test script 'usage_create.sh' must be run first - we will run that now.  Ready?"
     pced "Running usage_create.sh..."
-    "$DIR/usage_create.sh" --no-use-test --no-pause
+    "$DIR/usage_create.sh" --use-test --pause
 
     pced "Ready to begin Packaging tests"
     echodiv
@@ -34,6 +34,9 @@ echo "Packaging test tool"
 cp "$TEST_SCRIPT_PACKAGED" "$TEST_SCRIPT_DIST"
 
 if [ "$1" != "--no-use-test" ]; then
+    pced "Testing version output:"
+    "$TEST_SCRIPT_PACKAGED" version
+
     pced "Testing help output:"
     "$TEST_SCRIPT_PACKAGED" help
 

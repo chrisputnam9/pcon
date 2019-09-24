@@ -17,7 +17,7 @@ echodiv
 if [ ! -f "$TEST_SCRIPT_PACKAGED" ]; then
     echo "Test script 'usage_package.sh' must be run first - we will run that now.  Ready?"
     pced "Running usage_package.sh..."
-    "$DIR/usage_package.sh" --no-use-test --no-pause
+    "$DIR/usage_package.sh" --use-test --pause
 
     pced "Ready to begin Install tests"
     echodiv
@@ -27,6 +27,9 @@ echo "Installing test tool"
 sudo "$TEST_SCRIPT_PACKAGED" install --verbose
 
 if [ "$1" != "--no-use-test" ]; then
+    pced "Testing version output:"
+    "$TEST_SCRIPT_INSTALLED" version
+
     pced "Testing help output:"
     "$TEST_SCRIPT_INSTALLED" help
 

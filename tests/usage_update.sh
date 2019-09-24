@@ -17,7 +17,7 @@ echodiv
 if [ ! -f "$TEST_SCRIPT_INSTALLED" ]; then
     echo "Test script 'usage_install.sh' must be run first - we will run that now.  Ready?"
     pced "Running usage_install.sh..."
-    "$DIR/usage_install.sh" --no-use-test --no-pause
+    "$DIR/usage_install.sh" --use-test --pause
 
     pced "Ready to begin Update tests"
     echodiv
@@ -27,6 +27,9 @@ echo "Running Update"
 sudo "$TEST_SCRIPT_INSTALLED" update --verbose
 
 if [ "$1" != "--no-use-test" ]; then
+    pced "Testing version output:"
+    "$TEST_SCRIPT_INSTALLED" version
+
     pced "Testing help output:"
     "$TEST_SCRIPT_INSTALLED" help
 

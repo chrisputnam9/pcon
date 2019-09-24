@@ -13,6 +13,6 @@ fi
 echo "$TEST_DIR will be removed and recreated"
 
 pced "Removing old test dir"
-sudo rm -rvf "$TEST_DIR" "/usr/local/bin/$TEST_SCRIPT_INSTALLED" "$TEST_SCRIPT_CONFIG_DIR"
+sudo rm -rvf "$TEST_DIR" "$TEST_SCRIPT_INSTALLED" "$TEST_SCRIPT_CONFIG_DIR"
 
 pced "Cleanup complete"

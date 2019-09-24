@@ -15,13 +15,16 @@ echo -n "Usage - Create - Tests Starting"
 
 if [ -d "$TEST_DIR" ]; then
     pced "Target directory already exists - cleanup required"
-    "$DIR/cleanup.sh" --no-pause
+    "$DIR/cleanup.sh" --pause
 fi
 
 pced "Creating new tool"
 "$PCON" create "Test thing script" "_test" "$TMP_DIR" true
 
 if [ "$1" != "--no-use-test" ]; then
+    pced "Testing version output:"
+    "$TEST_SCRIPT" version
+
     pced "Testing help output:"
     "$TEST_SCRIPT" help
 
