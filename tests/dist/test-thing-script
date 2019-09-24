@@ -546,9 +546,9 @@ class Console_Abstract
             }
         }
 
-        //todo move downloaded file to replace this one
         $this->log('Installing downloaded file');
         $success = rename($temp_path, $config_install_tool_path);
+        $success = $success and chmod($config_install_tool_path, 0755);
         if (!$success) $this->error("Update failed - may need higher privileges (eg. sudo)");
 
         $this->output('Update complete');
