@@ -8,4 +8,4 @@ Download Latest Version (1.0.1):
 https://raw.githubusercontent.com/chrisputnam9/pcon/master/tests/dist/test-thing-script
 
 Latest Version Hash (md5):
-5c367cb90ee4e6d2566f2a273520fd47
+16fb4f7eea94555f7096e8cf289e148c

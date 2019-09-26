@@ -67,7 +67,7 @@ class Console_Abstract
     protected $__timezone = ["Timezone - from http://php.net/manual/en/timezones.", "string"];
     public $timezone = "US/Eastern";
 
-    /* Default: 24 hrs
+    /* Default: check every 24 hrs
         24 * 60 * 60 = 86400
     */
     protected $__update_auto = ["How often to automatically check for an update (seconds, 0 to disable)", "int"];
@@ -102,6 +102,7 @@ class Console_Abstract
     protected $config_initialized = false;
     protected $dt = null;
     protected $run_stamp = '';
+    protected $method = '';
 
     protected $logged_in_user = '';
     protected $current_user = '';
@@ -177,6 +178,7 @@ class Console_Abstract
         $method = array_shift($argv);
 
         $instance = new $class();
+        $instance->method = $method;
 
         try
         {
@@ -223,6 +225,15 @@ class Console_Abstract
                     {
                         $instance->error("Cowardly refusing to run as root. Use --allow_root to bypass this error.", 200);
                     }
+                }
+            }
+
+            // Run an update check
+            if ($instance->updateCheck(true, true)) // auto:true, output:true
+            {
+                if ($method != 'update')
+                {
+                    $instance->sleep(3);
                 }
             }
 
@@ -573,8 +584,14 @@ class Console_Abstract
 
         if (empty($this->update_version_url))
         {
-            if ($output or $this->verbose) $this->output("Update is disabled - update_version_url is empty");
+            if (($output and !$auto) or $this->verbose) $this->output("Update is disabled - update_version_url is empty");
             return false; // update disabled
+        }
+
+        if (!defined('PACKAGED') or !PACKAGED)
+        {
+            if (($output and !$auto) or $this->verbose) $this->output("Only packaged tools may be updated - package first using PCon (https://cmp.onl/tjNJ), then install");
+            return false;
         }
 
         if (is_null($this->update_exists))
@@ -589,7 +606,7 @@ class Console_Abstract
                 // If disabled, return false
                 if ($this->update_auto <= 0)
                 {
-                    if ($output or $this->verbose) $this->output("Auto-update is disabled - update_auto <= 0");
+                    $this->log("Auto-update is disabled - update_auto <= 0");
                     return false; // auto-update disabled
                 }
 
@@ -609,7 +626,7 @@ class Console_Abstract
                     $seconds_since_last_check = $now - $last_check;
                     if ($seconds_since_last_check < $this->update_auto)
                     {
-                        if ($output or $this->verbose) $this->output("Only $seconds_since_last_check seconds since last check.  Configured auto-update is " . $this->update_auto . " seconds");
+                        $this->log("Only $seconds_since_last_check seconds since last check.  Configured auto-update is " . $this->update_auto . " seconds");
                         return false; // not yet time to check
                     }
                 }
@@ -641,7 +658,14 @@ class Console_Abstract
             {
                 if ($this->update_exists)
                 {
-                    $this->output("Update exists, version " . $this->update_version . " (installed is " . $class::VERSION . ")");
+                    $this->hr('>');
+                    $this->output("An update is available: version " . $this->update_version . " (currently installed version is " . $class::VERSION . ")");
+                    if ($this->method != 'update')
+                    {
+                        $this->output(" - Run 'update' to install latest version.");
+                        $this->output(" - See 'help update' for more information.");
+                    }
+                    $this->hr('>');
                 }
                 else
                 {
@@ -688,7 +712,7 @@ class Console_Abstract
                 $this->update_hash = $match[$index];
             }
 
-            $this->update_last_check = $now;
+            $this->update_last_check = date('Y-m-d H:i:s T', $now);
             $this->saveConfig();
         }
 
@@ -873,6 +897,37 @@ class Console_Abstract
         {
             $this->step = false;
         }
+    }
+
+    /**
+     * Sleep for set time, with countdown
+     * @param $seconds - number of seconds to wait
+     * @param $message - formatted string
+     */
+    public function sleep($seconds=3, $message="Continuing in %s...")
+    {
+        $seconds = (int) $seconds;
+        $max_pad = 0;
+        while ($seconds > 0)
+        {
+            $output = sprintf($message, $seconds);
+            $pad = strlen($output);
+            if ($pad < $max_pad)
+            {
+                $output = str_pad($output, $max_pad);
+            }
+            else
+            {
+                $max_pad = $pad;
+            }
+
+            echo $output;
+            sleep(1);
+            $seconds-=1;
+            echo "\r";
+        }
+        echo str_pad("", $max_pad);
+        echo "\n";
     }
 
     /**
