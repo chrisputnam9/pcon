@@ -49,5 +49,8 @@ if [ "$1" != "--no-use-test" ]; then
     pced "Testing 'test' method with custom message and verbose stamped output:"
     "$TEST_SCRIPT_PACKAGED" test "Custom Message" --verbose --stamp-lines
 
+    pced "Testing 'backup' method by backing up config:"
+    "$TEST_SCRIPT_PACKAGED" backup "$TEST_SCRIPT_CONFIG_DIR/config.json"
+
     pced "Usage - Package - Tests Complete"
 fi

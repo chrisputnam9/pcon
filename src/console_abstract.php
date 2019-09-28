@@ -33,6 +33,7 @@ class Console_Abstract
      * Callable Methods
      */
     protected static $METHODS = [
+        'backup',
         'help',
         'install',
         'update',
@@ -52,11 +53,17 @@ class Console_Abstract
 	/**
 	 * Config/option defaults
 	 */
-    protected $__install_path = ["Install path of this tool", "string"];
-	public $install_path = "/usr/local/bin";
-
     protected $__allow_root = "OK to run as root";
     protected $allow_root = false;
+
+    protected $__backup_age_limit = ["Age limit of backups to keep- number of days", "string"];
+    public $backup_age_limit = '30';
+
+    protected $__backup_dir = ["Default backup directory", "string"];
+    public $backup_dir = null;
+
+    protected $__install_path = ["Install path of this tool", "string"];
+	public $install_path = "/usr/local/bin";
 
     protected $__stamp_lines = "Stamp output lines";
 	public $stamp_lines = false;
@@ -100,6 +107,7 @@ class Console_Abstract
      * Child class can override all as needed
      */
     protected $config_initialized = false;
+    protected $config_to_save = null;
     protected $dt = null;
     protected $run_stamp = '';
     protected $method = '';
@@ -251,6 +259,53 @@ class Console_Abstract
         }
     }
 
+    protected $___backup = [
+        "Backup a file or files to the configured backup folder",
+        ["Paths to back up", "string", "required"],
+    ];
+    public function backup($files, $output=true)
+    {
+        $success = true;
+
+        $files = $this->prepArg($files, []);
+
+        if (empty($this->backup_dir))
+        {
+            $this->warn('Backups are disabled - no backup_dir specified in config', true);
+        }
+
+        if (!is_dir($this->backup_dir))
+            mkdir($this->backup_dir, 0755, true);
+
+        foreach ($files as $file)
+        {
+            $this->log("Backing up $file...");
+            if (!is_file($file))
+            {
+                $this->warn("$file does not exist - skipping", true);
+                continue;
+            }
+
+            $backup_file = $this->backup_dir . DS . basename($file) . '-' . $this->stamp() . '.bak';
+            $this->log(" - copying to $backup_file");
+
+            // Back up target
+            $success = ($success and copy($file, $backup_file));
+        }
+        
+        if (!$success) $this->error('Unable to back up one or more files');
+
+        // Clean up old backups - keep backup_age_limit days worth
+        if ($success)
+        {
+            $this->exec("find \"{$this->backup_dir}\" -mtime +{$this->backup_age_limit} -type f -delete");
+
+            if ($output or $verbose) $this->output('Backup successful');
+        }
+        
+        return $success;
+    }
+
     protected $___help = [
         "Shows help/usage information.",
         ["Method/option for specific help", "string"],
@@ -262,7 +317,10 @@ class Console_Abstract
 
         $methods = array_merge(static::$METHODS, self::$METHODS);
 
-        $this->output("USAGE:\n");
+        $this->version();
+
+        $this->output("\nUSAGE:\n");
+
         $this->output(static::SHORTNAME." <method> (argument1) (argument2) ... [options]\n");
 
         $this->hr('-');
@@ -477,7 +535,7 @@ class Console_Abstract
 
         if (!$success) $this->error("Install failed - may need higher privileges (eg. sudo)");
 
-        $this->install_path = $install_path;
+        $this->configure('install_path', $install_path, true);
         $this->saveConfig();
 
         $this->log("Install completed to $install_tool_path with no errors");
@@ -712,7 +770,7 @@ class Console_Abstract
                 $this->update_hash = $match[$index];
             }
 
-            $this->update_last_check = date('Y-m-d H:i:s T', $now);
+            $this->configure('update_last_check', date('Y-m-d H:i:s T', $now), true);
             $this->saveConfig();
         }
 
@@ -1064,6 +1122,8 @@ class Console_Abstract
     {
         $config_file = $this->getConfigFile();
 
+        $this->backup_dir = $this->getConfigDir() . DS . 'backups';
+
         try
         {
             // Loading specific config values from file
@@ -1082,7 +1142,16 @@ class Console_Abstract
                 }
             }
 
+            // Setting config to save, based on current values
+            $this->config_to_save = [];
+            foreach ($this->getPublicProperties() as $property)
+            {
+                $this->config_to_save[$property] = $this->$property;
+            }
+            ksort($this->config_to_save);
+
             $this->config_initialized = true;
+
             $this->saveConfig();
         }
         catch (Exception $e)
@@ -1099,7 +1168,7 @@ class Console_Abstract
     {
         if (!$this->config_initialized)
         {
-            $this->output('WARNING: Config not initiazlied, refusing to save and risk overwrite');
+            $this->warn('Config not initialized, refusing to save', true);
             return false;
         }
 
@@ -1108,13 +1177,6 @@ class Console_Abstract
 
         try
         {
-            // Loading default config values
-            $config = [];
-            foreach ($this->getPublicProperties() as $property)
-            {
-                $config[$property] = $this->$property;
-            }
-
             if (!is_dir($config_dir))
             {
                 // $this->log("Creating directory - $config_dir");
@@ -1122,8 +1184,7 @@ class Console_Abstract
             }
 
             // Rewrite config - pretty print
-            ksort($config);
-            $json = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            $json = json_encode($this->config_to_save, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
             file_put_contents($config_file, $json);
 
             // Fix permissions if needed
@@ -1218,7 +1279,7 @@ class Console_Abstract
     /**
      * Configure property - if public
      */
-    public function configure($key, $value)
+    public function configure($key, $value, $save_value=false)
     {
         $key = str_replace('-', '_', $key);
 
@@ -1235,6 +1296,11 @@ class Console_Abstract
             $value = preg_replace('/^\~/', $_SERVER['HOME'], $value);
 
             $this->{$key} = $value;
+
+            if ($save_value)
+            {
+                $this->config_to_save[$key] = $value;
+            }
         }
         else
         {

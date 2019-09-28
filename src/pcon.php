@@ -1,7 +1,7 @@
 <?php
 /**
  * PHP Console management tools
- * - helpers to create and package your own PHP console tools
+ * - helper to create and package your own PHP console tools
  */
 Class PCon extends Console_Abstract
 {
