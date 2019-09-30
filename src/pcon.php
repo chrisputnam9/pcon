@@ -6,7 +6,7 @@
 Class PCon extends Console_Abstract
 {
 
-    const VERSION = 1;
+    const VERSION = "1.1.0";
     // Name of script and directory to store config
     const SHORTNAME = 'pcon';
 
@@ -21,6 +21,15 @@ Class PCon extends Console_Abstract
     // Config Variables
     protected $__console_abstract_path = ["Path to console_abstract.php", "string"];
     public $console_abstract_path = CONSOLE_ABSTRACT_PATH;
+
+    // Don't bother with hash, no download built in
+	public $update_check_hash = false;
+
+    // URL to check for updates
+	public $update_version_url = "https://raw.githubusercontent.com/chrisputnam9/pcon/master/README.md";
+
+    // When update exists, show this message
+    protected $update_behavior='Pull git repository to update PHP Console tool (PCon) to latest version';
 
     protected $___create = [
         "Create a new PHP console tool - interactive, or specify options",

@@ -117,6 +117,11 @@ class Console_Abstract
     protected $logged_in_as_root = false;
     protected $running_as_root = false;
 
+    // Update behavior
+    // - DOWNLOAD - download and install update
+    // - Other - show text as a custom message
+    protected $update_behavior='DOWNLOAD';
+
     // Set this to false in child class to disable updates
     protected $update_pattern_standard = "~
         download\ latest\ version \s*
@@ -546,15 +551,22 @@ class Console_Abstract
     ];
     public function update()
     {
-        if (!defined('PACKAGED') or !PACKAGED)
-        {
-            $this->error('Only packaged tools may be updated - package first using PCon (https://cmp.onl/tjNJ), then install');
-        }
-
         // Make sure update is available
         if (!$this->updateCheck(false, true)) // auto:false, output:true
         {
             return true;
+        }
+
+        // Check prescribed behavior
+        if ($this->update_behavior != 'DOWNLOAD')
+        {
+            $this->output($this->update_behavior);
+            return;
+        }
+
+        if (!defined('PACKAGED') or !PACKAGED)
+        {
+            $this->error('Only packaged tools may be updated - package first using PCon (https://cmp.onl/tjNJ), then install');
         }
 
         // Check install path valid
@@ -644,12 +656,6 @@ class Console_Abstract
         {
             if (($output and !$auto) or $this->verbose) $this->output("Update is disabled - update_version_url is empty");
             return false; // update disabled
-        }
-
-        if (!defined('PACKAGED') or !PACKAGED)
-        {
-            if (($output and !$auto) or $this->verbose) $this->output("Only packaged tools may be updated - package first using PCon (https://cmp.onl/tjNJ), then install");
-            return false;
         }
 
         if (is_null($this->update_exists))
