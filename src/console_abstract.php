@@ -128,7 +128,7 @@ class Console_Abstract
         \( \s*
             ( [\d.]+ )
         \s* \) \s* :
-        \s* ( http \S* ) \s*$
+        \s* ( \S* ) \s*$
     ~ixm";
 
     // Set this to false in child class to disable hash check
