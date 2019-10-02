@@ -80,7 +80,7 @@ class Console_Abstract
     protected $__update_auto = ["How often to automatically check for an update (seconds, 0 to disable)", "int"];
 	public $update_auto = 86400;
 
-    protected $__update_last_check = ["Formatted timestap of last update check (UTC)", "string"];
+    protected $__update_last_check = ["Formatted timestap of last update check", "string"];
 	public $update_last_check = "";
 
     // Note: this is configurable, and the child class can also set a default
@@ -254,7 +254,14 @@ class Console_Abstract
             $instance->log("Calling $call_info");
             $instance->hrl();
 
-            call_user_func_array([$instance, $method], $args);
+            try {
+                call_user_func_array([$instance, $method], $args);
+            } catch (ArgumentCountError | InvalidArgumentException | Exception $e) {
+                $error = (get_class($e) == 'Exception') ? $e->getMessage() : "Incorrect usage - see method help below:";
+                $instance->error($error, false);
+                $instance->help($method);
+                exit(500);
+            }
 
             $instance->hrl();
             $instance->log("$call_info complete");
@@ -267,6 +274,7 @@ class Console_Abstract
     protected $___backup = [
         "Backup a file or files to the configured backup folder",
         ["Paths to back up", "string", "required"],
+        ["Whether to output when backup is complete"]
     ];
     public function backup($files, $output=true)
     {
@@ -288,6 +296,7 @@ class Console_Abstract
             if (!is_file($file))
             {
                 $this->warn("$file does not exist - skipping", true);
+                $success = false;
                 continue;
             }
 
@@ -776,7 +785,7 @@ class Console_Abstract
                 $this->update_hash = $match[$index];
             }
 
-            $this->configure('update_last_check', date('Y-m-d H:i:s T', $now), true);
+            $this->configure('update_last_check', gmdate('Y-m-d H:i:s T', $now), true);
             $this->saveConfig();
         }
 

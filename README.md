@@ -16,7 +16,7 @@ the same.  Here are some of the reasons I do reach for PHP:
  - I and my team generally have it installed on our workstations already
  - Most systems I work with use the LAMP stack, so they typically have PHP available in the shell by
    default
- - It's good enough for most of my use-cases.  If I need a compilable, fast,
+ - It's good enough for most of my use-cases.  If I need a compiling, fast,
    multi-platform, multi-threading language to build for wider distribution, I'll probably use
    [Go](http://golang.org).
 
