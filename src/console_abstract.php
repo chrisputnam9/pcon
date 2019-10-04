@@ -50,16 +50,33 @@ class Console_Abstract
         'version',
     ];
 
+    /**
+     * Config options that are hidden from help output
+     * - Add config values here that would not typically be overridden by a flag
+     * - Cleans up help output and avoids confusion
+     */
+    protected static $HIDDEN_CONFIG_OPTIONS = [
+        'backup_age_limit',
+        'backup_dir',
+        'install_path',
+        'step',
+        'timezone',
+        'update_auto',
+        'update_check_hash',
+        'update_last_check',
+        'update_version_url',
+    ];
+
 	/**
 	 * Config/option defaults
 	 */
     protected $__allow_root = "OK to run as root";
-    protected $allow_root = false;
+    public $allow_root = false;
 
     protected $__backup_age_limit = ["Age limit of backups to keep- number of days", "string"];
     public $backup_age_limit = '30';
 
-    protected $__backup_dir = ["Default backup directory", "string"];
+    protected $__backup_dir = ["Location to save backups", "string"];
     public $backup_dir = null;
 
     protected $__install_path = ["Install path of this tool", "string"];
@@ -236,7 +253,7 @@ class Console_Abstract
                 {
                     if (empty($class::$ROOT_METHODS) or !in_array($method, $class::$ROOT_METHODS))
                     {
-                        $instance->error("Cowardly refusing to run as root. Use --allow_root to bypass this error.", 200);
+                        $instance->error("Cowardly refusing to run as root. Use --allow-root to bypass this error.", 200);
                     }
                 }
             }
@@ -329,7 +346,10 @@ class Console_Abstract
         // Specific help?
         if ($specific) return $this->_help_specific($specific);
 
-        $methods = array_merge(static::$METHODS, self::$METHODS);
+        $class = get_called_class();
+
+        $methods = array_merge($class::$METHODS, self::$METHODS);
+        sort($methods);
 
         $this->version();
 
@@ -357,8 +377,12 @@ class Console_Abstract
         $this->hr('-');
         $this->output3col("OPTION", "TYPE", "INFO");
         $this->hr('-');
+
+        $hidden_options = array_merge($class::$HIDDEN_CONFIG_OPTIONS, self::$HIDDEN_CONFIG_OPTIONS);
+
         foreach ($this->getPublicProperties() as $property)
         {
+            if (!$this->verbose and in_array($property, $hidden_options)) continue;
             $property = str_replace('_', '-', $property);
             $help = $this->_help_var($property, 'option');
             $type = "";
@@ -373,6 +397,10 @@ class Console_Abstract
         }
         $this->hr('-');
         $this->output("Use no- to set boolean option to false - eg. --no-stamp-lines");
+        if (!$this->verbose)
+        {
+            $this->output("Less common options are hidden.  Use --verbose to show ALL options.");
+        }
     }
 
         /**
@@ -1366,6 +1394,7 @@ class Console_Abstract
             {
                 $this->_public_properties[]= $prop->getName();
             }
+            sort($this->_public_properties);
         }
 
         return $this->_public_properties;

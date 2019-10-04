@@ -18,6 +18,15 @@ Class PCon extends Console_Abstract
         'package',
     ];
 
+    /**
+     * Config options that are hidden from help output
+     * - Add config values here that would not typically be overridden by a flag
+     * - Cleans up help output and avoids confusion
+     */
+    protected static $HIDDEN_CONFIG_OPTIONS = [
+        'console_abstract_path',
+    ];
+
     // Config Variables
     protected $__console_abstract_path = ["Path to console_abstract.php", "string"];
     public $console_abstract_path = CONSOLE_ABSTRACT_PATH;
