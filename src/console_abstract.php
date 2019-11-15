@@ -34,6 +34,7 @@ class Console_Abstract
      */
     protected static $METHODS = [
         'backup',
+        'eval_file',
         'help',
         'install',
         'update',
@@ -335,6 +336,25 @@ class Console_Abstract
         }
         
         return $success;
+    }
+
+    protected $___eval_file = [
+        "Evaluate a php script file, which will have access to all internal methods via '\$this'",
+        ["File to evaluate", "string", "required"]
+    ];
+    public function eval_file($file)
+    {
+        if (!is_file($file))
+        {
+            $this->error("File does not exist, check the path: $file");
+        }
+
+        if (!is_readable($file))
+        {
+            $this->error("File is not readable, check permissions: $file");
+        }
+
+        require_once($file);
     }
 
     protected $___help = [
