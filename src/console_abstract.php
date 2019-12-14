@@ -846,6 +846,13 @@ class Console_Abstract
         return $this->update_exists;
     }
 
+    /**
+     * Clear - clear the CLI output
+     */
+    public function clear()
+    {
+        system('clear');
+    }
 
     /**
      * Exec - run bash command
