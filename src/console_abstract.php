@@ -1114,6 +1114,8 @@ class Console_Abstract
     {
         if ($message)
         {
+            if ($message === true) $message = "";
+
             if (!is_null($default))
             {
                 $message.= " ($default)";
@@ -1123,7 +1125,7 @@ class Console_Abstract
 
         while (true)
         {
-            $this->output($message, false);
+            if ($message) $this->output($message, false);
             if ($single)
             {
                 $line = strtolower( trim( `bash -c "read -n 1 -t 10 INPUT ; echo \\\$INPUT"` ) );
