@@ -342,7 +342,7 @@ class Console_Abstract
         "Evaluate a php script file, which will have access to all internal methods via '\$this'",
         ["File to evaluate", "string", "required"]
     ];
-    public function eval_file($file)
+    public function eval_file($file, ...$evaluation_arguments)
     {
         if (!is_file($file))
         {
@@ -1064,7 +1064,7 @@ class Console_Abstract
      * @param (any) $message (none) to show - prompt
      * @param (int) $default (0) index if no input
      */
-    public function select($list, $message=false,$default=0)
+    public function select($list, $message=false,$default=0,$q_to_quit=true)
     {
         $list = array_values($list);
         foreach ($list as $i => $item)
@@ -1072,20 +1072,39 @@ class Console_Abstract
             $this->output("$i. $item");
         }
 
-        $max = count($list)-1;
-        $s=-1;
-        $first = true;
-        while ($s < 0 or $s > $max)
+        if ($q_to_quit)
         {
-            if (!$first)
-            {
-                $this->warn("Invalid selection $s");
-            }
-            $s = (int) $this->input($message, $default);
-            $first = false;
+            $this->output("q. Quit and exit");
         }
 
-        return $list[$s];
+        $max = count($list)-1;
+        $index=-1;
+        $entry=false;
+
+        while ($index < 0 or $index > $max)
+        {
+            if ($entry !== false)
+            {
+                $this->warn("Invalid selection $entry");
+            }
+            $entry = $this->input($message, $default);
+            if ($q_to_quit and (strtolower(trim($entry)) == 'q'))
+            {
+                $this->warn('Selection Canceled');
+                exit;
+            }
+
+            // Make sure it's really a good entry
+            // Eg. avoid 1.2 => 1 or j => 0
+            //  - which would result in unwanted behavior for bad entries
+            $index = (int) $entry;
+            if ((string) $entry !== (string) $index)
+            {
+                $index = -1;
+            }
+        }
+
+        return $list[$index];
     }
 
     /**
@@ -1140,7 +1159,7 @@ class Console_Abstract
             $line = trim($line);
 
             // Entered input - return
-            if (!empty($line)) return $line;
+            if ($line !== "") return $line;
 
             // Input not required? Return default
             if (!$required) return $default;
