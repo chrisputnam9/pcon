@@ -59,6 +59,7 @@ class Console_Abstract
     protected static $HIDDEN_CONFIG_OPTIONS = [
         'backup_age_limit',
         'backup_dir',
+        'browser_exec',
         'install_path',
         'step',
         'timezone',
@@ -79,6 +80,9 @@ class Console_Abstract
 
     protected $__backup_dir = ["Location to save backups", "string"];
     public $backup_dir = null;
+
+    protected $__browser_exec = ["Command to open links in browser - %s for link placeholder via sprintf"];
+    protected $browser_exec = 'google-chrome "%s"';
 
     protected $__install_path = ["Install path of this tool", "string"];
 	public $install_path = "/usr/local/bin";
@@ -1365,6 +1369,15 @@ class Console_Abstract
         }
 
         return $value;
+    }
+
+    /**
+     * Open link in browser
+     */
+    public function openInBrowser($url)
+    {
+        $command = sprintf($this->browser_exec, $url);
+        $this->exec($command, true);
     }
 
     /**
