@@ -476,8 +476,8 @@ class Console_Abstract
 
                 if (!empty($params))
                 {
-                    $this->hr('-');
                     $this->output3col("PARAMETER", "TYPE", "INFO");
+                    $this->hr('-');
                     $this->hr('-');
                     foreach ($params as $p => $param)
                     {
@@ -961,7 +961,7 @@ class Console_Abstract
     /**
      * Output 3 Columns - for help for example
      */
-    public function output3col($col1, $col2=null, $col3=null, $line_ending=true, $stamp_lines=null)
+    public function output3col($col1, $col2=null, $col3=null)
     {
         $string = str_pad($col1, static::PAD_COL1, " ");
         if (!is_null($col2))
