@@ -25,9 +25,9 @@ class Console_Abstract
     /**
      * Padding for output
      */
-    const PAD_FULL = 100;
-    const PAD_COL1 = 25;
-    const PAD_COL2 = 40;
+    const PAD_FULL = 130;
+    const PAD_COL1 = 30;
+    const PAD_COL2 = 50;
 
     /**
      * Callable Methods
