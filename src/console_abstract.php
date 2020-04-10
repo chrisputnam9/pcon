@@ -307,6 +307,7 @@ class Console_Abstract
         if (empty($this->backup_dir))
         {
             $this->warn('Backups are disabled - no backup_dir specified in config', true);
+            return;
         }
 
         if (!is_dir($this->backup_dir))
@@ -314,11 +315,11 @@ class Console_Abstract
 
         foreach ($files as $file)
         {
-            $this->log("Backing up $file...");
+            $this->output("Backing up $file...", false);
             if (!is_file($file))
             {
+                $this->br();
                 $this->warn("$file does not exist - skipping", true);
-                $success = false;
                 continue;
             }
 
@@ -327,17 +328,20 @@ class Console_Abstract
 
             // Back up target
             $success = ($success and copy($file, $backup_file));
+            if ($success)
+            {
+                $this->output('successful');
+            }
+            else
+            {
+                $this->br();
+                $this->warn("Failed to back up $file", true);
+                continue;
+            }
         }
-        
-        if (!$success) $this->error('Unable to back up one or more files');
 
         // Clean up old backups - keep backup_age_limit days worth
-        if ($success)
-        {
-            $this->exec("find \"{$this->backup_dir}\" -mtime +{$this->backup_age_limit} -type f -delete");
-
-            if ($output or $verbose) $this->output('Backup successful');
-        }
+        $this->exec("find \"{$this->backup_dir}\" -mtime +{$this->backup_age_limit} -type f -delete");
         
         return $success;
     }
