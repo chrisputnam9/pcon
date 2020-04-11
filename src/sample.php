@@ -4,7 +4,7 @@
  */
 Class {{class_name}} extends Console_Abstract
 {
-    const VERSION = 1;
+    const VERSION = "0.0.1";
 
     // Name of script and directory to store config
     const SHORTNAME = '{{tool_shortname}}';

@@ -123,6 +123,7 @@ class Console_Abstract
      */
     protected $config_dir = null;
     protected $config_file = null;
+    protected $home_dir = null;
 
     /**
      * Stuff
@@ -667,7 +668,7 @@ class Console_Abstract
             if (!$success) $this->error("Failed to delete existing temp file ($temp_path) - may need higher privileges (eg. sudo)");
         }
 
-        $curl = $this->getCurl($this->update_url);
+        $curl = $this->getCurl($this->update_url, true);
         $updated_contents = curl_exec($curl);
         if (empty($updated_contents)) $this->error("Download failed - no contents at " . $this->update_url);
 
@@ -762,7 +763,7 @@ class Console_Abstract
             }
 
             // curl, get contents at config url
-            $curl = $this->getCurl($this->update_version_url);
+            $curl = $this->getCurl($this->update_version_url, true);
             $update_contents = curl_exec($curl);
 
             // look for version match
@@ -1194,7 +1195,7 @@ class Console_Abstract
     {
         if (is_null($this->config_dir))
         {
-            $this->config_dir = $_SERVER['HOME'] . DS . '.' . static::SHORTNAME;
+            $this->config_dir = $this->getHomeDir() . DS . '.' . static::SHORTNAME;
         }
 
         return $this->config_dir;
@@ -1212,6 +1213,47 @@ class Console_Abstract
         }
 
         return $this->config_file;
+    }
+
+    /**
+     * Get Home Directory
+     */
+    public function getHomeDir()
+    {
+        if (is_null($this->home_dir))
+        {
+            $sudo_user = "";
+            if ($this->running_as_root)
+            {
+                // Check if run via sudo vs. natively running as root
+                exec('echo "$SUDO_USER"', $output, $return);
+                if (!$return and !empty($output))
+                {
+                    $sudo_user = trim(array_pop($output));
+                }
+            }
+
+            if (empty($sudo_user))
+            {
+                exec('echo "$HOME"', $output, $return);
+            }
+            else
+            {
+                exec('getent passwd ' . $sudo_user . ' | cut -d: -f6', $output, $return);
+            }
+
+            if (!$return and !empty($output))
+            {
+                $this->home_dir = trim(array_pop($output));
+            }
+        }
+
+        if (empty($this->home_dir))
+        {
+            $this->error('Something odd about this environment... can\'t figure out your home directory; please submit an issue with details about your environment');
+        }
+
+        return $this->home_dir;
     }
 
     /**
@@ -1401,7 +1443,7 @@ class Console_Abstract
         if (in_array($key, $public_properties))
         {
 
-            $value = preg_replace('/^\~/', $_SERVER['HOME'], $value);
+            $value = preg_replace('/^\~/', $this->getHomeDir(), $value);
 
             $this->{$key} = $value;
 
@@ -1417,7 +1459,7 @@ class Console_Abstract
     }
 
     // Get basic curl
-    public function getCurl($url)
+    public function getCurl($url, $fresh_no_cache=false)
     {
         $ch = curl_init();
         curl_setopt_array($ch, [
@@ -1428,6 +1470,11 @@ class Console_Abstract
             CURLOPT_TIMEOUT => 180,
             CURLOPT_FOLLOWLOCATION => true,
         ]);
+
+        if ($fresh_no_cache)
+        {
+            curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
+        }
         
         return $ch;
     }
