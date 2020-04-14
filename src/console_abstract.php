@@ -1239,7 +1239,7 @@ class Console_Abstract
             }
             else
             {
-                exec('getent passwd ' . $sudo_user . ' | cut -d: -f6', $output, $return);
+                exec('echo ~' . $sudo_user, $output, $return);
             }
 
             if (!$return and !empty($output))
