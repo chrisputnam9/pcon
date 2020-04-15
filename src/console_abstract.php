@@ -874,10 +874,17 @@ class Console_Abstract
         $this->log("exec: $command 2>&1");
         exec($command, $output, $return);
         $output = empty($output) ? "" : "\n\t" . implode("\n\t", $output);
-        if ($return and $error)
+        if ($return)
         {
             $output = empty($output) ? $return : $output;
-            $this->error($output);
+            if ($error)
+            {
+                $this->error($output);
+            }
+            else
+            {
+                $this->warn($output);
+            }
         }
         $this->log($output);
         return $output;
