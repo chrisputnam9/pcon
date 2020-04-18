@@ -1341,8 +1341,8 @@ class Console_Abstract
                 $success = true;
                 $success = ($success and chown($config_dir, $this->logged_in_user));
                 $success = ($success and chown($config_file, $this->logged_in_user));
-                $success = ($success and chgrp($config_dir, $this->logged_in_user));
-                $success = ($success and chgrp($config_file, $this->logged_in_user));
+                # $success = ($success and chgrp($config_dir, $this->logged_in_user));
+                # $success = ($success and chgrp($config_file, $this->logged_in_user));
 
                 if (!$success)
                 {
