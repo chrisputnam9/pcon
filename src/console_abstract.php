@@ -9,11 +9,21 @@ if (!defined('DS'))
     define('DS', DIRECTORY_SEPARATOR);
 }
 
+// Either log or display all errors
+error_reporting(E_ALL);
+
 if (defined('ERRORS') and ERRORS)
 {
     // Enable and show errors
+    echo "************************************\n";
+    echo "* Displaying all errors & warnings *\n";
+    echo "************************************\n\n";
     ini_set('display_errors', 1);
-    error_reporting(E_ALL);
+}
+else
+{
+    // Disable PHP Error display
+    ini_set('display_errors', 0);
 }
 
 /**
@@ -185,6 +195,17 @@ class Console_Abstract
      */
     public function __construct()
     {
+        if (defined('ERRORS') and ERRORS)
+        {
+            // Enable and show errors
+            $this->log("Displaying all errors");
+        }
+        else
+        {
+            // Disable PHP Error display
+            $this->log("NOT displaying errors");
+        }
+
         date_default_timezone_set($this->timezone);
         $this->run_stamp = $this->stamp();
 
