@@ -32,12 +32,13 @@ else
  */
 class Console_Abstract
 {
+
     /**
      * Padding for output
      */
-    const PAD_FULL = 130;
-    const PAD_COL1 = 30;
-    const PAD_COL2 = 50;
+    const DEFAULT_WIDTH = 130; // characters - if not able to dynamically determine
+    const COL1_WIDTH = 20; // percentage of full width
+    const COL2_WIDTH = 50; // percentage of full width - col1 + col2
 
     /**
      * Callable Methods
@@ -996,16 +997,20 @@ class Console_Abstract
      */
     public function output3col($col1, $col2=null, $col3=null)
     {
-        $string = str_pad($col1, static::PAD_COL1, " ");
+        $full_width = $this->getTerminalWidth();
+        $col1_width = floor(($full_width * static::COL1_WIDTH) / 100);
+        $col2_width = floor(($full_width * static::COL2_WIDTH) / 100);
+
+        $string = str_pad($col1, $col1_width, " ");
         if (!is_null($col2))
         {
             $string.= "| " . $col2;
         }
         if (!is_null($col3))
         {
-            $string = str_pad($string, static::PAD_COL2, " ") . "| " . $col3;
+            $string = str_pad($string, $col2_width, " ") . "| " . $col3;
         }
-        $string = str_pad("| $string", static::PAD_FULL-1) . "|";
+        $string = str_pad("| $string", $full_width-1) . "|";
         $this->output($string);
     }
 
@@ -1031,7 +1036,7 @@ class Console_Abstract
      */
     public function hr($c='=', $prefix="")
     {
-        $string = str_pad($prefix, static::PAD_FULL, $c);
+        $string = str_pad($prefix, $this->getTerminalWidth(), $c);
         $this->output($string);
     }
     /**
@@ -1558,6 +1563,30 @@ class Console_Abstract
         {
             fclose($this->_cli_input_handle);
         }
+    }
+
+    protected $_terminal_width = null;
+    protected function getTerminalWidth($fresh=false)
+    {
+        if (is_null($this->_terminal_width))
+        {
+            exec("tput cols", $output, $return);
+
+            if (
+                $return
+                or empty($output)
+                or empty($output[0])
+                or !is_numeric($output[0])
+            ){
+                $this->_terminal_width = static::DEFAULT_WIDTH;
+            }
+            else
+            {
+                $this->_terminal_width = (int) $output[0];
+            }
+        }
+
+        return $this->_terminal_width;
     }
 
 }
