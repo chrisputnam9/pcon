@@ -15,7 +15,7 @@ error_reporting(E_ALL);
 if (defined('ERRORS') and ERRORS)
 {
     // Enable and show errors
-    echo "************************************\n";
+    echo "\n\n************************************\n";
     echo "* Displaying all errors & warnings *\n";
     echo "************************************\n\n";
     ini_set('display_errors', 1);
@@ -196,17 +196,6 @@ class Console_Abstract
      */
     public function __construct()
     {
-        if (defined('ERRORS') and ERRORS)
-        {
-            // Enable and show errors
-            $this->log("Displaying all errors");
-        }
-        else
-        {
-            // Disable PHP Error display
-            $this->log("NOT displaying errors");
-        }
-
         date_default_timezone_set($this->timezone);
         $this->run_stamp = $this->stamp();
 
@@ -286,6 +275,9 @@ class Console_Abstract
                 }
             }
 
+            $instance->log('Determined home directory to be ' . $instance->home_dir);
+
+
             // Run an update check
             if ($instance->updateCheck(true, true)) // auto:true, output:true
             {
@@ -301,11 +293,12 @@ class Console_Abstract
 
             try {
                 call_user_func_array([$instance, $method], $args);
-            } catch (ArgumentCountError | InvalidArgumentException | Exception $e) {
-                $error = (get_class($e) == 'Exception') ? $e->getMessage() : "Incorrect usage - see method help below:";
-                $instance->error($error, false);
-                $instance->help($method);
-                exit(500);
+            } catch (ArgumentCountError $e) {
+                static::_run_error($e);
+            } catch (InvalidArgumentException $e) {
+                static::_run_error($e);
+            } catch (Exception $e) {
+                static::_run_error($e);
             }
 
             $instance->hrl();
@@ -315,6 +308,13 @@ class Console_Abstract
             $instance->error($e->getMessage());
         }
     }
+        protected static function _run_error($e)
+        {
+            $error = (get_class($e) == 'Exception') ? $e->getMessage() : "Incorrect usage - see method help below:";
+            $instance->error($error, false);
+            $instance->help($method);
+            exit(500);
+        }
 
     protected $___backup = [
         "Backup a file or files to the configured backup folder",
@@ -1255,35 +1255,52 @@ class Console_Abstract
     {
         if (is_null($this->home_dir))
         {
+            $return_error = false;
+
             $sudo_user = "";
             if ($this->running_as_root)
             {
                 // Check if run via sudo vs. natively running as root
-                exec('echo "$SUDO_USER"', $output, $return);
-                if (!$return and !empty($output))
+                exec('echo "$SUDO_USER"', $output, $return_error);
+                if (!$return_error and !empty($output))
                 {
                     $sudo_user = trim(array_pop($output));
                 }
             }
 
+            // Not Sudo User?
             if (empty($sudo_user))
             {
-                exec('echo "$HOME"', $output, $return);
+                // Windows doesn't have 'HOME' set necessarily
+                if (empty($_SERVER['HOME']))
+                {
+                    $this->home_dir = $_SERVER['HOMEDRIVE'] . $_SERVER['HOMEDRIVE'];
+                }
+                // Simplest and most typical - get home dir from env vars.
+                else
+                {
+                    $this->home_dir = $_SERVER['HOME'];
+                }
             }
-            else
+            else // Running via sudo - get home dir of sudo user (if not root)
             {
-                exec('echo ~' . $sudo_user, $output, $return);
+                exec('echo ~' . $sudo_user, $output, $return_error);
+
+                if (!$return_error and !empty($output))
+                {
+                    $this->home_dir = trim(array_pop($output));
+                }
             }
 
-            if (!$return and !empty($output))
+            if (empty($this->home_dir))
             {
-                $this->home_dir = trim(array_pop($output));
+                $this->error('Something odd about this environment... can\'t figure out your home directory; please submit an issue with details about your environment');
             }
-        }
+            else if (!is_dir($this->home_dir))
+            {
+                $this->error('Something odd about this environment... home directory looks like "'.$this->home_dir.'" but that is not a directory; please submit an issue with details about your environment');
+            }
 
-        if (empty($this->home_dir))
-        {
-            $this->error('Something odd about this environment... can\'t figure out your home directory; please submit an issue with details about your environment');
         }
 
         return $this->home_dir;
