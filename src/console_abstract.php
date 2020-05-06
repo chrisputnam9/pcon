@@ -1526,8 +1526,8 @@ class Console_Abstract
             CURLOPT_CONNECTTIMEOUT => 0,
             CURLOPT_TIMEOUT => 180,
             CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_SSL_VERIFYHOST => $this->ssl_check,
-            CURLOPT_SSL_VERIFYPEER => $this->ssl_check,
+            CURLOPT_SSL_VERIFYHOST => ($this->ssl_check ? 2 : 0),
+            CURLOPT_SSL_VERIFYPEER => ($this->ssl_check ? 2 : 0),
         ]);
 
         if ($fresh_no_cache)
