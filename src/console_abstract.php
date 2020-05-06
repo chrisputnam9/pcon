@@ -96,7 +96,10 @@ class Console_Abstract
     protected $browser_exec = 'google-chrome "%s"';
 
     protected $__install_path = ["Install path of this tool", "string"];
-	public $install_path = "/usr/local/bin";
+	public $install_path = DS . "usr" . DS . "local" . DS . "bin";
+
+    protected $__ssl_check = "Whether to check SSL certificates with curl";
+	public $ssl_check = true;
 
     protected $__stamp_lines = "Stamp output lines";
 	public $stamp_lines = false;
@@ -691,7 +694,7 @@ class Console_Abstract
         }
 
         $curl = $this->getCurl($this->update_url, true);
-        $updated_contents = curl_exec($curl);
+        $updated_contents = $this->execCurl($curl);
         if (empty($updated_contents)) $this->error("Download failed - no contents at " . $this->update_url);
 
         $success = file_put_contents($temp_path, $updated_contents);
@@ -786,7 +789,7 @@ class Console_Abstract
 
             // curl, get contents at config url
             $curl = $this->getCurl($this->update_version_url, true);
-            $update_contents = curl_exec($curl);
+            $update_contents = $this->execCurl($curl);
 
             // look for version match
             if ($this->update_version_pattern[0] === true)
@@ -1189,9 +1192,8 @@ class Console_Abstract
             if ($message) $this->output($message, false);
             if ($single)
             {
-                $line = strtolower( trim( `bash -c "read -n 1 -t 10 INPUT ; echo \\\$INPUT"` ) );
+                $line = strtolower( trim( `bash -c 'read -n1 -t10 CHAR && echo \$CHAR'` ) );
                 $this->output('');
-                // $line = fgetc($handle);
             }
             else
             {
@@ -1511,22 +1513,56 @@ class Console_Abstract
     // Get basic curl
     public function getCurl($url, $fresh_no_cache=false)
     {
-        $ch = curl_init();
-        curl_setopt_array($ch, [
+        if (!$this->ssl_check)
+        {
+            $this->warn("Initializing unsafe connection to $url (no SSL check, as configured)", true);
+        }
+
+        $curl = curl_init();
+        curl_setopt_array($curl, [
             CURLOPT_URL => $url,
             CURLOPT_HEADER => false,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_CONNECTTIMEOUT => 0,
             CURLOPT_TIMEOUT => 180,
             CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_SSL_VERIFYHOST => $this->ssl_check,
+            CURLOPT_SSL_VERIFYPEER => $this->ssl_check,
         ]);
 
         if ($fresh_no_cache)
         {
-            curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
+            curl_setopt($curl, CURLOPT_FRESH_CONNECT, true);
         }
-        
-        return $ch;
+
+        return $curl;
+    }
+
+    // Exec curl and handle errors, return response if good
+    public function execCurl($curl)
+    {
+        $response = curl_exec($curl);
+
+        if (empty($response))
+        {
+            $number = curl_errno($curl);
+
+            // Was there an error?
+            if ($number)
+            {
+                $message = curl_error($curl);
+
+                if (stripos($message, 'ssl'))
+                {
+                    $message.= "\n\nFor some SSL issues, try downloading the latest CA bundle and pointing your PHP.ini to that (https://curl.haxx.se/docs/caextract.html)";
+                    $message.= "\n\nAlthough risky and not recommended, you can also consider re-running your command with the --no-ssl-check flag";
+                }
+
+                $this->warn($message, true);
+            }
+        }
+
+        return $response;
     }
 
     /**
