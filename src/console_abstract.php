@@ -154,6 +154,8 @@ class Console_Abstract
     protected $logged_in_as_root = false;
     protected $running_as_root = false;
 
+    protected $minimum_php_major_version = '7';
+
     // Update behavior
     // - DOWNLOAD - download and install update
     // - Other - show text as a custom message
@@ -218,6 +220,31 @@ class Console_Abstract
     }
 
     /**
+     * Check requirements
+     * - Extend in child if needed and pass problems to parent
+     */
+    protected function checkRequirements($problems=[])
+    {
+        $php_version = explode('.', PHP_VERSION);
+        $major = (int) $php_version[0];
+        if ($major < $this->minimum_php_major_version)
+        {
+            $problems[]= "This tool is not well tested below PHP " . $this->minimum_php_major_version .
+                " - please consider upgrading to PHP " . $this->minimum_php_major_version . ".0 or higher";
+        }
+
+        if (!function_exists('curl_version'))
+        {
+            $problems[]= "This tool requires curl for many features such as update checks and installs - please install php-curl";
+        }
+
+        if (!empty($problems))
+        {
+            $this->error("There are some problems with requirements: \n - " . implode("\n - ", $problems), false, true);
+        }
+    }
+
+    /**
      * Run - parse args and run method specified
      */
     public static function run($argv)
@@ -233,6 +260,8 @@ class Console_Abstract
         try
         {
             $instance->initConfig();
+
+            $instance->checkRequirements();
 
             $valid_methods = array_merge($class::$METHODS, self::$METHODS);
 
@@ -613,9 +642,9 @@ class Console_Abstract
         {
             $this->warn("Install path ($install_path) does not exist and will be created", true);
 
-            $success = mkdir($install_path, 0755);
+            $success = mkdir($install_path, 0755, true);
 
-            if (!$success) $this->error("Failed to create install path ($install_path) - may need higher privileges (eg. sudo)");
+            if (!$success) $this->error("Failed to create install path ($install_path) - may need higher privileges (eg. sudo or run as admin)");
         }
 
         $tool_path = __FILE__;
@@ -629,7 +658,7 @@ class Console_Abstract
 
         $success = rename($tool_path, $install_tool_path);
 
-        if (!$success) $this->error("Install failed - may need higher privileges (eg. sudo)");
+        if (!$success) $this->error("Install failed - may need higher privileges (eg. sudo or run as admin)");
 
         $this->configure('install_path', $install_path, true);
         $this->saveConfig();
@@ -681,7 +710,7 @@ class Console_Abstract
 
             $success = mkdir($this->install_path, 0755);
 
-            if (!$success) $this->error("Failed to create install path ($this->install_path) - may need higher privileges (eg. sudo)");
+            if (!$success) $this->error("Failed to create install path ($this->install_path) - may need higher privileges (eg. sudo or run as admin)");
         }
 
         $this->log('Downloading update to temp file, from ' . $this->update_url);
@@ -690,7 +719,7 @@ class Console_Abstract
         if (is_file($temp_path))
         {
             $success = unlink($temp_path);
-            if (!$success) $this->error("Failed to delete existing temp file ($temp_path) - may need higher privileges (eg. sudo)");
+            if (!$success) $this->error("Failed to delete existing temp file ($temp_path) - may need higher privileges (eg. sudo or run as admin)");
         }
 
         $curl = $this->getCurl($this->update_url, true);
@@ -698,7 +727,7 @@ class Console_Abstract
         if (empty($updated_contents)) $this->error("Download failed - no contents at " . $this->update_url);
 
         $success = file_put_contents($temp_path, $updated_contents);
-        if (!$success) $this->error("Failed to write to temp file ($temp_path) - may need higher privileges (eg. sudo)");
+        if (!$success) $this->error("Failed to write to temp file ($temp_path) - may need higher privileges (eg. sudo or run as admin)");
 
         if ($this->update_check_hash)
         {
@@ -716,7 +745,7 @@ class Console_Abstract
         $this->log('Installing downloaded file');
         $success = rename($temp_path, $config_install_tool_path);
         $success = $success and chmod($config_install_tool_path, 0755);
-        if (!$success) $this->error("Update failed - may need higher privileges (eg. sudo)");
+        if (!$success) $this->error("Update failed - may need higher privileges (eg. sudo or run as admin)");
 
         $this->output('Update complete');
     }
@@ -923,7 +952,7 @@ class Console_Abstract
      *  - 200 - safety / caution error (eg. running as root)
      *  - 500 - misc. error
 	 */
-	public function error($data, $code=500)
+	public function error($data, $code=500, $prompt_to_continue=false)
 	{
         $this->hr('!');
 		$this->output('ERROR: ', false);
@@ -933,6 +962,15 @@ class Console_Abstract
 		{
 			exit($code);
 		}
+
+        if ($prompt_to_continue)
+        {
+            $yn = $this->input("Continue? (y/n)", 'n', false, true);
+            if (!in_array($yn, ['y', 'Y']))
+            {
+                $this->error('Aborted', 100);
+            }
+        }
 	}
 
 	/**
