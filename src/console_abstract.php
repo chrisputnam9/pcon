@@ -153,7 +153,7 @@ class Console_Abstract
     protected $current_user = '';
     protected $logged_in_as_root = false;
     protected $running_as_root = false;
-
+    protected $is_windows = false;
     protected $minimum_php_major_version = '7';
 
     // Update behavior
@@ -217,6 +217,8 @@ class Console_Abstract
             $this->current_user = trim(implode($current_user));
         }
         $this->running_as_root = ($this->current_user == 'root');
+
+        $this->is_windows = (strtolower(substr(PHP_OS, 0, 3)) === 'win');
     }
 
     /**
@@ -225,6 +227,8 @@ class Console_Abstract
      */
     protected function checkRequirements($problems=[])
     {
+        $this->log("PHP Version: " . PHP_VERSION);
+
         $php_version = explode('.', PHP_VERSION);
         $major = (int) $php_version[0];
         if ($major < $this->minimum_php_major_version)
@@ -638,6 +642,19 @@ class Console_Abstract
             $install_path = $this->install_path;
         }
 
+        if ($is_windows)
+        {
+            $this->warn(
+                "Since you appear to be running on Windows, you will very likely need to modify your install path" . 
+                " - The current setting is: " . $install_path . 
+                " - The desired setting will vay based on your environment, but you'll probably want to use a directory that's in your PATH" .
+                " - For example, if you're using Git Bash, you may want to use: C:\Program Files\Git\usr\local\bin as your install path " .
+                " Enter 'y' if the install path is correct and you are ready to install" . 
+                " Enter 'n' to halt now so you can edit 'install_path' in your config file (" . $this->getConfigFile() . ")", 
+                true
+            );
+        }
+
         if (!is_dir($install_path))
         {
             $this->warn("Install path ($install_path) does not exist and will be created", true);
@@ -708,7 +725,7 @@ class Console_Abstract
         {
             $this->warn("Install path ($this->install_path) does not exist and will be created", true);
 
-            $success = mkdir($this->install_path, 0755);
+            $success = mkdir($this->install_path, 0755, true);
 
             if (!$success) $this->error("Failed to create install path ($this->install_path) - may need higher privileges (eg. sudo or run as admin)");
         }

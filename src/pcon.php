@@ -6,7 +6,7 @@
 Class PCon extends Console_Abstract
 {
 
-    const VERSION = "1.1.7";
+    const VERSION = "1.1.8";
     // Name of script and directory to store config
     const SHORTNAME = 'pcon';
 
