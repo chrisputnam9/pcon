@@ -228,6 +228,8 @@ class Console_Abstract
     protected function checkRequirements($problems=[])
     {
         $this->log("PHP Version: " . PHP_VERSION);
+        $this->log("OS: " . PHP_OS);
+        $this->log("Windows: " . ($this->is_windows ? "Yes" : "No"));
 
         $php_version = explode('.', PHP_VERSION);
         $major = (int) $php_version[0];
@@ -264,8 +266,6 @@ class Console_Abstract
         try
         {
             $instance->initConfig();
-
-            $instance->checkRequirements();
 
             $valid_methods = array_merge($class::$METHODS, self::$METHODS);
 
@@ -310,6 +310,8 @@ class Console_Abstract
                     }
                 }
             }
+
+            $instance->checkRequirements();
 
             $instance->log('Determined home directory to be ' . $instance->home_dir);
 
@@ -642,15 +644,15 @@ class Console_Abstract
             $install_path = $this->install_path;
         }
 
-        if ($is_windows)
+        if ($this->is_windows)
         {
             $this->warn(
                 "Since you appear to be running on Windows, you will very likely need to modify your install path" . 
-                " - The current setting is: " . $install_path . 
-                " - The desired setting will vay based on your environment, but you'll probably want to use a directory that's in your PATH" .
-                " - For example, if you're using Git Bash, you may want to use: C:\Program Files\Git\usr\local\bin as your install path " .
-                " Enter 'y' if the install path is correct and you are ready to install" . 
-                " Enter 'n' to halt now so you can edit 'install_path' in your config file (" . $this->getConfigFile() . ")", 
+                "\n - The current setting is: " . $install_path . 
+                "\n - The desired setting will vay based on your environment, but you'll probably want to use a directory that's in your PATH" .
+                "\n - For example, if you're using Git Bash, you may want to use: C:\Program Files\Git\usr\local\bin as your install path " .
+                "\n Enter 'y' if the install path is correct and you are ready to install" . 
+                "\n Enter 'n' to halt now so you can edit 'install_path' in your config file (" . $this->getConfigFile() . ")", 
                 true
             );
         }
@@ -1247,7 +1249,14 @@ class Console_Abstract
             if ($message) $this->output($message, false);
             if ($single)
             {
-                $line = strtolower( trim( `bash -c 'read -n1 -t10 CHAR && echo \$CHAR'` ) );
+                if ($this->is_windows)
+                {
+                    $line = strtolower( trim( `bash -c "read -n1 -t10 CHAR && echo \$CHAR"` ) );
+                }
+                else
+                {
+                    $line = strtolower( trim( `bash -c 'read -n1 -t10 CHAR && echo \$CHAR'` ) );
+                }
                 $this->output('');
             }
             else
@@ -1607,7 +1616,7 @@ class Console_Abstract
             {
                 $message = curl_error($curl);
 
-                if (stripos($message, 'ssl'))
+                if (stripos($message, 'ssl') !== false)
                 {
                     $message.= "\n\nFor some SSL issues, try downloading the latest CA bundle and pointing your PHP.ini to that (https://curl.haxx.se/docs/caextract.html)";
                     $message.= "\n\nAlthough risky and not recommended, you can also consider re-running your command with the --no-ssl-check flag";
