@@ -332,11 +332,11 @@ class Console_Abstract
             try {
                 call_user_func_array([$instance, $method], $args);
             } catch (ArgumentCountError $e) {
-                static::_run_error($e);
+                $instance->_run_error($e, $method);
             } catch (InvalidArgumentException $e) {
-                static::_run_error($e);
+                $instance->_run_error($e, $method);
             } catch (Exception $e) {
-                static::_run_error($e);
+                $instance->_run_error($e, $method);
             }
 
             $instance->hrl();
@@ -346,11 +346,11 @@ class Console_Abstract
             $instance->error($e->getMessage());
         }
     }
-        protected static function _run_error($e)
+        protected function _run_error($e, $method)
         {
             $error = (get_class($e) == 'Exception') ? $e->getMessage() : "Incorrect usage - see method help below:";
-            $instance->error($error, false);
-            $instance->help($method);
+            $this->error($error, false);
+            $this->help($method);
             exit(500);
         }
 
