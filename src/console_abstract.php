@@ -71,6 +71,7 @@ class Console_Abstract
         'backup_age_limit',
         'backup_dir',
         'browser_exec',
+        'cache_lifetime',
         'install_path',
         'step',
         'timezone',
@@ -94,6 +95,9 @@ class Console_Abstract
 
     protected $__browser_exec = ["Command to open links in browser - %s for link placeholder via sprintf"];
     protected $browser_exec = 'google-chrome "%s"';
+
+    protected $__cache_lifetime = ["Default time to cache data in seconds"];
+    public $cache_lifetime = 86400; // Default: 24 hours
 
     protected $__install_path = ["Install path of this tool", "string"];
 	public $install_path = DS . "usr" . DS . "local" . DS . "bin";
@@ -154,6 +158,7 @@ class Console_Abstract
     protected $logged_in_as_root = false;
     protected $running_as_root = false;
     protected $is_windows = false;
+
     protected $minimum_php_major_version = '7';
 
     // Update behavior
@@ -1627,6 +1632,60 @@ class Console_Abstract
         }
 
         return $response;
+    }
+
+    /**
+     * Interact with cache files
+     */
+    public function getCacheContents($subpath, $expiration=null)
+    {
+        $expiration = $expiration ?? $this->cache_lifetime;
+
+        $config_dir = $this->getConfigDir();
+        $cache_dir = $config_dir . DS . 'cache';
+        $subpath = implode(DS, $subpath);
+
+        $cache_file = $cache_dir . DS . $subpath;
+        $contents=false;
+
+        if (is_file($cache_file))
+        {
+            $this->log("Cache file exists ($cache_file) - checking age");
+            $cache_modified = filemtime($cache_file);
+            $now = time();
+            $cache_age = $now - $cache_modified;
+            if ($cache_age < $expiration)
+            {
+                $this->log("New enough - reading from cache file ($cache_file)");
+                $contents = file_get_contents($cache_file);
+                if ($contents === false)
+                {
+                    $this->warn("Failed to read cache file ($cache_file) - possible permissions issue", true);
+                }
+            }
+        }
+
+        return $contents;
+    }
+    public function setCacheContents($subpath, $contents)
+    {
+        $config_dir = $this->getConfigDir();
+        $cache_dir = $config_dir . DS . 'cache';
+        $subpath = implode(DS, $subpath);
+
+        $cache_file = $cache_dir . DS . $subpath;
+        $cache_dir = dirname($cache_file);
+
+        if (!is_dir($cache_dir))
+            mkdir($cache_dir, 0755, true);
+
+        $written = file_put_contents($cache_file, $contents);
+        if ($written === false)
+        {
+            $this->warn("Failed to write to cache file ($cache_file) - possible permissions issue", true);
+        }
+
+        return $written;
     }
 
     /**
