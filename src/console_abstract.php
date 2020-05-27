@@ -1396,7 +1396,7 @@ class Console_Abstract
                 $config = json_decode($json, true);
                 if (empty($config))
                 {
-                    $this->error("Likely Syntax Error: $config_file");
+                    $this->error("Likely syntax error: $config_file");
                 }
                 foreach ($config as $key => $value)
                 {
@@ -1643,7 +1643,7 @@ class Console_Abstract
 
         $config_dir = $this->getConfigDir();
         $cache_dir = $config_dir . DS . 'cache';
-        $subpath = implode(DS, $subpath);
+        $subpath = is_array($subpath) ? implode(DS, $subpath) : $subpath;
 
         $cache_file = $cache_dir . DS . $subpath;
         $contents=false;
@@ -1671,7 +1671,7 @@ class Console_Abstract
     {
         $config_dir = $this->getConfigDir();
         $cache_dir = $config_dir . DS . 'cache';
-        $subpath = implode(DS, $subpath);
+        $subpath = is_array($subpath) ? implode(DS, $subpath) : $subpath;
 
         $cache_file = $cache_dir . DS . $subpath;
         $cache_dir = dirname($cache_file);
