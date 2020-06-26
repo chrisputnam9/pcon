@@ -1035,6 +1035,20 @@ class Console_Abstract
      */
     public function output($data, $line_ending=true, $stamp_lines=null)
     {
+        $data = $this->stringify($data);
+
+        $stamp_lines = is_null($stamp_lines) ? $this->stamp_lines : $stamp_lines;
+		if ($stamp_lines)
+			echo $this->stamp() . ' ... ';
+
+		echo $data . ($line_ending ? "\n" : "");
+    }
+
+    /**
+     * Stringify some data for output
+     */
+    public function stringify($data)
+    {
         if (is_object($data) or is_array($data))
         {
             $data = print_r($data, true);
@@ -1043,18 +1057,22 @@ class Console_Abstract
         {
             $data = $data ? "(Bool) True" : "(Bool) False";
         }
+        elseif (is_null($data))
+        {
+            $data = "(NULL)";
+        }
+        elseif (is_int($data))
+        {
+            $data = "(int) $data";
+        }
         else if (!is_string($data))
         {
             ob_start();
             var_dump($data);
             $data = ob_get_clean();
         }
-
-        $stamp_lines = is_null($stamp_lines) ? $this->stamp_lines : $stamp_lines;
-		if ($stamp_lines)
-			echo $this->stamp() . ' ... ';
-
-		echo $data . ($line_ending ? "\n" : "");
+        $data = trim($data, " \t\n\r\0\x0B/");
+        return $data;
     }
 
     /**
