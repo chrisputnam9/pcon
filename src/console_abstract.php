@@ -1045,6 +1045,37 @@ class Console_Abstract
     }
 
     /**
+     * Progress Bar Output
+     */
+    public function outputProgress($count, $total)
+    {
+        if (!$this->verbose)
+        {
+            if ($count > 0)
+            {
+                // Set cursor to first column
+                echo chr(27) . "[0G";
+                // Set cursor up 2 lines
+                echo chr(27) . "[2A";
+            }
+
+            $full_width = $this->getTerminalWidth();
+            $pad = $full_width - 1;
+            $bar_count = floor(($count * $pad) / $total);
+            $output = "[";
+            $output = str_pad($output, $bar_count, "|");
+            $output = str_pad($output, $pad, " ");
+            $output.= "]";
+            $this->output($output);
+            $this->output(str_pad("$count/$total", $full_width, " ", STR_PAD_LEFT));
+        }
+        else
+        {
+            $this->output("$count/$total");
+        }
+    }
+
+    /**
      * Stringify some data for output
      */
     public function stringify($data)
