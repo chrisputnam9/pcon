@@ -94,7 +94,7 @@ class Console_Abstract
     public $backup_dir = null;
 
     protected $__browser_exec = ["Command to open links in browser - %s for link placeholder via sprintf"];
-    protected $browser_exec = 'google-chrome "%s"';
+    protected $browser_exec = 'nohup google-chrome "%s" >/dev/null 2>&1 &';
 
     protected $__cache_lifetime = ["Default time to cache data in seconds"];
     public $cache_lifetime = 86400; // Default: 24 hours
@@ -1047,7 +1047,7 @@ class Console_Abstract
     /**
      * Progress Bar Output
      */
-    public function outputProgress($count, $total)
+    public function outputProgress($count, $total, $description = "remaining")
     {
         if (!$this->verbose)
         {
@@ -1071,7 +1071,7 @@ class Console_Abstract
         }
         else
         {
-            $this->output("$count/$total");
+            $this->output("$count/$total $description");
         }
     }
 
