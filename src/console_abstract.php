@@ -26,11 +26,16 @@ else
     ini_set('display_errors', 0);
 }
 
+if (!defined('PACKAGED') or !PACKAGED)
+{
+    require_once(__DIR__ . DS . "lib" . DS . "command_abstract.php");
+}
+
 /**
  * Console Abstract
  * Reusable abstract for creating PHP console utilities
  */
-class Console_Abstract
+abstract class Console_Abstract extends Command_Abstract
 {
 
     /**
