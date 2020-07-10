@@ -28,7 +28,15 @@ else
 
 if (!defined('PACKAGED') or !PACKAGED)
 {
-    require_once(__DIR__ . DS . "lib" . DS . "command_abstract.php");
+    $lib_files = scandir(__DIR__ . DS . "lib");
+    foreach ($lib_files as $file)
+    {
+        $path = __DIR__ . DS . "lib" . DS . $file;
+        if (is_file($path))
+        {
+            require_once($path);
+        }
+    }
 }
 
 /**
@@ -229,6 +237,8 @@ abstract class Console_Abstract extends Command_Abstract
         $this->running_as_root = ($this->current_user == 'root');
 
         $this->is_windows = (strtolower(substr(PHP_OS, 0, 3)) === 'win');
+
+        parent::__construct();
     }
 
     /**
@@ -789,156 +799,6 @@ abstract class Console_Abstract extends Command_Abstract
     }
 
     /**
-     * Check for an update, and parse out all relevant information if one exists
-     * @param $auto Whether this is an automatic check or triggered intentionally
-     * @return Boolean True if newer version exists. False if:
-     *  - no new version or
-     *  - if auto, but auto check is disabled or
-     *  - if auto, but not yet time to check or
-     *  - if update is disabled
-     */
-    protected function updateCheck($auto=true, $output=false)
-    {
-        $this->log("Running update check");
-
-        if (empty($this->update_version_url))
-        {
-            if (($output and !$auto) or $this->verbose) $this->output("Update is disabled - update_version_url is empty");
-            return false; // update disabled
-        }
-
-        if (is_null($this->update_exists))
-        {
-            $now = time();
-
-            // If this is an automatic check, make sure it's time to check again
-            if ($auto)
-            {
-                $this->log("Designated as auto-update");
-
-                // If disabled, return false
-                if ($this->update_auto <= 0)
-                {
-                    $this->log("Auto-update is disabled - update_auto <= 0");
-                    return false; // auto-update disabled
-                }
-
-                // If we haven't checked before, we'll check now
-                // Otherwise...
-                if (!empty($this->update_last_check))
-                {
-                    $last_check = strtotime($this->update_last_check);
-
-                    // Make sure last check was a valid time
-                    if (empty($last_check) or $last_check < 0)
-                    {
-                        $this->error('Issue with update_last_check value (' . $this->update_last_check . ')');
-                    }
-
-                    // Has it been long enough? If not, we'll return false
-                    $seconds_since_last_check = $now - $last_check;
-                    if ($seconds_since_last_check < $this->update_auto)
-                    {
-                        $this->log("Only $seconds_since_last_check seconds since last check.  Configured auto-update is " . $this->update_auto . " seconds");
-                        return false; // not yet time to check
-                    }
-                }
-            }
-
-            // curl, get contents at config url
-            $curl = $this->getCurl($this->update_version_url, true);
-            $update_contents = $this->execCurl($curl);
-
-            // look for version match
-            if ($this->update_version_pattern[0] === true)
-            {
-                $this->update_version_pattern[0] = $this->update_pattern_standard;
-            }
-            if (!preg_match($this->update_version_pattern[0], $update_contents, $match))
-            {
-                $this->log($update_contents);
-                $this->log($this->update_version_pattern[0]);
-                $this->error('Issue with update version check - pattern not found at ' . $this->update_version_url);
-            }
-            $index = $this->update_version_pattern[1];
-            $this->update_version = $match[$index];
-
-            // check if remote version is newer than installed
-            $class = get_called_class();
-            $this->update_exists = version_compare($class::VERSION, $this->update_version, '<');
-
-            if ($output or $this->verbose)
-            {
-                if ($this->update_exists)
-                {
-                    $this->hr('>');
-                    $this->output("An update is available: version " . $this->update_version . " (currently installed version is " . $class::VERSION . ")");
-                    if ($this->method != 'update')
-                    {
-                        $this->output(" - Run 'update' to install latest version.");
-                        $this->output(" - See 'help update' for more information.");
-                    }
-                    $this->hr('>');
-                }
-                else
-                {
-                    $this->output("Already at latest version (" . $class::VERSION . ")");
-                }
-            }
-
-            // look for download match
-            if ($this->update_download_pattern[0] === true)
-            {
-                $this->update_download_pattern[0] = $this->update_pattern_standard;
-            }
-            if (!preg_match($this->update_download_pattern[0], $update_contents, $match))
-            {
-                $this->error('Issue with update download check - pattern not found at ' . $this->update_version_url);
-            }
-            $index = $this->update_download_pattern[1];
-            $this->update_url = $match[$index];
-
-            if ($this->update_check_hash)
-            {
-                // look for hash algorithm match
-                if ($this->update_hash_algorithm_pattern[0] === true)
-                {
-                    $this->update_hash_algorithm_pattern[0] = $this->hash_pattern_standard;
-                }
-                if (!preg_match($this->update_hash_algorithm_pattern[0], $update_contents, $match))
-                {
-                    $this->error('Issue with update hash algorithm check - pattern not found at ' . $this->update_version_url);
-                }
-                $index = $this->update_hash_algorithm_pattern[1];
-                $this->update_hash_algorithm = $match[$index];
-
-                // look for hash match
-                if ($this->update_hash_pattern[0] === true)
-                {
-                    $this->update_hash_pattern[0] = $this->hash_pattern_standard;
-                }
-                if (!preg_match($this->update_hash_pattern[0], $update_contents, $match))
-                {
-                    $this->error('Issue with update hash check - pattern not found at ' . $this->update_version_url);
-                }
-                $index = $this->update_hash_pattern[1];
-                $this->update_hash = $match[$index];
-            }
-
-            $this->configure('update_last_check', gmdate('Y-m-d H:i:s T', $now), true);
-            $this->saveConfig();
-        }
-
-        $this->log(" -- update_exists: " . $this->update_exists);
-        $this->log(" -- update_version: " . $this->update_version);
-        $this->log(" -- update_url: " . $this->update_url);
-        $this->log(" -- update_hash_algorithm: " . $this->update_hash_algorithm);
-        $this->log(" -- update_hash: " . $this->update_hash);
-
-        return $this->update_exists;
-    }
-
-    /**
      * Clear - clear the CLI output
      */
     public function clear()
@@ -971,201 +831,6 @@ abstract class Console_Abstract extends Command_Abstract
         }
         $this->log($output);
         return $output;
-    }
-
-	/**
-	 * Error output
-     * 
-     * Code Guidelines:
-     *  - 100 - expected error - eg. aborted due to user input
-     *  - 200 - safety / caution error (eg. running as root)
-     *  - 500 - misc. error
-	 */
-	public function error($data, $code=500, $prompt_to_continue=false)
-	{
-        $this->hr('!');
-		$this->output('ERROR: ', false);
-		$this->output($data);
-        $this->hr('!');
-		if ($code)
-		{
-			exit($code);
-		}
-
-        if ($prompt_to_continue)
-        {
-            $yn = $this->input("Continue? (y/n)", 'n', false, true);
-            if (!in_array($yn, ['y', 'Y']))
-            {
-                $this->error('Aborted', 100);
-            }
-        }
-	}
-
-	/**
-	 * Warn output
-     * @param $data to output as warning
-     * @param $prompt_to_continue - whether to prompt with Continue? y/n
-	 */
-	public function warn($data, $prompt_to_continue=false)
-	{
-        $this->hr('*');
-		$this->output('WARNING: ', false);
-		$this->output($data, true, false);
-        $this->hr('*');
-
-        if ($prompt_to_continue)
-        {
-            $yn = $this->input("Continue? (y/n)", 'n', false, true);
-            if (!in_array($yn, ['y', 'Y']))
-            {
-                $this->error('Aborted', 100);
-            }
-        }
-
-	}
-
-    /**
-     * Logging output - only when verbose=true
-     */
-    public function log($data)
-    {
-        if (!$this->verbose) return;
-        
-        $this->output($data);
-    }
-
-    /**
-     * Output data
-     */
-    public function output($data, $line_ending=true, $stamp_lines=null)
-    {
-        $data = $this->stringify($data);
-
-        $stamp_lines = is_null($stamp_lines) ? $this->stamp_lines : $stamp_lines;
-		if ($stamp_lines)
-			echo $this->stamp() . ' ... ';
-
-		echo $data . ($line_ending ? "\n" : "");
-    }
-
-    /**
-     * Progress Bar Output
-     */
-    public function outputProgress($count, $total, $description = "remaining")
-    {
-        if (!$this->verbose)
-        {
-            if ($count > 0)
-            {
-                // Set cursor to first column
-                echo chr(27) . "[0G";
-                // Set cursor up 2 lines
-                echo chr(27) . "[2A";
-            }
-
-            $full_width = $this->getTerminalWidth();
-            $pad = $full_width - 1;
-            $bar_count = floor(($count * $pad) / $total);
-            $output = "[";
-            $output = str_pad($output, $bar_count, "|");
-            $output = str_pad($output, $pad, " ");
-            $output.= "]";
-            $this->output($output);
-            $this->output(str_pad("$count/$total", $full_width, " ", STR_PAD_LEFT));
-        }
-        else
-        {
-            $this->output("$count/$total $description");
-        }
-    }
-
-    /**
-     * Stringify some data for output
-     */
-    public function stringify($data)
-    {
-        if (is_object($data) or is_array($data))
-        {
-            $data = print_r($data, true);
-        }
-        else if (is_bool($data))
-        {
-            $data = $data ? "(Bool) True" : "(Bool) False";
-        }
-        elseif (is_null($data))
-        {
-            $data = "(NULL)";
-        }
-        elseif (is_int($data))
-        {
-            $data = "(int) $data";
-        }
-        else if (!is_string($data))
-        {
-            ob_start();
-            var_dump($data);
-            $data = ob_get_clean();
-        }
-        $data = trim($data, " \t\n\r\0\x0B/");
-        return $data;
-    }
-
-    /**
-     * Output 3 Columns - for help for example
-     */
-    public function output3col($col1, $col2=null, $col3=null)
-    {
-        $full_width = $this->getTerminalWidth();
-        $col1_width = floor(($full_width * static::COL1_WIDTH) / 100);
-        $col2_width = floor(($full_width * static::COL2_WIDTH) / 100);
-
-        $string = str_pad($col1, $col1_width, " ");
-        if (!is_null($col2))
-        {
-            $string.= "| " . $col2;
-        }
-        if (!is_null($col3))
-        {
-            $string = str_pad($string, $col2_width, " ") . "| " . $col3;
-        }
-        $string = str_pad("| $string", $full_width-1) . "|";
-        $this->output($string);
-    }
-
-    /**
-     * Output break
-     */
-    public function br()
-    {
-        $this->output('');
-    }
-
-    /**
-     * br, but only if logging is on
-     */
-    public function brl()
-    {
-        if (!$this->verbose) return;
-
-        $this->br;
-    }
-    /**
-     * Output horizonal line - divider
-     */
-    public function hr($c='=', $prefix="")
-    {
-        $string = str_pad($prefix, $this->getTerminalWidth(), $c);
-        $this->output($string);
-    }
-    /**
-     * hr, but only if logging is on
-     */
-    public function hrl($c='=', $prefix="")
-    {
-        if (!$this->verbose) return;
-
-        $this->hr($c, $prefix);
     }
 
 
@@ -1767,6 +1432,7 @@ abstract class Console_Abstract extends Command_Abstract
             $reflection = new ReflectionObject($this);
             foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $prop)
             {
+                if ($prop->isStatic()) continue;
                 $this->_public_properties[]= $prop->getName();
             }
             sort($this->_public_properties);
@@ -1795,8 +1461,8 @@ abstract class Console_Abstract extends Command_Abstract
         }
     }
 
-    protected $_terminal_width = null;
-    protected function getTerminalWidth($fresh=false)
+    public $_terminal_width = null;
+    public function getTerminalWidth($fresh=false)
     {
         if (is_null($this->_terminal_width))
         {

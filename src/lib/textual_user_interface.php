@@ -1,6 +1,6 @@
 <?php
 
-class Input extends Util_Abstract
+class Textual_User_Interface extends Util_Abstract
 {
 
     /**
@@ -12,4 +12,4 @@ class Input extends Util_Abstract
     }
 
 }
-Command_Abstract::$util_classes[]="Input";
+Command_Abstract::$util_classes[]="Textual_User_Interface";
