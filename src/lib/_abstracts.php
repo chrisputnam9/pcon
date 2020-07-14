@@ -14,7 +14,20 @@ class Command_Abstract
      */
     protected static $METHODS = [
         'help',
+        'exit',
         'prompt',
+    ];
+
+    /**
+     * Method aliases
+     */
+    protected static $METHOD_ALIASES = [
+        'h' => 'help',
+        '?' => 'help',
+        'p' => 'prompt',
+        'x' => 'exit',
+        'q' => 'exit',
+        'quit' => 'exit',
     ];
 
     /**
@@ -50,9 +63,24 @@ class Command_Abstract
     /**
      * Run - parse args and run method specified
      */
-    public function try_calling($argv, $initial=false, $prompt_when_done=false)
+    public function try_calling($arg_list, $initial=false, $prompt_when_done=false)
     {
-        $method = array_shift($argv);
+        $this->log($arg_list);
+
+        $method = array_shift($arg_list);
+
+        $class = get_class($this);
+
+        if (empty($method))
+        {
+            $method = static::$DEFAULT_METHOD;
+        }
+
+        $aliases = static::getMergedProperty('METHOD_ALIASES');
+        if (isset($aliases[$method]))
+        {
+            $method = $aliases[$method];
+        }
 
         $this->method = $method;
 
@@ -62,13 +90,21 @@ class Command_Abstract
 
             if (!in_array($method, $valid_methods))
             {
-                $this->help();
-                $this->hr();
-                $this->error("Invalid method - $method");
+                if ($prompt_when_done)
+                {
+                    $this->warn("Invalid method - $method");
+                    $this->prompt(false, true);
+                }
+                else
+                {
+                    $this->help();
+                    $this->hr();
+                    $this->error("Invalid method - $method");
+                }
             }
 
             $args = [];
-            foreach ($argv as $_arg)
+            foreach ($arg_list as $_arg)
             {
                 if (strpos($_arg, '--') === 0)
                 {
@@ -148,24 +184,12 @@ class Command_Abstract
             exit(500);
         }
 
-    protected $___prompt = [
-        "Show interactive prompt"
+    protected $___exit = [
+        "Exit the command prompt",
     ];
-    public function prompt($clear=true, $help=false)
+    public function exit()
     {
-        if ($clear) $this->clear();
-
-        if ($help)
-        {
-            $this->hr();
-            $this->output("Enter a valid command");
-            $this->output(" help - list commands");
-        }
-
-        $this->hr();
-        $command_string = $this->input("cmd");
-
-        $this->try_calling($command_string, false, true);
+        exit();
     }
 
     protected $___help = [
@@ -230,6 +254,26 @@ class Command_Abstract
         {
             $this->output("Less common options are hidden.  Use --verbose to show ALL options.");
         }
+    }
+
+    protected $___prompt = [
+        "Show interactive prompt"
+    ];
+    public function prompt($clear=false, $help=true)
+    {
+        if ($clear) $this->clear();
+
+        if ($help)
+        {
+            $this->hr();
+            $this->output("Enter 'help' to list valid commands");
+        }
+
+        $this->hr();
+        $command_string = $this->input("cmd");
+        $arg_list = explode(" ", $command_string);
+
+        $this->try_calling($arg_list, false, true);
     }
 
         /**

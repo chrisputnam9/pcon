@@ -272,11 +272,11 @@ class Console_Abstract extends Command_Abstract
     /**
      * Run - parse args and run method specified
      */
-    public static function run($argv)
+    public static function run($arg_list)
     {
         $class = get_called_class();
 
-        $script = array_shift($argv);
+        $script = array_shift($arg_list);
 
         $instance = new $class();
 
@@ -284,7 +284,7 @@ class Console_Abstract extends Command_Abstract
         {
             $instance->initConfig();
 
-            $instance->try_calling($argv, true);
+            $instance->try_calling($arg_list, true);
 
         } catch (Exception $e) {
             $instance->error($e->getMessage());
