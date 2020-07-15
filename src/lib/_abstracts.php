@@ -13,8 +13,9 @@ class Command_Abstract
      * Callable Methods
      */
     protected static $METHODS = [
-        'help',
+        'clear',
         'exit',
+        'help',
         'prompt',
     ];
 
@@ -174,7 +175,7 @@ class Command_Abstract
             $this->error($e->getMessage());
         }
 
-        if ($prompt_when_done) $this->prompt(false, true);
+        if ($prompt_when_done) $this->prompt(false, false);
     }
         protected function _run_error($e, $method)
         {
@@ -183,6 +184,14 @@ class Command_Abstract
             $this->help($method);
             exit(500);
         }
+
+    protected $___clear = [
+        "Clear the screen",
+    ];
+    public function clear()
+    {
+        $this->clear();
+    }
 
     protected $___exit = [
         "Exit the command prompt",
