@@ -1037,11 +1037,11 @@ class Console_Abstract extends Command_Abstract
             {
                 if ($this->is_windows)
                 {
-                    $line = strtolower( trim( `bash -c "read -n1 -t10 CHAR && echo \$CHAR"` ) );
+                    $line = trim( `bash -c "read -n1 -t10 CHAR && echo \$CHAR"` );
                 }
                 else
                 {
-                    $line = strtolower( trim( `bash -c 'read -n1 -t10 CHAR && echo \$CHAR'` ) );
+                    $line = trim( `bash -c 'read -n1 -t10 CHAR && echo \$CHAR'` );
                 }
                 $this->output('');
             }
