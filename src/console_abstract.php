@@ -1415,6 +1415,46 @@ class Console_Abstract extends Command_Abstract
         return $response;
     }
 
+    // Update arguments for curl URL
+    public function updateCurlArgs($ch, $args, $overwrite=false)
+    {
+        // Get info from previous curl
+        $curl_info = curl_getinfo($ch);
+
+        // Parse out URL and query params
+        $url = $curl_info['url'];
+
+        $url_parsed = parse_url($url);
+        if (empty($url_parsed['query']))
+        {
+            $query = [];
+        }
+        else
+        {
+            parse_str($url_parsed['query'], $query);
+        }
+
+        // Set new args
+        foreach ($args as $key=>$value)
+        {
+            if (!isset($query[$key]) or $overwrite)
+            {
+                $query[$key] = $value;
+            }
+        }
+
+        // Build new URL
+        $new_url =
+            $url_parsed['scheme'] .
+            "://" .
+            $url_parsed['host'] .
+            $url_parsed['path'] .
+            "?" .
+            http_build_query($query);
+        $this->log($new_url);
+        curl_setopt($ch, CURLOPT_URL, $new_url);
+    }
+
     /**
      * Interact with cache files
      */
