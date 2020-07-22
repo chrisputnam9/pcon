@@ -839,6 +839,41 @@ class Console_Abstract extends Command_Abstract
     }
 
     /**
+     * Colorize a string for output to console
+     *  - https://en.wikipedia.org/wiki/ANSI_escape_code
+     */
+    public function colorize($string, $foreground=null, $background=null)
+    {
+        $colored_string = "";
+        $colored = false;
+
+        foreach (['foreground', 'background'] as $type)
+        {
+            if (!is_null($$type))
+            {
+                if (isset(CONSOLE_COLORS::$$type[$$type]))
+                {
+                    $colored_string .= "\033[" . CONSOLE_COLORS::$$type[$$type] . "m";
+                    $colored = true;
+                }
+                else
+                {
+                    $this->warn("Invalid $type color specification - " . $$type);
+                }
+            }
+        }
+
+        $colored_string.= $string;
+
+        if ($colored)
+        {
+            $colored_string.="\033[0m";
+        }
+
+        return $colored_string;
+    }
+
+    /**
      * Output 3 Columns - for help for example
      */
     public function output3col($col1, $col2=null, $col3=null)

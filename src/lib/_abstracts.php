@@ -261,7 +261,7 @@ class Command_Abstract
         $this->output("Use no- to set boolean option to false - eg. --no-stamp-lines");
         if (!$this->verbose)
         {
-            $this->output("Less common options are hidden.  Use --verbose to show ALL options.");
+            $this->output($this->colorize("Less common options are hidden.  Use --verbose to show ALL options.", "yellow"));
         }
     }
 
