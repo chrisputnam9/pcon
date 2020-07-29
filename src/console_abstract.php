@@ -84,6 +84,7 @@ class Console_Abstract extends Command_Abstract
         'backup_dir',
         'browser_exec',
         'cache_lifetime',
+        'editor_exec',
         'install_path',
         'step',
         'timezone',
@@ -110,6 +111,9 @@ class Console_Abstract extends Command_Abstract
 
     protected $__cache_lifetime = ["Default time to cache data in seconds"];
     public $cache_lifetime = 86400; // Default: 24 hours
+
+    protected $__editor_exec = ["Command to open file in editor - %s for filepath placeholder via sprintf"];
+    protected $editor_exec = '/usr/bin/vim "%s" > `tty`';
 
     protected $__install_path = ["Install path of this tool", "string"];
 	public $install_path = DS . "usr" . DS . "local" . DS . "bin";
@@ -1045,6 +1049,24 @@ class Console_Abstract extends Command_Abstract
     }
 
     /**
+     * Edit some text in external editor
+     * @param $text to edit
+     */
+    public function edit($text="", $filename=null)
+    {
+        if (is_null($filename))
+        {
+            $filename = "edit_" . date("YmdHis") . ".txt";
+        }
+        $filepath = $this->setTempContents($filename, $text);
+
+        $command = sprintf($this->editor_exec, $filepath);
+        $this->exec($command, true);
+
+        return $this->getTempContents($filename);
+    }
+
+    /**
      * Get input from CLI
      * @param $message to show - prompt
      * @param $default if no input
@@ -1533,15 +1555,66 @@ class Console_Abstract extends Command_Abstract
         $cache_dir = dirname($cache_file);
 
         if (!is_dir($cache_dir))
+        {
             mkdir($cache_dir, 0755, true);
+        }
 
         $written = file_put_contents($cache_file, $contents);
         if ($written === false)
         {
             $this->warn("Failed to write to cache file ($cache_file) - possible permissions issue", true);
+            return false;
         }
 
-        return $written;
+        return $cache_file;
+    }
+
+    /**
+     * Interact with temp files
+     */
+    public function getTempContents($subpath)
+    {
+        $config_dir = $this->getConfigDir();
+        $temp_dir = $config_dir . DS . 'temp';
+        $subpath = is_array($subpath) ? implode(DS, $subpath) : $subpath;
+
+        $temp_file = $temp_dir . DS . $subpath;
+        $contents=false;
+
+        if (is_file($temp_file))
+        {
+            $this->log("Temp file exists ($temp_file) - reading from temp file");
+            $contents = file_get_contents($temp_file);
+            if ($contents === false)
+            {
+                $this->warn("Failed to read temp file ($temp_file) - possible permissions issue", true);
+            }
+        }
+
+        return $contents;
+    }
+    public function setTempContents($subpath, $contents)
+    {
+        $config_dir = $this->getConfigDir();
+        $temp_dir = $config_dir . DS . 'temp';
+        $subpath = is_array($subpath) ? implode(DS, $subpath) : $subpath;
+
+        $temp_file = $temp_dir . DS . $subpath;
+        $temp_dir = dirname($temp_file);
+
+        if (!is_dir($temp_dir))
+        {
+            mkdir($temp_dir, 0755, true);
+        }
+
+        $written = file_put_contents($temp_file, $contents);
+        if ($written === false)
+        {
+            $this->warn("Failed to write to temp file ($temp_file) - possible permissions issue", true);
+            return false;
+        }
+
+        return $temp_file;
     }
 
     /**
