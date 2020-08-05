@@ -5,7 +5,6 @@
  *  - main "run" method accepts and parses arguments
  *  - default run method checks for available sub-methods
  */
-
 class Command_Abstract
 {
 
@@ -442,13 +441,13 @@ class Command_Abstract
      */
     public function __call($method, $arguments)
     {
-        $callable = [$main_tool, $method];
+        $callable = [$this->main_tool, $method];
         if (is_callable($callable))
         {
             return call_user_func_array ($callable, $arguments);
         }
 
-        throw new Exception("Invalid method '$method'");
+        throw new Exception("Invalid class method '$method'");
     }
 
 }
