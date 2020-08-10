@@ -49,6 +49,7 @@ class Console_Abstract extends Command_Abstract
     /**
      * Padding for output
      */
+    const DEFAULT_HEIGHT = 30; // lines - if not able to dynamically determine
     const DEFAULT_WIDTH = 130; // characters - if not able to dynamically determine
     const COL1_WIDTH = 20; // percentage of full width
     const COL2_WIDTH = 50; // percentage of full width - col1 + col2
@@ -589,7 +590,8 @@ class Console_Abstract extends Command_Abstract
             {
                 $this->log($update_contents);
                 $this->log($this->update_version_pattern[0]);
-                $this->error('Issue with update version check - pattern not found at ' . $this->update_version_url);
+                $this->error('Issue with update version check - pattern not found at ' . $this->update_version_url, null, true);
+                return false;
             }
             $index = $this->update_version_pattern[1];
             $this->update_version = $match[$index];
@@ -624,7 +626,8 @@ class Console_Abstract extends Command_Abstract
             }
             if (!preg_match($this->update_download_pattern[0], $update_contents, $match))
             {
-                $this->error('Issue with update download check - pattern not found at ' . $this->update_version_url);
+                $this->error('Issue with update download check - pattern not found at ' . $this->update_version_url, null, true);
+                return false;
             }
             $index = $this->update_download_pattern[1];
             $this->update_url = $match[$index];
@@ -1668,6 +1671,30 @@ class Console_Abstract extends Command_Abstract
         {
             fclose($this->_cli_input_handle);
         }
+    }
+
+    protected $_terminal_height = null;
+    protected function getTerminalHeight($fresh=false)
+    {
+        if (is_null($this->_terminal_height))
+        {
+            exec("tput lines", $output, $return);
+
+            if (
+                $return
+                or empty($output)
+                or empty($output[0])
+                or !is_numeric($output[0])
+            ){
+                $this->_terminal_height = static::DEFAULT_HEIGHT;
+            }
+            else
+            {
+                $this->_terminal_height = (int) $output[0];
+            }
+        }
+
+        return $this->_terminal_height;
     }
 
     protected $_terminal_width = null;
