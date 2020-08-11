@@ -1621,6 +1621,66 @@ class Console_Abstract extends Command_Abstract
     }
 
     /**
+     * Paginate some content for display on terminal
+     */
+    public function paginate($content, $options=[])
+    {
+        $options = array_merge([
+            'starting_line' => 1, // todo
+            'starting_row' => 1, // todo
+            'wrap' => false, // todo
+            'line_buffer' => 1,
+            'output' => true,
+            'include_page_info' => true, // todo
+        ], $options);
+
+        $max_height = $this->getTerminalHeight();
+        $max_height = $max_height - $options['line_buffer'];
+        if ($options['include_page_info'])
+        {
+            $max_height = $max_height - 2;
+        }
+
+        $max_width = $this->getTerminalWidth();
+
+        $height = 0;
+        $output = [];
+
+        if (!is_array($content)) $content = explode("\n");
+        $content = array_values($content);
+        foreach ($content as $l => $line)
+        {
+            if ($height >= $max_height) break;
+            if (!is_string($line)) $this->error("Bad type for line $l of content - string expected");
+            if (strlen($line) > $max_width)
+            {
+                if ($options['wrap'])
+                {
+                    // todo
+                    // check height - break if we can't fit wrapped item
+                    // known edge case - single item too long to fit on screen - may need to wrap all items BEFORE paginating...?
+                }
+                else
+                {
+                    $line = substr($line, 0, $max_width);
+                }
+            }
+            $output[]= $line;
+        }
+
+        $output = implode("\n", $output);
+
+        if ($options['output'])
+        {
+            echo $output;
+        }
+        else
+        {
+            return $output;
+        }
+    }
+
+    /**
      * Get parameters for a given method
      */
     protected function _getMethodParams($method)

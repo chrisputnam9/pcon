@@ -57,7 +57,7 @@ class List_Command extends Command_Abstract
 
         $count = count($this->list);
 
-        $this->hr();
+        $content_to_display=[];
         foreach ($this->list as $i => $item)
         {
             // Prep output using template
@@ -76,13 +76,13 @@ class List_Command extends Command_Abstract
             }
 
             $this->_fill_item = $item;
-            $output = preg_replace_callback('/\{[^\}]+\}/', [$this, '_fill_item_to_template'], $output );
-            $this->output($output, false);
-            $this->br();
+            $content_to_display[]= preg_replace_callback('/\{[^\}]+\}/', [$this, '_fill_item_to_template'], $output );
         }
-        $this->hr();
-        $this->output("$count total items");
-        $this->hr();
+
+        $this->clear();
+        $this->paginate($content_to_display);
+        $this->br();
+        $this->input('Enter command');
 
         // TODO
         // Set up pagination based on terminal height
