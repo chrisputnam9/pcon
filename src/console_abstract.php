@@ -1626,31 +1626,39 @@ class Console_Abstract extends Command_Abstract
     public function paginate($content, $options=[])
     {
         $options = array_merge([
-            'starting_line' => 1, // todo
+            'starting_line' => 1,
             'starting_row' => 1, // todo
             'wrap' => false, // todo
             'line_buffer' => 1,
             'output' => true,
-            'include_page_info' => true, // todo
+            'include_page_info' => true,
         ], $options);
 
         $max_height = $this->getTerminalHeight();
         $max_height = $max_height - $options['line_buffer'];
+        $max_height = $max_height - 2; // for start/end line breaks
         if ($options['include_page_info'])
         {
-            $max_height = $max_height - 2;
+            $max_height = $max_height - 2; // for page info and extra line break
         }
 
         $max_width = $this->getTerminalWidth();
 
         $height = 0;
         $output = [];
+        // Starting line break
+        $output[]= str_pad($prefix, $this->getTerminalWidth(), "=");
 
         if (!is_array($content)) $content = explode("\n");
         $content = array_values($content);
-        foreach ($content as $l => $line)
+
+        $l = $options['starting_line'] - 1;
+        $final_line = $options['starting_line'];
+        while ($height < $max_height)
         {
-            if ($height >= $max_height) break;
+            $final_line = $l + 1;
+            $line = $content[$l];
+
             if (!is_string($line)) $this->error("Bad type for line $l of content - string expected");
             if (strlen($line) > $max_width)
             {
@@ -1666,7 +1674,19 @@ class Console_Abstract extends Command_Abstract
                 }
             }
             $output[]= $line;
+
+            $l++;
+            $height++;
         }
+
+        if ($options['include_page_info'])
+        {
+            $output[]= str_pad($prefix, $max_width, "=");
+            $output[]= str_pad($options['starting_line'] . " - " . $final_line . " of " . count($content) . " items", $max_width, " ");
+        }
+
+        // Ending line break
+        $output[]= str_pad($prefix, $this->getTerminalWidth(), "=");
 
         $output = implode("\n", $output);
 

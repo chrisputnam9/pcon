@@ -189,7 +189,7 @@ class Command_Abstract
     ];
     public function clear()
     {
-        $this->clear();
+        $this->main_tool->clear();
     }
 
     protected $___exit = [

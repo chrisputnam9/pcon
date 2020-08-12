@@ -81,7 +81,6 @@ class List_Command extends Command_Abstract
 
         $this->clear();
         $this->paginate($content_to_display);
-        $this->br();
         $this->input('Enter command');
 
         // TODO
