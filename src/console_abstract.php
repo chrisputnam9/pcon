@@ -1647,7 +1647,7 @@ class Console_Abstract extends Command_Abstract
         $height = 0;
         $output = [];
         // Starting line break
-        $output[]= str_pad($prefix, $this->getTerminalWidth(), "=");
+        $output[]= str_pad("", $max_width, "=");
 
         if (!is_array($content)) $content = explode("\n");
         $content = array_values($content);
@@ -1681,12 +1681,12 @@ class Console_Abstract extends Command_Abstract
 
         if ($options['include_page_info'])
         {
-            $output[]= str_pad($prefix, $max_width, "=");
+            $output[]= str_pad("", $max_width, "=");
             $output[]= str_pad($options['starting_line'] . " - " . $final_line . " of " . count($content) . " items", $max_width, " ");
         }
 
         // Ending line break
-        $output[]= str_pad($prefix, $this->getTerminalWidth(), "=");
+        $output[]= str_pad("", $max_width, "=");
 
         $output = implode("\n", $output);
 

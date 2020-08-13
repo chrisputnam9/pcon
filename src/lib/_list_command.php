@@ -4,6 +4,7 @@
  */
 class List_Command extends Command_Abstract
 {
+    public $original_list=[];
     public $list=[];
     public $filters = [];
     public $commands = [];
@@ -17,6 +18,11 @@ class List_Command extends Command_Abstract
     {
         parent::__construct($main_tool);
 
+        if (empty($list))
+        {
+            $this->error("Empty list", false, true);
+        }
+
         $options = array_merge([
             'commands' => [
                 'Filter' =>[
@@ -26,6 +32,10 @@ class List_Command extends Command_Abstract
                 'Quit' =>[
                     'q',
                     [$this, 'quit'],
+                ],
+                'Search' =>[
+                    '/',
+                    [$this, 'search'],
                 ],
             ],
             'filters' => [
@@ -38,9 +48,17 @@ class List_Command extends Command_Abstract
             'template' => "{_KEY}: {_VALUE}",
         ], $options);
 
+        $this->original_list = $list;
         $this->list = $list;
         $this->filters = $options['filters'];
         $this->commands = $options['commands'];
+        foreach ($this->commands as $command_name => $command_details)
+        {
+            if (is_string($command_details[0])) $command_details[0] = str_split($command_details[0]);
+            if (!is_array($command_details[0])) $this->error("Invalid command keys for '$command_name'");
+            $this->commands[$command_name][0] = $command_details[0];
+        }
+
         $this->multiselect = $options['multiselect'];
         $this->template = $options['template'];
     }
@@ -50,11 +68,6 @@ class List_Command extends Command_Abstract
      */
     public function run()
     {
-        if (empty($this->list))
-        {
-            $this->error($this->error_empty_list);
-        }
-
         $count = count($this->list);
 
         $content_to_display=[];
@@ -81,7 +94,33 @@ class List_Command extends Command_Abstract
 
         $this->clear();
         $this->paginate($content_to_display);
-        $this->input('Enter command');
+        $input = $this->input(null, null, false, true);
+        $matched = false;
+
+        foreach ($this->commands as $command_name => $command_details)
+        {
+            $command_keys = $command_details[0];
+            $this->output($command_keys);
+            $command_callable = $command_details[1];
+
+            if (in_array($input, $command_keys))
+            {
+                $matched = true;
+                if (is_callable($command_callable))
+                {
+                    call_user_func($command_callable, $this);
+                }
+                else $this->error("Uncallable method for $input", false, true);
+            }
+        }
+
+        if (!$matched)
+        {
+            $this->log("Invalid input $input");
+        }
+
+        $this->pause();
+        $this->run();
 
         // TODO
         // Set up pagination based on terminal height
