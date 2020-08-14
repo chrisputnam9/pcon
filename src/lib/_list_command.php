@@ -4,12 +4,20 @@
  */
 class List_Command extends Command_Abstract
 {
-    public $original_list=[];
     public $list=[];
+    public $list_original=[];
+    public $list_selection=[];
+
+    public $focus=0;
+    public $starting_item=1;
+
     public $filters = [];
     public $commands = [];
+
     public $multiselect;
     public $template;
+
+    public $continue_loop=true;
 
     /**
      * Constructor
@@ -25,17 +33,25 @@ class List_Command extends Command_Abstract
 
         $options = array_merge([
             'commands' => [
-                'Filter' =>[
+                'Filter' => [
                     'f',
                     [$this, 'filter'],
                 ],
-                'Quit' =>[
+                'Quit' => [
                     'q',
                     [$this, 'quit'],
                 ],
-                'Search' =>[
+                'Search' => [
                     '/',
-                    [$this, 'search'],
+                    [$this, 'filter_by_text'],
+                ],
+                'Focus Down' => [
+                    ['j', 'OB'],
+                    [$this, 'focus_down'],
+                ],
+                'Focus Up' => [
+                    ['k', 'OA'],
+                    [$this, 'focus_up'],
                 ],
             ],
             'filters' => [
@@ -48,7 +64,7 @@ class List_Command extends Command_Abstract
             'template' => "{_KEY}: {_VALUE}",
         ], $options);
 
-        $this->original_list = $list;
+        $this->list_original = $list;
         $this->list = $list;
         $this->filters = $options['filters'];
         $this->commands = $options['commands'];
@@ -93,14 +109,15 @@ class List_Command extends Command_Abstract
         }
 
         $this->clear();
-        $this->paginate($content_to_display);
-        $input = $this->input(null, null, false, true);
+        $this->paginate($content_to_display, [
+            'starting_line' => $this->starting_line,
+        ]);
+        $input = $this->input(true, null, false, true);
         $matched = false;
 
         foreach ($this->commands as $command_name => $command_details)
         {
             $command_keys = $command_details[0];
-            $this->output($command_keys);
             $command_callable = $command_details[1];
 
             if (in_array($input, $command_keys))
@@ -119,16 +136,11 @@ class List_Command extends Command_Abstract
             $this->log("Invalid input $input");
         }
 
-        $this->pause();
-        $this->run();
-
-        // TODO
-        // Set up pagination based on terminal height
-        // - paginate method on abstract - items, starting item, room for input (default to 1 for single input line)
-        // Allow moving up and down
-        // Allow selection
-        // Allow filtering
-        // Set up wrap/scrolling based on terminal width
+        if ($this->continue_loop)
+        {
+            $this->pause();
+            $this->run();
+        }
     }
 
         /**
@@ -179,4 +191,26 @@ class List_Command extends Command_Abstract
 
             return $value;
         }
+
+    /**
+     * Built-in commands
+     */
+
+    // Quit
+    public function quit()
+    {
+        $this->continue_loop = false;
+    }
+
+    // Filter - present ways to filter
+    public function filter()
+    {
+        die('filter');
+    }
+
+    // Filter - by text/regex (search)
+    public function filter_by_text()
+    {
+        die('filter_by_text');
+    }
 }
