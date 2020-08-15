@@ -849,23 +849,31 @@ class Console_Abstract extends Command_Abstract
      * Colorize a string for output to console
      *  - https://en.wikipedia.org/wiki/ANSI_escape_code
      */
-    public function colorize($string, $foreground=null, $background=null)
+    public function colorize($string, $foreground=null, $background=null, $other=[])
     {
         $colored_string = "";
         $colored = false;
 
-        foreach (['foreground', 'background'] as $type)
+        foreach (['foreground', 'background', 'other'] as $type)
         {
             if (!is_null($$type))
             {
-                if (isset(CONSOLE_COLORS::$$type[$$type]))
+                if (!is_array($$type))
                 {
-                    $colored_string .= "\033[" . CONSOLE_COLORS::$$type[$$type] . "m";
-                    $colored = true;
+                    $$type = [$$type];
                 }
-                else
+
+                foreach ($$type as $value_name)
                 {
-                    $this->warn("Invalid $type color specification - " . $$type);
+                    if (isset(CONSOLE_COLORS::$$type[$value_name]))
+                    {
+                        $colored_string .= "\033[" . CONSOLE_COLORS::$$type[$value_name] . "m";
+                        $colored = true;
+                    }
+                    else
+                    {
+                        $this->warn("Invalid '$type' color specification - " . $value_name);
+                    }
                 }
             }
         }
@@ -1077,7 +1085,7 @@ class Console_Abstract extends Command_Abstract
      * @param $single - prompt for single character (vs waiting for enter key)
      * @return input text or default
      */
-    public function input($message=false, $default=null, $required=false, $single=false)
+    public function input($message=false, $default=null, $required=false, $single=false, $single_hide=false)
     {
         if ($message)
         {
@@ -1095,15 +1103,15 @@ class Console_Abstract extends Command_Abstract
             if ($message) $this->output($message, false);
             if ($single)
             {
+                $single_hide = $single_hide ? ' -s' : '';
                 if ($this->is_windows)
                 {
-                    $line = trim( `bash -c "read -n1 -t10 CHAR && echo \$CHAR"` );
+                    $line = trim( `bash -c "read$single_hide -n1 CHAR && echo \$CHAR"` );
                 }
                 else
                 {
-                    $line = trim( `bash -c 'read -n1 -t10 CHAR && echo \$CHAR'` );
+                    $line = trim( `bash -c 'read$single_hide -n1 CHAR && echo \$CHAR'` );
                 }
-                $this->output('');
             }
             else
             {

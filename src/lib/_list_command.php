@@ -9,7 +9,7 @@ class List_Command extends Command_Abstract
     public $list_selection=[];
 
     public $focus=0;
-    public $starting_item=1;
+    public $starting_line=1;
 
     public $filters = [];
     public $commands = [];
@@ -105,14 +105,19 @@ class List_Command extends Command_Abstract
             }
 
             $this->_fill_item = $item;
-            $content_to_display[]= preg_replace_callback('/\{[^\}]+\}/', [$this, '_fill_item_to_template'], $output );
+            $content = preg_replace_callback('/\{[^\}]+\}/', [$this, '_fill_item_to_template'], $output );
+            if ($this->focus == $i)
+            {
+                $content = $this->colorize($content, 'blue', 'light_gray', ['bold']);
+            }
+            $content_to_display[]= $content;
         }
 
         $this->clear();
         $this->paginate($content_to_display, [
             'starting_line' => $this->starting_line,
         ]);
-        $input = $this->input(true, null, false, true);
+        $input = $this->input(true, null, false, 'single', 'hide_input');
         $matched = false;
 
         foreach ($this->commands as $command_name => $command_details)
@@ -212,5 +217,23 @@ class List_Command extends Command_Abstract
     public function filter_by_text()
     {
         die('filter_by_text');
+    }
+
+
+    // Focus up/down
+    public function focus_up()
+    {
+        if ($this->focus > 0)
+        {
+            $this->focus--;
+        }
+    }
+    public function focus_down()
+    {
+        $max_focus = (count($this->list) - 1);
+        if ($this->focus < $max_focus)
+        {
+            $this->focus++;
+        }
     }
 }

@@ -35,4 +35,17 @@ class CONSOLE_COLORS
         'cyan' => '46',
         'light_gray' => '47',
     ];
+
+    public static $other = [
+        'bold' => '1',
+        'underline' => '4',
+
+        // Need logic to turn off (?)
+        // 'dim' => '2',
+        // 'blink' => 5,
+
+        // Don't seem to work:
+        // 'strike' => 9,
+        // 'frame' => 51,
+    ];
 }
