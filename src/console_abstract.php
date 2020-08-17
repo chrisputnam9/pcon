@@ -1635,7 +1635,7 @@ class Console_Abstract extends Command_Abstract
     {
         $options = array_merge([
             'starting_line' => 1,
-            'starting_row' => 1, // todo
+            'starting_column' => 1, // todo
             'wrap' => false, // todo
             'line_buffer' => 1,
             'output' => true,
@@ -1702,10 +1702,13 @@ class Console_Abstract extends Command_Abstract
         {
             echo $output;
         }
-        else
-        {
-            return $output;
-        }
+
+        return [
+            'output' => $output,
+            'starting_line' => $options['starting_line'],
+            'page_length' => $max_height,
+            'ending_line' => min(($options['starting_line'] + $max_height) - 1, count($content)),
+        ];
     }
 
     /**

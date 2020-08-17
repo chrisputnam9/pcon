@@ -10,6 +10,7 @@ class List_Command extends Command_Abstract
 
     public $focus=0;
     public $starting_line=1;
+    public $page_info=[];
 
     public $filters = [];
     public $commands = [];
@@ -46,11 +47,11 @@ class List_Command extends Command_Abstract
                     [$this, 'filter_by_text'],
                 ],
                 'Focus Down' => [
-                    ['j', 'OB'],
+                    ['j'],
                     [$this, 'focus_down'],
                 ],
                 'Focus Up' => [
-                    ['k', 'OA'],
+                    ['k'],
                     [$this, 'focus_up'],
                 ],
             ],
@@ -114,7 +115,7 @@ class List_Command extends Command_Abstract
         }
 
         $this->clear();
-        $this->paginate($content_to_display, [
+        $this->page_info = $this->paginate($content_to_display, [
             'starting_line' => $this->starting_line,
         ]);
         $input = $this->input(true, null, false, 'single', 'hide_input');
@@ -227,6 +228,7 @@ class List_Command extends Command_Abstract
         {
             $this->focus--;
         }
+        $this->page_to_focus();
     }
     public function focus_down()
     {
@@ -234,6 +236,21 @@ class List_Command extends Command_Abstract
         if ($this->focus < $max_focus)
         {
             $this->focus++;
+        }
+        $this->page_to_focus();
+    }
+
+    // Adjust page view to focus
+    public function page_to_focus()
+    {
+        $focus = $this->focus+1;
+        if ($focus < $this->starting_line)
+        {
+            $this->starting_line--;
+        }
+        if ($focus > $this->page_info['ending_line'])
+        {
+            $this->starting_line++;
         }
     }
 }
