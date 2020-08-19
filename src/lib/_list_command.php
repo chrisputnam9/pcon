@@ -34,25 +34,29 @@ class List_Command extends Command_Abstract
 
         $options = array_merge([
             'commands' => [
-                'Filter' => [
+                'Help - list available commands' => [
+                    '?',
+                    [$this, 'help'],
+                ],
+                'Filter list' => [
                     'f',
                     [$this, 'filter'],
                 ],
-                'Quit' => [
-                    'q',
-                    [$this, 'quit'],
-                ],
-                'Search' => [
+                'Search list (filter by text entry)' => [
                     '/',
                     [$this, 'filter_by_text'],
                 ],
-                'Focus Down' => [
+                'Down - move focus down in the list' => [
                     ['j'],
                     [$this, 'focus_down'],
                 ],
-                'Focus Up' => [
+                'Up - move focus up in the list' => [
                     ['k'],
                     [$this, 'focus_up'],
+                ],
+                'Quit - exit the list' => [
+                    'q',
+                    [$this, 'quit'],
                 ],
             ],
             'filters' => [
@@ -201,6 +205,22 @@ class List_Command extends Command_Abstract
     /**
      * Built-in commands
      */
+
+    // Help
+    public function help($specific=false)
+    {
+        $this->clear();
+        $this->hr();
+        $this->output("Available Commands:");
+        $this->hr();
+        foreach ($this->commands as $command_name => $command_details)
+        {
+            $command_keys = $command_details[0];
+            $this->output( str_pad( implode( ",", $command_keys) . " ", 15, ".") . " " . $command_name );
+        }
+        $this->hr();
+        $this->input("Hit any key to exit help", null, false, true);
+    }
 
     // Quit
     public function quit()

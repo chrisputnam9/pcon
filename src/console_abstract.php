@@ -841,7 +841,7 @@ class Console_Abstract extends Command_Abstract
             var_dump($data);
             $data = ob_get_clean();
         }
-        $data = trim($data, " \t\n\r\0\x0B/");
+        $data = trim($data, " \t\n\r\0\x0B");
         return $data;
     }
 
