@@ -46,13 +46,21 @@ class List_Command extends Command_Abstract
                     '/',
                     [$this, 'filter_by_text'],
                 ],
+                'Up - move focus up in the list' => [
+                    ['k'],
+                    [$this, 'focus_up'],
+                ],
                 'Down - move focus down in the list' => [
                     ['j'],
                     [$this, 'focus_down'],
                 ],
-                'Up - move focus up in the list' => [
-                    ['k'],
-                    [$this, 'focus_up'],
+                'Top - move focus to top of list' => [
+                    ['g'],
+                    [$this, 'focus_top'],
+                ],
+                'Bottom - move focus to bottom of list' => [
+                    ['G'],
+                    [$this, 'focus_bottom'],
                 ],
                 'Quit - exit the list' => [
                     'q',
@@ -64,6 +72,10 @@ class List_Command extends Command_Abstract
                     '/',
                     [$this, 'filter_by_text'],
                 ],
+                'Remove filters - go back to full list' => [
+                    'r',
+                    [$this, 'filter_remove'],
+                ],
             ],
             'multiselect' => false,
             'template' => "{_KEY}: {_VALUE}",
@@ -71,7 +83,15 @@ class List_Command extends Command_Abstract
 
         $this->list_original = $list;
         $this->list = $list;
+
         $this->filters = $options['filters'];
+        foreach ($this->filters as $filter_name => $filter_details)
+        {
+            if (is_string($filter_details[0])) $filter_details[0] = str_split($filter_details[0]);
+            if (!is_array($filter_details[0])) $this->error("Invalid filter keys for '$filter_name'");
+            $this->filters[$filter_name][0] = $filter_details[0];
+        }
+
         $this->commands = $options['commands'];
         foreach ($this->commands as $command_name => $command_details)
         {
@@ -92,7 +112,8 @@ class List_Command extends Command_Abstract
         $count = count($this->list);
 
         $content_to_display=[];
-        foreach ($this->list as $i => $item)
+        $i=0;
+        foreach ($this->list as $key => $item)
         {
             // Prep output using template
             $output = $this->template;
@@ -100,7 +121,7 @@ class List_Command extends Command_Abstract
             $key_start = strpos($output, '{_KEY}');
             if ($key_start !== false)
             {
-                $output = substr_replace($output, $i, $key_start, 6);
+                $output = substr_replace($output, $key, $key_start, 6);
             }
 
             $value_start = strpos($output, '{_VALUE}');
@@ -113,9 +134,15 @@ class List_Command extends Command_Abstract
             $content = preg_replace_callback('/\{[^\}]+\}/', [$this, '_fill_item_to_template'], $output );
             if ($this->focus == $i)
             {
-                $content = $this->colorize($content, 'blue', 'light_gray', ['bold']);
+                $content = "[*] " . $content;
+                $content = $this->colorize($content , 'blue', 'light_gray', ['bold']);
+            }
+            else
+            {
+                $content = "[ ] " . $content;
             }
             $content_to_display[]= $content;
+            $i++;
         }
 
         $this->clear();
@@ -231,7 +258,52 @@ class List_Command extends Command_Abstract
     // Filter - present ways to filter
     public function filter()
     {
-        die('filter');
+        while (true)
+        {
+            $this->clear();
+            $this->hr();
+            $this->output("Available Filters:");
+            $this->hr();
+            foreach ($this->filters as $filter_name => $filter_details)
+            {
+                $filter_keys = $filter_details[0];
+                $this->output( str_pad( implode( ",", $filter_keys) . " ", 15, ".") . " " . $filter_name );
+            }
+            $this->output( str_pad( "q ", 15, ".") . " Quit - cancel filtering and go back to list" );
+            $this->hr();
+            $input = $this->input(true, null, false, 'single', 'hide_input');
+
+            $matched = false;
+
+            if ($input == 'q') break;
+
+            foreach ($this->filters as $filter_name => $filter_details)
+            {
+                $filter_keys = $filter_details[0];
+                $filter_callable = $filter_details[1];
+
+                if (in_array($input, $filter_keys))
+                {
+                    $matched = true;
+                    if (is_callable($filter_callable))
+                    {
+                        call_user_func($filter_callable, $this);
+                    }
+                    else $this->error("Uncallable method for $input", false, true);
+                }
+            }
+
+            if (!$matched)
+            {
+                $this->log("Invalid input $input");
+            }
+        }
+    }
+
+    // Filter - remove filters
+    public function filter_remove()
+    {
+        die('filter_remove');
     }
 
     // Filter - by text/regex (search)
@@ -259,6 +331,17 @@ class List_Command extends Command_Abstract
         }
         $this->page_to_focus();
     }
+    public function focus_top()
+    {
+        $this->focus = 0;
+        $this->page_to_focus();
+    }
+    public function focus_bottom()
+    {
+        $max_focus = (count($this->list) - 1);
+        $this->focus = $max_focus;
+        $this->page_to_focus();
+    }
 
     // Adjust page view to focus
     public function page_to_focus()
@@ -266,11 +349,11 @@ class List_Command extends Command_Abstract
         $focus = $this->focus+1;
         if ($focus < $this->starting_line)
         {
-            $this->starting_line--;
+            $this->starting_line = $focus;
         }
         if ($focus > $this->page_info['ending_line'])
         {
-            $this->starting_line++;
+            $this->starting_line = ($focus - $this->page_info['page_length']) + 1;
         }
     }
 }
