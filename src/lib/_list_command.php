@@ -275,7 +275,7 @@ class List_Command extends Command_Abstract
 
             $matched = false;
 
-            if ($input == 'q') break;
+            if ($input == 'q') return;
 
             foreach ($this->filters as $filter_name => $filter_details)
             {
@@ -288,6 +288,7 @@ class List_Command extends Command_Abstract
                     if (is_callable($filter_callable))
                     {
                         call_user_func($filter_callable, $this);
+                        return;
                     }
                     else $this->error("Uncallable method for $input", false, true);
                 }
@@ -303,13 +304,72 @@ class List_Command extends Command_Abstract
     // Filter - remove filters
     public function filter_remove()
     {
-        die('filter_remove');
+        $this->list = $this->list_original;
+        $this->focus_top();
     }
 
     // Filter - by text/regex (search)
     public function filter_by_text()
     {
-        die('filter_by_text');
+        while (true)
+        {
+            $this->clear();
+            $this->hr();
+            $this->output("Filter by Text:");
+            $this->output(" - Case insensive if search string is all lowercase");
+            $this->output(" - Start with / to use RegEx");
+            $this->hr();
+            $search_pattern = $this->input("Enter text", null, true);
+
+            $current_list = $this->list;
+            $filtered_list = [];
+
+            $search_pattern = trim($search_pattern);
+            $is_regex = (substr($search_pattern, 0, 1) == '/');
+            $case_insensitive = (!$is_regex and (strtolower($search_pattern) == $search_pattern));
+
+            foreach ($current_list as $item)
+            {
+                $json = json_encode($item);
+                $match = false;
+                if ($is_regex)
+                {
+                    $match = preg_match($search_pattern, $json);
+                }
+                elseif ($case_insensitive)
+                {
+                    $match = ( stripos($json, $search_pattern) !== false );
+                }
+                else
+                {
+                    $match = ( strpos($json, $search_pattern) !== false );
+                }
+
+                if ($match)
+                {
+                    $filtered_list[]= $item;
+                }
+            }
+
+            if (!empty($filtered_list))
+            {
+                // Results found - display as the new current list
+                $this->list = $filtered_list;
+                $this->focus_top();
+                return;
+            }
+            else
+            {
+                // No results - offer to try a new search
+                $this->output("No Results found");
+                $new_search = $this->confirm("Try a new search?", "y", false, true);
+                if ( ! $new_search)
+                {
+                    return;
+                }
+                // Otherwise, will continue the loop
+            }
+        }
     }
 
 

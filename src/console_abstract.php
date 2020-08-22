@@ -1047,13 +1047,12 @@ class Console_Abstract extends Command_Abstract
 
     /**
      * Confirm yes/no
-     * @param $message to show - yes/no question
-     * @param $default (y) default if no input
+     * @param Same params as input - see descriptions there
      * @return (bool) true/false
      */
-    public function confirm($message, $default='y')
+    public function confirm($message, $default='y', $required=false, $single=true, $single_hide=false)
     {
-        $yn = $this->input($message, $default);
+        $yn = $this->input($message, $default, $required, $single, $single_hide);
 
         // True if first letter of response is y or Y
         return strtolower(substr($yn,0,1)) == 'y';
@@ -1083,6 +1082,7 @@ class Console_Abstract extends Command_Abstract
      * @param $default if no input
      * @param $required - wether input is required
      * @param $single - prompt for single character (vs waiting for enter key)
+     * @param $single_hide - hide input for single character (is this working?)
      * @return input text or default
      */
     public function input($message=false, $default=null, $required=false, $single=false, $single_hide=false)
