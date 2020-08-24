@@ -13,10 +13,11 @@ class List_Command extends Command_Abstract
     public $page_info=[];
 
     public $filters = [];
+
     public $commands = [];
 
-    public $multiselect;
-    public $template;
+    public $multiselect = false;
+    public $template = "{_KEY}: {_VALUE}";
 
     public $continue_loop=true;
 
@@ -32,59 +33,23 @@ class List_Command extends Command_Abstract
             $this->error("Empty list", false, true);
         }
 
-        $options = array_merge([
-            'commands' => [
-                'Help - list available commands' => [
-                    '?',
-                    [$this, 'help'],
-                ],
-                'Filter list' => [
-                    'f',
-                    [$this, 'filter'],
-                ],
-                'Search list (filter by text entry)' => [
-                    '/',
-                    [$this, 'filter_by_text'],
-                ],
-                'Up - move focus up in the list' => [
-                    ['k'],
-                    [$this, 'focus_up'],
-                ],
-                'Down - move focus down in the list' => [
-                    ['j'],
-                    [$this, 'focus_down'],
-                ],
-                'Top - move focus to top of list' => [
-                    ['g'],
-                    [$this, 'focus_top'],
-                ],
-                'Bottom - move focus to bottom of list' => [
-                    ['G'],
-                    [$this, 'focus_bottom'],
-                ],
-                'Quit - exit the list' => [
-                    'q',
-                    [$this, 'quit'],
-                ],
-            ],
-            'filters' => [
-                'Text/Regex Search' => [
-                    '/',
-                    [$this, 'filter_by_text'],
-                ],
-                'Remove filters - go back to full list' => [
-                    'r',
-                    [$this, 'filter_remove'],
-                ],
-            ],
-            'multiselect' => false,
-            'template' => "{_KEY}: {_VALUE}",
-        ], $options);
-
         $this->list_original = $list;
         $this->list = $list;
 
-        $this->filters = $options['filters'];
+        $this->filters = [
+            'Text/Regex Search' => [
+                '/',
+                [$this, 'filter_by_text'],
+            ],
+            'Remove filters - go back to full list' => [
+                'r',
+                [$this, 'filter_remove'],
+            ],
+        ];
+        if (isset($options['filters']))
+        {
+            $this->filters = array_merge($this->filters, $options['filters']);
+        }
         foreach ($this->filters as $filter_name => $filter_details)
         {
             if (is_string($filter_details[0])) $filter_details[0] = str_split($filter_details[0]);
@@ -92,7 +57,46 @@ class List_Command extends Command_Abstract
             $this->filters[$filter_name][0] = $filter_details[0];
         }
 
-        $this->commands = $options['commands'];
+
+
+        $this->commands = [
+            'Help - list available commands' => [
+                '?',
+                [$this, 'help'],
+            ],
+            'Filter list' => [
+                'f',
+                [$this, 'filter'],
+            ],
+            'Search list (filter by text entry)' => [
+                '/',
+                [$this, 'filter_by_text'],
+            ],
+            'Up - move focus up in the list' => [
+                ['k'],
+                [$this, 'focus_up'],
+            ],
+            'Down - move focus down in the list' => [
+                ['j'],
+                [$this, 'focus_down'],
+            ],
+            'Top - move focus to top of list' => [
+                ['g'],
+                [$this, 'focus_top'],
+            ],
+            'Bottom - move focus to bottom of list' => [
+                ['G'],
+                [$this, 'focus_bottom'],
+            ],
+            'Quit - exit the list' => [
+                'q',
+                [$this, 'quit'],
+            ],
+        ];
+        if (isset($options['commands']))
+        {
+            $this->commands = array_merge($this->commands, $options['commands']);
+        }
         foreach ($this->commands as $command_name => $command_details)
         {
             if (is_string($command_details[0])) $command_details[0] = str_split($command_details[0]);
@@ -100,8 +104,15 @@ class List_Command extends Command_Abstract
             $this->commands[$command_name][0] = $command_details[0];
         }
 
-        $this->multiselect = $options['multiselect'];
-        $this->template = $options['template'];
+        if (isset($options['multiselect']))
+        {
+            $this->multiselect = $options['multiselect'];
+        }
+
+        if (isset($options['template']))
+        {
+            $this->template = $options['template'];
+        }
     }
 
     /**
@@ -162,7 +173,13 @@ class List_Command extends Command_Abstract
                 $matched = true;
                 if (is_callable($command_callable))
                 {
-                    call_user_func($command_callable, $this);
+                    $list_values = array_values($this->list);
+                    $selected_value = $list_values[$this->focus];
+
+                    $list_keys = array_keys($this->list);
+                    $selected_key = $list_keys[$this->focus];
+
+                    call_user_func($command_callable, $this, $selected_key, $selected_value);
                 }
                 else $this->error("Uncallable method for $input", false, true);
             }
@@ -287,7 +304,7 @@ class List_Command extends Command_Abstract
                     $matched = true;
                     if (is_callable($filter_callable))
                     {
-                        call_user_func($filter_callable, $this);
+                        call_user_func($filter_callable, $this, $this->list[$this->focus]);
                         return;
                     }
                     else $this->error("Uncallable method for $input", false, true);
