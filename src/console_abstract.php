@@ -717,6 +717,7 @@ class Console_Abstract extends Command_Abstract
 	 */
 	public function error($data, $code=500, $prompt_to_continue=false)
 	{
+        $this->br();
         $this->hr('!');
 		$this->output('ERROR: ', false);
 		$this->output($data);
@@ -743,6 +744,7 @@ class Console_Abstract extends Command_Abstract
 	 */
 	public function warn($data, $prompt_to_continue=false)
 	{
+        $this->br();
         $this->hr('*');
 		$this->output('WARNING: ', false);
 		$this->output($data, true, false);
@@ -750,6 +752,7 @@ class Console_Abstract extends Command_Abstract
 
         if ($prompt_to_continue)
         {
+            $this->log("Getting input to continue");
             $yn = $this->input("Continue? (y/n)", 'n', false, true);
             if (!in_array($yn, ['y', 'Y']))
             {

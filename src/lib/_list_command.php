@@ -174,12 +174,12 @@ class List_Command extends Command_Abstract
                 if (is_callable($command_callable))
                 {
                     $list_values = array_values($this->list);
-                    $selected_value = $list_values[$this->focus];
+                    $focused_value = $list_values[$this->focus];
 
                     $list_keys = array_keys($this->list);
-                    $selected_key = $list_keys[$this->focus];
+                    $focused_key = $list_keys[$this->focus];
 
-                    call_user_func($command_callable, $this, $selected_key, $selected_value);
+                    call_user_func($command_callable, $this, $focused_key, $focused_value);
                 }
                 else $this->error("Uncallable method for $input", false, true);
             }
