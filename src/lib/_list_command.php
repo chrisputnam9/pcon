@@ -16,6 +16,9 @@ class List_Command extends Command_Abstract
 
     public $commands = [];
 
+    public $reload_function;
+    public $reload_data;
+
     public $multiselect = false;
     public $template = "{_KEY}: {_VALUE}";
 
@@ -24,17 +27,26 @@ class List_Command extends Command_Abstract
     /**
      * Constructor
      */
-    public function __construct($main_tool, $list, $options=[])
+    public function __construct($main_tool, $list, $reload_function, $reload_data=[], $options=[])
     {
         parent::__construct($main_tool);
 
         if (empty($list))
         {
             $this->error("Empty list", false, true);
+            return false;
+        }
+
+        if (empty($reload_function) or !is_callable($reload_function))
+        {
+            $this->error("Argument reload_function is required");
         }
 
         $this->list_original = $list;
         $this->list = $list;
+
+        $this->reload_function = $reload_function;
+        $this->reload_data = $reload_data;
 
         $this->filters = [
             'Text/Regex Search' => [
@@ -81,12 +93,16 @@ class List_Command extends Command_Abstract
                 [$this, 'focus_down'],
             ],
             'Top - move focus to top of list' => [
-                ['g'],
+                'g',
                 [$this, 'focus_top'],
             ],
             'Bottom - move focus to bottom of list' => [
-                ['G'],
+                'G',
                 [$this, 'focus_bottom'],
+            ],
+            'Reload - refresh list' => [
+                'r',
+                [$this, 'reload'],
             ],
             'Quit - exit the list' => [
                 'q',
@@ -180,6 +196,12 @@ class List_Command extends Command_Abstract
                     $focused_key = $list_keys[$this->focus];
 
                     call_user_func($command_callable, $this, $focused_key, $focused_value);
+
+                    // May have modified data, so we call reload, unless reload was what we just called
+                    if ($input != 'r')
+                    {
+                        $this->reload();
+                    }
                 }
                 else $this->error("Uncallable method for $input", false, true);
             }
@@ -266,6 +288,14 @@ class List_Command extends Command_Abstract
         $this->input("Hit any key to exit help", null, false, true);
     }
 
+    // Reload
+    public function reload()
+    {
+        $list = call_user_func($this->reload_function, $this->reload_data, $this);
+        $this->list_original = $list;
+        $this->list = $list;
+    }
+
     // Quit
     public function quit()
     {
@@ -304,7 +334,8 @@ class List_Command extends Command_Abstract
                     $matched = true;
                     if (is_callable($filter_callable))
                     {
-                        call_user_func($filter_callable, $this, $this->list[$this->focus]);
+                        call_user_func($filter_callable, $this);
+                        // Not expected to modify the data itself, so we do not call reload
                         return;
                     }
                     else $this->error("Uncallable method for $input", false, true);
