@@ -1639,11 +1639,35 @@ class Console_Abstract extends Command_Abstract
         $options = array_merge([
             'starting_line' => 1,
             'starting_column' => 1, // todo
-            'wrap' => false, // todo
+            'wrap' => false,
             'line_buffer' => 1,
             'output' => true,
             'include_page_info' => true,
         ], $options);
+
+        // Split into lines if needed
+        if (is_string($content))
+        {
+            $content = preg_split("/\r\n|\n|\r/", $content);
+        }
+
+        $max_width = $this->getTerminalWidth();
+
+        // Pre-wrap lines if specified, to make sure pagination works based on real number of lines
+        if ($options['wrap'])
+        {
+            $wrapped_content = [];
+            foreach ($content as $line)
+            {
+                while (strlen($line) > $max_width)
+                {
+                    $wrapped_content[]= substr($line, 0, $max_width);
+                    $line = substr($line, $max_width);
+                }
+                $wrapped_content[]= $line;
+            }
+            $content = $wrapped_content;
+        }
 
         $content_length = count($content);
 
@@ -1666,8 +1690,6 @@ class Console_Abstract extends Command_Abstract
         {
             $are_next = true;
         }
-
-        $max_width = $this->getTerminalWidth();
 
         $height = 0;
         $output = [];
@@ -1697,14 +1719,12 @@ class Console_Abstract extends Command_Abstract
             {
                 if ($options['wrap'])
                 {
-                    // todo
-                    // check height - break if we can't fit wrapped item
-                    // known edge case - single item too long to fit on screen - may need to wrap all items BEFORE paginating...?
+                    $this->error("Something wrong with the following line - wrap was on, but it's still too long", false);
+                    $this->output($line);
+                    $this->error("Aborting");
                 }
-                else
-                {
-                    $line = substr($line, 0, $max_width);
-                }
+
+                $line = substr($line, 0, $max_width);
             }
             $output[]= $line;
 
