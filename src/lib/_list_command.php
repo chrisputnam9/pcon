@@ -49,75 +49,86 @@ class List_Command extends Command_Abstract
         $this->reload_data = $reload_data;
 
         $this->filters = [
-            'Text/Regex Search' => [
-                '/',
-                [$this, 'filter_by_text'],
+            'filter_by_text' => [
+                'description' => 'Text/Regex Search',
+                'keys' => '/',
+                'callback' => [$this, 'filter_by_text'],
             ],
-            'Remove filters - go back to full list' => [
-                'r',
-                [$this, 'filter_remove'],
+            'filter_remove' => [
+                'description' => 'Remove filters - go back to full list',
+                'keys' => 'r',
+                'callback' => [$this, 'filter_remove'],
             ],
         ];
         if (isset($options['filters']))
         {
             $this->filters = array_merge($this->filters, $options['filters']);
         }
-        foreach ($this->filters as $filter_name => $filter_details)
+        foreach ($this->filters as $filter_slug => $filter_details)
         {
-            if (is_string($filter_details[0])) $filter_details[0] = str_split($filter_details[0]);
-            if (!is_array($filter_details[0])) $this->error("Invalid filter keys for '$filter_name'");
-            $this->filters[$filter_name][0] = $filter_details[0];
+            if (is_string($filter_details['keys'])) $filter_details['keys'] = str_split($filter_details['keys']);
+            if (!is_array($filter_details['keys'])) $this->error("Invalid filter keys for '$filter_slug'");
+            $this->filters[$filter_slug]['keys'] = $filter_details['keys'];
         }
 
 
 
         $this->commands = [
-            'Help - list available commands' => [
-                '?',
-                [$this, 'help'],
+            'help' => [
+                'description' => 'Help - list available commands',
+                'keys' => '?',
+                'callback' => [$this, 'help'],
             ],
-            'Filter list' => [
-                'f',
-                [$this, 'filter'],
+            'filter' => [
+                'description' => 'Filter list',
+                'keys' => 'f',
+                'callback' => [$this, 'filter'],
             ],
-            'Search list (filter by text entry)' => [
-                '/',
-                [$this, 'filter_by_text'],
+            'filter_by_text' => [
+                'description' => 'Search list (filter by text entry)',
+                'keys' => '/',
+                'callback' => [$this, 'filter_by_text'],
             ],
-            'Up - move focus up in the list' => [
-                ['k'],
-                [$this, 'focus_up'],
+            'focus_up' => [
+                'description' => 'Up - move focus up in the list',
+                'keys' => 'k',
+                'callback' => [$this, 'focus_up'],
             ],
-            'Down - move focus down in the list' => [
-                ['j'],
-                [$this, 'focus_down'],
+            'focus_down' => [
+                'description' => 'Down - move focus down in the list',
+                'keys' => 'j',
+                'callback' => [$this, 'focus_down'],
             ],
-            'Top - move focus to top of list' => [
-                'g',
-                [$this, 'focus_top'],
+            'focus_top' => [
+                'description' => 'Top - move focus to top of list',
+                'keys' => 'g',
+                'callback' => [$this, 'focus_top'],
             ],
-            'Bottom - move focus to bottom of list' => [
-                'G',
-                [$this, 'focus_bottom'],
+            'focus_bottom' => [
+                'description' => 'Bottom - move focus to bottom of list',
+                'keys' => 'G',
+                'callback' => [$this, 'focus_bottom'],
             ],
-            'Reload - refresh list' => [
-                'r',
-                [$this, 'reload'],
+            'reload' => [
+                'description' => 'Reload - refresh list',
+                'keys' => 'r',
+                'callback' => [$this, 'reload'],
             ],
-            'Quit - exit the list' => [
-                'q',
-                [$this, 'quit'],
+            'quit' => [
+                'description' => 'Quit - exit the list',
+                'keys' => 'q',
+                'callback' => [$this, 'quit'],
             ],
         ];
         if (isset($options['commands']))
         {
             $this->commands = array_merge($this->commands, $options['commands']);
         }
-        foreach ($this->commands as $command_name => $command_details)
+        foreach ($this->commands as $command_slug => $command_details)
         {
-            if (is_string($command_details[0])) $command_details[0] = str_split($command_details[0]);
-            if (!is_array($command_details[0])) $this->error("Invalid command keys for '$command_name'");
-            $this->commands[$command_name][0] = $command_details[0];
+            if (is_string($command_details['keys'])) $command_details['keys'] = str_split($command_details['keys']);
+            if (!is_array($command_details['keys'])) $this->error("Invalid command keys for '$command_slug'");
+            $this->commands[$command_slug]['keys'] = $command_details['keys'];
         }
 
         if (isset($options['multiselect']))
@@ -179,10 +190,11 @@ class List_Command extends Command_Abstract
         $input = $this->input(true, null, false, 'single', 'hide_input');
         $matched = false;
 
-        foreach ($this->commands as $command_name => $command_details)
+        foreach ($this->commands as $command_slug => $command_details)
         {
-            $command_keys = $command_details[0];
-            $command_callable = $command_details[1];
+            $command_name = $command_details['description'];
+            $command_keys = $command_details['keys'];
+            $command_callable = $command_details['callback'];
 
             if (in_array($input, $command_keys))
             {
@@ -197,8 +209,8 @@ class List_Command extends Command_Abstract
 
                     call_user_func($command_callable, $this, $focused_key, $focused_value);
 
-                    // May have modified data, so we call reload, unless reload was what we just called
-                    if ($input != 'r')
+                    // Reload if set
+                    if (!empty($command_details['reload']))
                     {
                         $this->reload();
                     }
@@ -279,9 +291,10 @@ class List_Command extends Command_Abstract
         $this->hr();
         $this->output("Available Commands:");
         $this->hr();
-        foreach ($this->commands as $command_name => $command_details)
+        foreach ($this->commands as $command_slug => $command_details)
         {
-            $command_keys = $command_details[0];
+            $command_name = $command_details['description'];
+            $command_keys = $command_details['keys'];
             $this->output( str_pad( implode( ",", $command_keys) . " ", 15, ".") . " " . $command_name );
         }
         $this->hr();
@@ -311,9 +324,10 @@ class List_Command extends Command_Abstract
             $this->hr();
             $this->output("Available Filters:");
             $this->hr();
-            foreach ($this->filters as $filter_name => $filter_details)
+            foreach ($this->filters as $filter_slug => $filter_details)
             {
-                $filter_keys = $filter_details[0];
+                $filter_name = $filter_details['description'];
+                $filter_keys = $filter_details['keys'];
                 $this->output( str_pad( implode( ",", $filter_keys) . " ", 15, ".") . " " . $filter_name );
             }
             $this->output( str_pad( "q ", 15, ".") . " Quit - cancel filtering and go back to list" );
@@ -324,10 +338,11 @@ class List_Command extends Command_Abstract
 
             if ($input == 'q') return;
 
-            foreach ($this->filters as $filter_name => $filter_details)
+            foreach ($this->filters as $filter_slug => $filter_details)
             {
-                $filter_keys = $filter_details[0];
-                $filter_callable = $filter_details[1];
+                $filter_name = $filter_details['description'];
+                $filter_keys = $filter_details['keys'];
+                $filter_callable = $filter_details['callback'];
 
                 if (in_array($input, $filter_keys))
                 {
