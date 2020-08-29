@@ -5,7 +5,7 @@
  *  - main "run" method accepts and parses arguments
  *  - default run method checks for available sub-methods
  */
-class Command_Abstract
+class Command
 {
 
     /**
@@ -434,6 +434,44 @@ class Command_Abstract
             }
         }
         return array_unique($value);
+    }
+
+    /**
+     * Merge arrays recursively, in the way we expect
+     * Primarily, we are expecting meaningful keys - eg. option arrays, commands/subcommands, etc.
+     *  - Start with array1
+     *  - Check each key - if that key exists in array2, overwrite with array2's value, EXCEPT:
+     *  - If both values are an array, merge the values instead - recursively
+     *  - Last, add keys that are in array2 only
+     */
+    protected function mergeArraysRecursively($array1, $array2)
+    {
+        $merged_array = [];
+        foreach ($array1 as $key => $value1)
+        {
+            if (isset($array2[$key]))
+            {
+                if (is_array($array1[$key]) and is_array($array2[$key]))
+                {
+                    $merged_array[$key] = $this->mergeArraysRecursively($array1[$key], $array2[$key]);
+                }
+                else
+                {
+                    $merged_array[$key] = $array2[$key];
+                    unset($array2[$key]);
+                }
+            }
+            else
+            {
+                $merged_array[$key] = $value1;
+            }
+        }
+        foreach ($array2 as $key => $value2)
+        {
+            $merged_array[$key] = $value2;
+        }
+
+        return $merged_array;
     }
 
     /**

@@ -43,7 +43,7 @@ if (!defined('PACKAGED') or !PACKAGED)
  * Console Abstract
  * Reusable abstract for creating PHP console utilities
  */
-class Console_Abstract extends Command_Abstract
+class Console_Abstract extends Command
 {
 
     /**

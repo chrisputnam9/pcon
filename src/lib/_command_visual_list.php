@@ -1,8 +1,8 @@
 <?php
 /**
- * List Command
+ * Visual command that shows a list of items
  */
-class List_Command extends Command_Abstract
+class Command_Visual_List extends Command_Visual
 {
     public $list=[];
     public $list_original=[];
@@ -12,8 +12,6 @@ class List_Command extends Command_Abstract
     public $starting_line=1;
     public $page_info=[];
 
-    public $filters = [];
-
     public $commands = [];
 
     public $reload_function;
@@ -21,8 +19,6 @@ class List_Command extends Command_Abstract
 
     public $multiselect = false;
     public $template = "{_KEY}: {_VALUE}";
-
-    public $continue_loop=true;
 
     /**
      * Constructor
@@ -48,31 +44,6 @@ class List_Command extends Command_Abstract
         $this->reload_function = $reload_function;
         $this->reload_data = $reload_data;
 
-        $this->filters = [
-            'filter_by_text' => [
-                'description' => 'Text/Regex Search',
-                'keys' => '/',
-                'callback' => [$this, 'filter_by_text'],
-            ],
-            'filter_remove' => [
-                'description' => 'Remove filters - go back to full list',
-                'keys' => 'r',
-                'callback' => [$this, 'filter_remove'],
-            ],
-        ];
-        if (isset($options['filters']))
-        {
-            $this->filters = array_merge($this->filters, $options['filters']);
-        }
-        foreach ($this->filters as $filter_slug => $filter_details)
-        {
-            if (is_string($filter_details['keys'])) $filter_details['keys'] = str_split($filter_details['keys']);
-            if (!is_array($filter_details['keys'])) $this->error("Invalid filter keys for '$filter_slug'");
-            $this->filters[$filter_slug]['keys'] = $filter_details['keys'];
-        }
-
-
-
         $this->commands = [
             'help' => [
                 'description' => 'Help - list available commands',
@@ -80,9 +51,22 @@ class List_Command extends Command_Abstract
                 'callback' => [$this, 'help'],
             ],
             'filter' => [
-                'description' => 'Filter list',
+                'description' => 'Filter the list',
                 'keys' => 'f',
-                'callback' => [$this, 'filter'],
+                'callback' => [
+                    'subcommands' => [
+                        'filter_by_text' => [
+                            'description' => 'Text/Regex Search',
+                            'keys' => '/',
+                            'callback' => [$this, 'filter_by_text'],
+                        ],
+                        'filter_remove' => [
+                            'description' => 'Remove filters - go back to full list',
+                            'keys' => 'r',
+                            'callback' => [$this, 'filter_remove'],
+                        ],
+                    ],
+                ],
             ],
             'filter_by_text' => [
                 'description' => 'Search list (filter by text entry)',
@@ -122,14 +106,9 @@ class List_Command extends Command_Abstract
         ];
         if (isset($options['commands']))
         {
-            $this->commands = array_merge($this->commands, $options['commands']);
+            $this->commands = $this->mergeArraysRecursively($this->commands, $options['commands']);
         }
-        foreach ($this->commands as $command_slug => $command_details)
-        {
-            if (is_string($command_details['keys'])) $command_details['keys'] = str_split($command_details['keys']);
-            if (!is_array($command_details['keys'])) $this->error("Invalid command keys for '$command_slug'");
-            $this->commands[$command_slug]['keys'] = $command_details['keys'];
-        }
+        $this->cleanCommandArray($this->commands);
 
         if (isset($options['multiselect']))
         {
@@ -187,45 +166,12 @@ class List_Command extends Command_Abstract
         $this->page_info = $this->paginate($content_to_display, [
             'starting_line' => $this->starting_line,
         ]);
-        $input = $this->input(true, null, false, 'single', 'hide_input');
-        $matched = false;
 
-        foreach ($this->commands as $command_slug => $command_details)
+        $continue_loop = $this->promptAndRunCommand($this->commands);
+
+        if ($continue_loop !== false)
         {
-            $command_name = $command_details['description'];
-            $command_keys = $command_details['keys'];
-            $command_callable = $command_details['callback'];
-
-            if (in_array($input, $command_keys))
-            {
-                $matched = true;
-                if (is_callable($command_callable))
-                {
-                    $list_values = array_values($this->list);
-                    $focused_value = $list_values[$this->focus];
-
-                    $list_keys = array_keys($this->list);
-                    $focused_key = $list_keys[$this->focus];
-
-                    call_user_func($command_callable, $this, $focused_key, $focused_value);
-
-                    // Reload if set
-                    if (!empty($command_details['reload']))
-                    {
-                        $this->reload();
-                    }
-                }
-                else $this->error("Uncallable method for $input", false, true);
-            }
-        }
-
-        if (!$matched)
-        {
-            $this->log("Invalid input $input");
-        }
-
-        if ($this->continue_loop)
-        {
+            $this->log("Looping!");
             $this->pause();
             $this->run();
         }
@@ -312,56 +258,7 @@ class List_Command extends Command_Abstract
     // Quit
     public function quit()
     {
-        $this->continue_loop = false;
-    }
-
-    // Filter - present ways to filter
-    public function filter()
-    {
-        while (true)
-        {
-            $this->clear();
-            $this->hr();
-            $this->output("Available Filters:");
-            $this->hr();
-            foreach ($this->filters as $filter_slug => $filter_details)
-            {
-                $filter_name = $filter_details['description'];
-                $filter_keys = $filter_details['keys'];
-                $this->output( str_pad( implode( ",", $filter_keys) . " ", 15, ".") . " " . $filter_name );
-            }
-            $this->output( str_pad( "q ", 15, ".") . " Quit - cancel filtering and go back to list" );
-            $this->hr();
-            $input = $this->input(true, null, false, 'single', 'hide_input');
-
-            $matched = false;
-
-            if ($input == 'q') return;
-
-            foreach ($this->filters as $filter_slug => $filter_details)
-            {
-                $filter_name = $filter_details['description'];
-                $filter_keys = $filter_details['keys'];
-                $filter_callable = $filter_details['callback'];
-
-                if (in_array($input, $filter_keys))
-                {
-                    $matched = true;
-                    if (is_callable($filter_callable))
-                    {
-                        call_user_func($filter_callable, $this);
-                        // Not expected to modify the data itself, so we do not call reload
-                        return;
-                    }
-                    else $this->error("Uncallable method for $input", false, true);
-                }
-            }
-
-            if (!$matched)
-            {
-                $this->log("Invalid input $input");
-            }
-        }
+        return false; // Back to previous area, basically
     }
 
     // Filter - remove filters
@@ -466,6 +363,10 @@ class List_Command extends Command_Abstract
         $this->page_to_focus();
     }
 
+    /**
+     * Helper functions
+     */
+
     // Adjust page view to focus
     public function page_to_focus()
     {
@@ -478,5 +379,17 @@ class List_Command extends Command_Abstract
         {
             $this->starting_line = ($focus - $this->page_info['page_length']) + 1;
         }
+    }
+
+    // Get Focused Data
+    public function getFocusedKey()
+    {
+        $list_keys = array_keys($this->list);
+        return $list_keys[$this->focus];
+    }
+    public function getFocusedValue()
+    {
+        $list_values = array_values($this->list);
+        return $list_values[$this->focus];
     }
 }
