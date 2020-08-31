@@ -12,20 +12,15 @@ class Command_Visual_List extends Command_Visual
     public $starting_line=1;
     public $page_info=[];
 
-    public $commands = [];
-
-    public $reload_function;
-    public $reload_data;
-
     public $multiselect = false;
     public $template = "{_KEY}: {_VALUE}";
 
     /**
      * Constructor
      */
-    public function __construct($main_tool, $list, $reload_function, $reload_data=[], $options=[])
+    public function __construct($main_tool, $reload_function, $reload_data=[], $list, $options=[])
     {
-        parent::__construct($main_tool);
+        parent::__construct($main_tool, $reload_function, $reload_data, $options);
 
         if (empty($list))
         {
@@ -33,16 +28,8 @@ class Command_Visual_List extends Command_Visual
             return false;
         }
 
-        if (empty($reload_function) or !is_callable($reload_function))
-        {
-            $this->error("Argument reload_function is required");
-        }
-
         $this->list_original = $list;
         $this->list = $list;
-
-        $this->reload_function = $reload_function;
-        $this->reload_data = $reload_data;
 
         $this->commands = [
             'help' => [
@@ -59,11 +46,13 @@ class Command_Visual_List extends Command_Visual
                             'description' => 'Text/Regex Search',
                             'keys' => '/',
                             'callback' => [$this, 'filter_by_text'],
+                            'continue' => false,
                         ],
                         'filter_remove' => [
                             'description' => 'Remove filters - go back to full list',
                             'keys' => 'r',
                             'callback' => [$this, 'filter_remove'],
+                            'continue' => false,
                         ],
                     ],
                 ],
@@ -250,7 +239,7 @@ class Command_Visual_List extends Command_Visual
     // Reload
     public function reload()
     {
-        $list = call_user_func($this->reload_function, $this->reload_data, $this);
+        $list = parent::reload();
         $this->list_original = $list;
         $this->list = $list;
     }
@@ -279,12 +268,17 @@ class Command_Visual_List extends Command_Visual
             $this->output(" - Case insensive if search string is all lowercase");
             $this->output(" - Start with / to use RegEx");
             $this->hr();
-            $search_pattern = $this->input("Enter text", null, true);
+            $search_pattern = $this->input("Enter text", null, false);
 
             $current_list = $this->list;
             $filtered_list = [];
 
             $search_pattern = trim($search_pattern);
+            if (empty($search_pattern))
+            {
+                return;
+            }
+
             $is_regex = (substr($search_pattern, 0, 1) == '/');
             $case_insensitive = (!$is_regex and (strtolower($search_pattern) == $search_pattern));
 

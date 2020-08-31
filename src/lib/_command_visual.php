@@ -6,7 +6,27 @@
  */
 class Command_Visual extends Command
 {
-    // Todo when need arises, pull more of the visual logic input/output out of Command_List class
+    public $commands = [];
+
+    public $reload_function;
+    public $reload_data;
+
+    /**
+     * Constructor
+     */
+    public function __construct($main_tool, $reload_function, $reload_data=[], $options=[])
+    {
+        parent::__construct($main_tool);
+
+        if (empty($reload_function) or !is_callable($reload_function))
+        {
+            $this->error("Argument reload_function is required");
+        }
+
+        $this->reload_function = $reload_function;
+        $this->reload_data = $reload_data;
+
+    }
 
     /**
      * Clean an array of commands
@@ -80,9 +100,11 @@ class Command_Visual extends Command
                                 $this->hr();
                                 $continue_loop = $this->promptAndRunCommand($command_callable['subcommands'], true);
 
-                                if ($continue_loop === false)
-                                {
-                                    return true;
+                                if (
+                                    $continue_loop === false
+                                    or (isset($command_details['continue']) and $command_details['continue'] === false)
+                                ) {
+                                    return;
                                 }
                             }
                         }
@@ -100,7 +122,14 @@ class Command_Visual extends Command
                     $this->reload();
                 }
 
-                return $continue_loop;
+                if (
+                    $continue_loop === false
+                    or (isset($command_details['continue']) and $command_details['continue'] === false)
+                ) {
+                    return false;
+                }
+
+                return true;
             }
         }
 
@@ -108,5 +137,11 @@ class Command_Visual extends Command
         {
             $this->log("Invalid input $input");
         }
+    }
+
+    // Reload
+    public function reload()
+    {
+        return call_user_func($this->reload_function, $this->reload_data, $this);
     }
 }
