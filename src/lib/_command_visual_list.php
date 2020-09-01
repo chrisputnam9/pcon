@@ -18,9 +18,9 @@ class Command_Visual_List extends Command_Visual
     /**
      * Constructor
      */
-    public function __construct($main_tool, $reload_function, $reload_data=[], $list, $options=[])
+    public function __construct($main_tool, $list, $options=[])
     {
-        parent::__construct($main_tool, $reload_function, $reload_data, $options);
+        $this->setMainTool($main_tool);
 
         if (empty($list))
         {
@@ -31,12 +31,17 @@ class Command_Visual_List extends Command_Visual
         $this->list_original = $list;
         $this->list = $list;
 
-        $this->commands = [
-            'help' => [
-                'description' => 'Help - list available commands',
-                'keys' => '?',
-                'callback' => [$this, 'help'],
-            ],
+        if (isset($options['multiselect']))
+        {
+            $this->multiselect = $options['multiselect'];
+        }
+
+        if (isset($options['template']))
+        {
+            $this->template = $options['template'];
+        }
+
+        $commands = [
             'filter' => [
                 'description' => 'Filter the list',
                 'keys' => 'f',
@@ -82,32 +87,15 @@ class Command_Visual_List extends Command_Visual
                 'keys' => 'G',
                 'callback' => [$this, 'focus_bottom'],
             ],
-            'reload' => [
-                'description' => 'Reload - refresh list',
-                'keys' => 'r',
-                'callback' => [$this, 'reload'],
-            ],
-            'quit' => [
-                'description' => 'Quit - exit the list',
-                'keys' => 'q',
-                'callback' => [$this, 'quit'],
-            ],
         ];
+
         if (isset($options['commands']))
         {
-            $this->commands = $this->mergeArraysRecursively($this->commands, $options['commands']);
+            $commands = $this->mergeArraysRecursively($commands, $options['commands']);
         }
-        $this->cleanCommandArray($this->commands);
+        $options['commands'] = $commands;
 
-        if (isset($options['multiselect']))
-        {
-            $this->multiselect = $options['multiselect'];
-        }
-
-        if (isset($options['template']))
-        {
-            $this->template = $options['template'];
-        }
+        parent::__construct($main_tool, $options);
     }
 
     /**
@@ -219,35 +207,12 @@ class Command_Visual_List extends Command_Visual
      * Built-in commands
      */
 
-    // Help
-    public function help($specific=false)
-    {
-        $this->clear();
-        $this->hr();
-        $this->output("Available Commands:");
-        $this->hr();
-        foreach ($this->commands as $command_slug => $command_details)
-        {
-            $command_name = $command_details['description'];
-            $command_keys = $command_details['keys'];
-            $this->output( str_pad( implode( ",", $command_keys) . " ", 15, ".") . " " . $command_name );
-        }
-        $this->hr();
-        $this->input("Hit any key to exit help", null, false, true);
-    }
-
     // Reload
     public function reload()
     {
         $list = parent::reload();
         $this->list_original = $list;
         $this->list = $list;
-    }
-
-    // Quit
-    public function quit()
-    {
-        return false; // Back to previous area, basically
     }
 
     // Filter - remove filters
@@ -327,7 +292,7 @@ class Command_Visual_List extends Command_Visual
     }
 
 
-    // Focus up/down
+    // Focus up/down/top/bottom
     public function focus_up()
     {
         if ($this->focus > 0)

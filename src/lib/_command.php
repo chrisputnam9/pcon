@@ -57,6 +57,15 @@ class Command
      */
     public function __construct($main_tool)
     {
+        $this->setMainTool($main_tool);
+    }
+
+    /**
+     * Set Main Tool
+     * - for shared functionality
+     */
+    public function setMainTool($main_tool)
+    {
         $this->main_tool = $main_tool;
     }
 

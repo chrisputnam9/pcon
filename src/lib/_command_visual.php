@@ -14,18 +14,43 @@ class Command_Visual extends Command
     /**
      * Constructor
      */
-    public function __construct($main_tool, $reload_function, $reload_data=[], $options=[])
+    public function __construct($main_tool, $options=[])
     {
         parent::__construct($main_tool);
 
-        if (empty($reload_function) or !is_callable($reload_function))
+        if (empty($options['reload_function']) or !is_callable($options['reload_function']))
         {
-            $this->error("Argument reload_function is required");
+            $this->error("Option 'reload_function' is required");
         }
 
-        $this->reload_function = $reload_function;
-        $this->reload_data = $reload_data;
+        $this->reload_function = $options['reload_function'];
+        if (isset($options['reload_data']))
+        {
+            $this->reload_data = $options['reload_data'];
+        }
 
+        $this->commands = [
+            'help' => [
+                'description' => 'Help - list available commands',
+                'keys' => '?',
+                'callback' => [$this, 'help'],
+            ],
+            'reload' => [
+                'description' => 'Reload - refresh list',
+                'keys' => 'r',
+                'callback' => [$this, 'reload'],
+            ],
+            'quit' => [
+                'description' => 'Quit - exit the list',
+                'keys' => 'q',
+                'callback' => [$this, 'quit'],
+            ],
+        ];
+        if (isset($options['commands']))
+        {
+            $this->commands = $this->mergeArraysRecursively($this->commands, $options['commands']);
+        }
+        $this->cleanCommandArray($this->commands);
     }
 
     /**
@@ -137,6 +162,33 @@ class Command_Visual extends Command
         {
             $this->log("Invalid input $input");
         }
+    }
+
+    /**
+     * Built-in commands
+     */
+
+    // Help
+    public function help($specific=false)
+    {
+        $this->clear();
+        $this->hr();
+        $this->output("Available Commands:");
+        $this->hr();
+        foreach ($this->commands as $command_slug => $command_details)
+        {
+            $command_name = $command_details['description'];
+            $command_keys = $command_details['keys'];
+            $this->output( str_pad( implode( ",", $command_keys) . " ", 15, ".") . " " . $command_name );
+        }
+        $this->hr();
+        $this->input("Hit any key to exit help", null, false, true);
+    }
+
+    // Quit
+    public function quit()
+    {
+        return false; // Back to previous area, basically
     }
 
     // Reload
