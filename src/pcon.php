@@ -293,7 +293,7 @@ Class PCon extends Console_Abstract
                     $text .= " ($foreground text)";
                 }
 
-                $this->output(str_pad(" - $text: ", 35) . $this->colorize("In order to understand recursion, one must first understand recursion.", $foreground, $background, $other));
+                $this->output(str_pad(" - $text ", 35, ".") . " " . $this->colorize("In order to understand recursion, one must first understand recursion.", $foreground, $background, $other));
             }
         }
 
