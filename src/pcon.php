@@ -16,6 +16,7 @@ Class PCon extends Console_Abstract
     protected static $METHODS = [
         'create',
         'package',
+        'test_colors',
     ];
 
     /**
@@ -260,6 +261,43 @@ Class PCon extends Console_Abstract
         $this->output('Packaging complete to: ' . $tool_exec_path);
         $this->output('Package hash ('.$this->update_hash_algorithm.'): ' . $package_hash);
 
+    }
+
+    protected $___test_colors = [
+        "Test available colors and text decoration - escape codes",
+        ["Types to test - comma-separted - defaults to test all", "string"],
+    ];
+    public function test_colors($types=null)
+    {
+        $types = $this->prepArg($types, ["foreground","background","other"]);
+
+        foreach ($types as $type)
+        {
+            if (empty(CONSOLE_COLORS::$$type))
+            {
+                $this->warn("Invalid type specified - $type");
+            }
+
+            $this->hr();
+            $this->output($this->colorize(ucwords($type) . ":", null, null, "bold"));
+            foreach (CONSOLE_COLORS::$$type as $text => $code)
+            {
+                $foreground = null;
+                $background = null;
+                $other = null;
+                $$type = $text;
+
+                if ($type == 'background')
+                {
+                    $foreground = ($background == 'light_gray') ? 'dark_gray' : 'white';
+                    $text .= " ($foreground text)";
+                }
+
+                $this->output(str_pad(" - $text: ", 35) . $this->colorize("In order to understand recursion, one must first understand recursion.", $foreground, $background, $other));
+            }
+        }
+
+        $this->pause();
     }
 
 }
