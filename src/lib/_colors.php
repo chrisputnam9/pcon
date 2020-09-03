@@ -38,14 +38,19 @@ class CONSOLE_COLORS
 
     public static $other = [
         'bold' => '1',
+        'dim' => '2',
         'underline' => '4',
+        'blink' => '5',
+        'inverse' => '7',
 
-        // Need logic to turn off (?)
-        // 'dim' => '2',
-        // 'blink' => 5,
-
-        // Don't seem to work:
-        // 'strike' => 9,
-        // 'frame' => 51,
+        // Don't seem to work for the author at least:
+        //'italic' => '3',
+        //'blink_fast' => '6',
+        //'concealed' => '8',
+        //'strike' => '9',
+        //'double_underline' => '21',
+        //'frame' => '51',
+        //'encircled' => '52',
+        //'overlined' => '53',
     ];
 }
