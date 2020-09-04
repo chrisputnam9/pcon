@@ -54,3 +54,5 @@ class CONSOLE_COLORS
         //'overlined' => '53',
     ];
 }
+
+// Note: leave this for packaging ?>

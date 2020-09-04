@@ -132,9 +132,11 @@ Class PCon extends Console_Abstract
 
         $this->log('Copying over template files');
 
+        $package_dir = __DIR__ . DS . 'pkg' . DS;
+
         // Copy primary executable sample
         $tool_exec_path = $tool_path . DS . $tool_shortname;
-        copy(__DIR__ . DS . 'sample', $tool_exec_path);
+        copy($package_dir . 'sample', $tool_exec_path);
         chmod($tool_exec_path, 0755);
 
         // Create src directory
@@ -142,7 +144,7 @@ Class PCon extends Console_Abstract
 
         // Copy Sample class
         $tool_src_path = $tool_path . DS . 'src' . DS . $tool_shortname . '.php';
-        copy(__DIR__ . DS . 'sample.php', $tool_src_path);
+        copy($package_dir . 'sample.php', $tool_src_path);
 
         $created = $this->exec('ls -halR "' . $tool_path . '"');
 
@@ -231,8 +233,21 @@ Class PCon extends Console_Abstract
         $tool_exec_handle = fopen($tool_exec_path, 'w');
 
         // Start with basic template, hashbang
-        $package_template_src = file_get_contents(__DIR__ . DS . 'package_template');
+        $package_dir = __DIR__ . DS . 'pkg' . DS;
+        $package_template_src = file_get_contents($package_dir . 'package_template');
         fwrite($tool_exec_handle, $package_template_src);
+
+        // Add Lib Files
+        $lib_files = scandir(__DIR__ . DS . "lib");
+        foreach ($lib_files as $lib_file)
+        {
+            $lib_file_path = __DIR__ . DS . "lib" . DS . $lib_file;
+            if (is_file($lib_file_path))
+            {
+                $lib_file_src = file_get_contents($lib_file_path);
+                fwrite($tool_exec_handle, $lib_file_src);
+            }
+        }
 
         // Add console abstract
         $console_abstract_src = file_get_contents(__DIR__ . DS . 'console_abstract.php');

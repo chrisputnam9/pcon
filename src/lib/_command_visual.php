@@ -197,3 +197,5 @@ class Command_Visual extends Command
         return call_user_func($this->reload_function, $this->reload_data, $this);
     }
 }
+
+// Note: leave this for packaging ?>

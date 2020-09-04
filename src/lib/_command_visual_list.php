@@ -352,3 +352,5 @@ class Command_Visual_List extends Command_Visual
         return $list_values[$this->focus];
     }
 }
+
+// Note: leave this for packaging ?>

@@ -5,4 +5,5 @@
 ##################################################
 define('ERRORS', false);
 define('PACKAGED', true);
-?>
+
+// Note: leave this for packaging ?>

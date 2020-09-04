@@ -498,3 +498,5 @@ class Command
     }
 
 }
+
+// Note: leave this for packaging ?>
