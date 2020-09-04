@@ -2,7 +2,7 @@
 PCon - PHP Console - is a console tool and abstract that you can use to help build your own PHP
 console tools.
 
-Download Latest Version (1.1.9):
+Download Latest Version (1.2.0):
 https://github.com/chrisputnam9/pcon
 
 ## Why Create Console Tools in PHP?
