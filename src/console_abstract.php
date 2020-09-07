@@ -1643,6 +1643,7 @@ class Console_Abstract extends Command
             'line_buffer' => 1,
             'output' => true,
             'include_page_info' => true,
+            'fill_height' => true,
         ], $options);
 
         // Split into lines if needed
@@ -1652,6 +1653,17 @@ class Console_Abstract extends Command
         }
 
         $max_width = $this->getTerminalWidth();
+
+        $max_height = $this->getTerminalHeight();
+        $max_height = $max_height - $options['line_buffer'];
+        $max_height = $max_height - 2; // for start/end line breaks
+        if ($options['include_page_info'])
+        {
+            $max_height = $max_height - 2; // for page info and extra line break
+        }
+
+        if (!is_array($content)) $content = explode("\n");
+        $content = array_values($content);
 
         // Pre-wrap lines if specified, to make sure pagination works based on real number of lines
         if ($options['wrap'])
@@ -1670,14 +1682,6 @@ class Console_Abstract extends Command
         }
 
         $content_length = count($content);
-
-        $max_height = $this->getTerminalHeight();
-        $max_height = $max_height - $options['line_buffer'];
-        $max_height = $max_height - 2; // for start/end line breaks
-        if ($options['include_page_info'])
-        {
-            $max_height = $max_height - 2; // for page info and extra line break
-        }
 
         $are_prev = false;
         if ($options['starting_line'] > 1)
@@ -1704,15 +1708,27 @@ class Console_Abstract extends Command
             $output[]= str_pad("", $max_width, "=");
         }
 
-        if (!is_array($content)) $content = explode("\n");
-        $content = array_values($content);
-
         $l = $options['starting_line'] - 1;
         $final_line = $options['starting_line'];
-        while ($height < $max_height and $l < ($content_length))
+        while ($height < $max_height)
         {
-            $final_line = $l + 1;
-            $line = $content[$l];
+            if ($l < ($content_length))
+            {
+                $final_line = $l + 1;
+                $line = $content[$l];
+            }
+            else
+            {
+                if ($options['fill_height'])
+                {
+                    $line = "";
+                }
+                else
+                {
+                    break;
+                }
+            }
+
 
             if (!is_string($line)) $this->error("Bad type for line $l of content - string expected");
             if (strlen($line) > $max_width)
