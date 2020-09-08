@@ -1833,7 +1833,7 @@ class Console_Abstract extends Command
     }
 
     protected $_terminal_height = null;
-    protected function getTerminalHeight($fresh=false)
+    public function getTerminalHeight($fresh=false)
     {
         if (is_null($this->_terminal_height))
         {
@@ -1857,7 +1857,7 @@ class Console_Abstract extends Command
     }
 
     protected $_terminal_width = null;
-    protected function getTerminalWidth($fresh=false)
+    public function getTerminalWidth($fresh=false)
     {
         if (is_null($this->_terminal_width))
         {
