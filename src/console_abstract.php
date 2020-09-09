@@ -844,7 +844,9 @@ class Console_Abstract extends Command
             var_dump($data);
             $data = ob_get_clean();
         }
-        $data = trim($data, " \t\n\r\0\x0B");
+        // Trimming breaks areas where we *want* extra white space
+        // - must be done explicitly instead, or modify to pass in as an option maybe...
+        // $data = trim($data, " \t\n\r\0\x0B");
         return $data;
     }
 
