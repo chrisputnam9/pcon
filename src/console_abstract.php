@@ -114,7 +114,7 @@ class Console_Abstract extends Command
     public $cache_lifetime = 86400; // Default: 24 hours
 
     protected $__editor_exec = ["Command to open file in editor - %s for filepath placeholder via sprintf"];
-    protected $editor_exec = '/usr/bin/vim "%s" > `tty`';
+    protected $editor_exec = '/usr/bin/vim -c "startinsert" "%s" > `tty`';
 
     protected $__install_path = ["Install path of this tool", "string"];
 	public $install_path = DS . "usr" . DS . "local" . DS . "bin";
