@@ -86,6 +86,7 @@ class Console_Abstract extends Command
         'browser_exec',
         'cache_lifetime',
         'editor_exec',
+        'editor_modify_exec',
         'install_path',
         'step',
         'timezone',
@@ -114,7 +115,10 @@ class Console_Abstract extends Command
     public $cache_lifetime = 86400; // Default: 24 hours
 
     protected $__editor_exec = ["Command to open file in editor - %s for filepath placeholder via sprintf"];
-    protected $editor_exec = '/usr/bin/vim -c "startinsert" "%s" > `tty`';
+    protected $editor_exec = '/usr/bin/vim -c "startinsert" "%s" > `tty`'; // vim in insert mode
+
+    protected $__editor_modify_exec = ["Command to open file in editor to review/modify existing text - %s for filepath placeholder via sprintf"];
+    protected $editor_modify_exec = '/usr/bin/vim "%s" > `tty`'; // vim in normal mode
 
     protected $__install_path = ["Install path of this tool", "string"];
 	public $install_path = DS . "usr" . DS . "local" . DS . "bin";
@@ -1067,7 +1071,7 @@ class Console_Abstract extends Command
      * Edit some text in external editor
      * @param $text to edit
      */
-    public function edit($text="", $filename=null)
+    public function edit($text="", $filename=null, $modify=false)
     {
         if (is_null($filename))
         {
@@ -1075,7 +1079,7 @@ class Console_Abstract extends Command
         }
         $filepath = $this->setTempContents($filename, $text);
 
-        $command = sprintf($this->editor_exec, $filepath);
+        $command = sprintf( ($modify ? $this->editor_modify_exec : $this->editor_exec), $filepath);
         $this->exec($command, true);
 
         return $this->getTempContents($filename);
