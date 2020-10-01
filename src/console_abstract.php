@@ -1034,11 +1034,34 @@ class Console_Abstract extends Command
             {
                 $this->warn("Invalid selection $entry");
             }
+            $this->output("Enter number or part of selection");
             $entry = $this->input($message, $default);
             if ($q_to_quit and (strtolower(trim($entry)) == 'q'))
             {
                 $this->warn('Selection Canceled');
                 exit;
+            }
+
+            if (!is_numeric($entry))
+            {
+                $filtered_items = [];
+
+                foreach ($list as $item)
+                {
+                    if (stripos($item, $entry) !== false)
+                    {
+                        $filtered_items[] = $item;
+                    }
+                }
+
+                if (count($filtered_items) == 1)
+                {
+                    return $filtered_items[0];
+                }
+                elseif (!empty($filtered_items))
+                {
+                    return $this->select($filtered_items, $message, 0, $q_to_quit);
+                }
             }
 
             // Make sure it's really a good entry
