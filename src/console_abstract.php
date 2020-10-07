@@ -1909,6 +1909,55 @@ class Console_Abstract extends Command
         return $this->_terminal_width;
     }
 
+    /**
+     * Parse HTML for output to terminal
+     * Supporting:
+     * Next:
+     *  - Bold
+     *  - Italic (showing as dim)
+     *  - Links (Underlined with link in parentheses)
+     *  - Unordered Lists ( - )
+     *  - Ordered Lists ( 1. ) 
+     *  - Hierarchical lists (via indentation)
+     * Maybe Later:
+     *  - Styled colors
+     *  - Underline styles
+     *  - Less commonly supported terminal styles
+     */
+    public function parseHtmlForTerminal($dom)
+    {
+        $output = "";
+
+        if (is_string($dom))
+        {
+            $tmp = new DOMDocument();
+            $tmp->loadHTML($dom);
+            $dom = $tmp;
+        }
+
+        if (!is_object($dom) or !in_array(get_class($dom), ["DOMDocumentType", "DOMDocument", "DOMElement"]))
+        {
+            $this->output($dom);
+            $this->output(get_class($dom));
+            $this->error("Invalid type passed to parseHtmlForTerminal");
+        }
+         
+        foreach ($dom->childNodes as $node)
+        {
+            $_output = "";
+            // Todo Note coloring if needed
+            $this->output($node->nodeName.':'.$node->nodeValue);
+            if ($node->hasChildNodes())
+            {
+                $_output.= $this->parseHtmlForTerminal($node);
+            }
+            // Todo Decorate the output as needed
+            $output.= $_output;
+        }
+
+        return $output;
+    }
+
     // Prevent infinite loop of magic method handling
     public function __call($method, $arguments)
     {
