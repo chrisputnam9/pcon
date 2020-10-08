@@ -860,6 +860,8 @@ class Console_Abstract extends Command
      */
     public function colorize($string, $foreground=null, $background=null, $other=[])
     {
+        if (empty($foreground) and empty($background) and empty($other)) return $string;
+
         $colored_string = "";
         $colored = false;
 
@@ -1924,34 +1926,62 @@ class Console_Abstract extends Command
      *  - Underline styles
      *  - Less commonly supported terminal styles
      */
-    public function parseHtmlForTerminal($dom)
+    public function parseHtmlForTerminal($dom, $depth=0)
     {
         $output = "";
 
         if (is_string($dom))
         {
             $tmp = new DOMDocument();
-            $tmp->loadHTML($dom);
+            $tmp->loadHTML(trim($dom));
             $dom = $tmp;
         }
 
         if (!is_object($dom) or !in_array(get_class($dom), ["DOMDocumentType", "DOMDocument", "DOMElement"]))
         {
-            $this->output($dom);
-            $this->output(get_class($dom));
-            $this->error("Invalid type passed to parseHtmlForTerminal");
+            $type = is_object($dom) ? get_class($dom) : gettype($dom);
+            $this->error("Invalid type passed to parseHtmlForTerminal - $type");
         }
          
         foreach ($dom->childNodes as $node)
         {
             $_output = "";
-            // Todo Note coloring if needed
-            $this->output($node->nodeName.':'.$node->nodeValue);
+
+            // Note coloring if needed
+            $color_foreground = null;
+            $color_background = null;
+            $color_other = null;
+            if (in_array($node->nodeName, ['b', 'strong']))
+            {
+                $color_other = 'bold';
+            }
+            
+            // TODO
+            // Process Italics
+            // Process Links
+            // Process Lists
+            
+            // TODO
+            // Process BR Tags
+            // Process special characters
+
+            // Once we get down to text, concatenate it on
+            if ($node->nodeName == '#text')
+            {
+                $_output.= $node->nodeValue;
+            }
+
+            // For Debugging:
+            // $this->output(str_pad("", $depth*2) . $node->nodeName.':"'.$node->nodeValue.'"');
+
             if ($node->hasChildNodes())
             {
-                $_output.= $this->parseHtmlForTerminal($node);
+                $_output.= $this->parseHtmlForTerminal($node, $depth+1);
             }
-            // Todo Decorate the output as needed
+
+            // Decorate the output as needed
+            $_output = $this->colorize($_output, $color_foreground, $color_background, $color_other);
+            
             $output.= $_output;
         }
 
