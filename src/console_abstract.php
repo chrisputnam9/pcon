@@ -1932,6 +1932,12 @@ class Console_Abstract extends Command
 
         if (is_string($dom))
         {
+            $this->output($dom);
+
+            // todo remove these when no longer needed
+            $dom = preg_replace('/\<li\s*>/', "\n - ", $dom);
+            $dom = preg_replace('/^\s*\-+\s*$/m', "", $dom);
+
             $tmp = new DOMDocument();
             $tmp->loadHTML(trim($dom));
             $dom = $tmp;
@@ -1951,28 +1957,40 @@ class Console_Abstract extends Command
             $color_foreground = null;
             $color_background = null;
             $color_other = null;
-            if (in_array($node->nodeName, ['b', 'strong']))
-            {
-                $color_other = 'bold';
-            }
-            
-            // TODO
-            // Process Italics
-            // Process Links
-            // Process Lists
-            
-            // TODO
-            // Process BR Tags
-            // Process special characters
 
-            // Once we get down to text, concatenate it on
-            if ($node->nodeName == '#text')
+            switch($node->nodeName)
             {
-                $_output.= $node->nodeValue;
+                case 'b':
+                case 'strong':
+                    $color_other = 'bold';
+                    break;
+
+                case 'em':
+                    $color_other = 'dim';
+                    break;
+            
+                // TODO
+                // Process Links
+                // Process Lists
+
+                case 'p':
+                case 'br':
+                    $_output.= "\n";
+                    break;
+
+
+                case '#text':
+                    $_output.= $node->nodeValue;
+                    break;
+
+                default:
+                    // For Debugging
+                    //$_output.="\n[" . $node->nodeName . "]";
+                    break;
             }
 
             // For Debugging:
-            // $this->output(str_pad("", $depth*2) . $node->nodeName.':"'.$node->nodeValue.'"');
+            $this->output(str_pad("", $depth*2) . $node->nodeName.':"'.$node->nodeValue.'"');
 
             if ($node->hasChildNodes())
             {
@@ -1985,7 +2003,12 @@ class Console_Abstract extends Command
             $output.= $_output;
         }
 
-        return $output;
+        // todo implement more generically if possible
+        $output = str_replace("\u{00a0}", " ", $output);
+        $output = str_replace("\r", "\n", $output);
+        $output = preg_replace('/\n\s*[\n\s]{2,}/', "\n\n", $output);
+
+        return htmlspecialchars_decode($output);
     }
 
     // Prevent infinite loop of magic method handling
