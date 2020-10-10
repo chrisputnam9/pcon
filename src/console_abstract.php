@@ -1932,7 +1932,18 @@ class Console_Abstract extends Command
 
         if (is_string($dom))
         {
-            $this->output($dom);
+            // Deal with odd UTF8 characters that sneak in sometimes
+            $dom = utf8_decode($dom);
+
+            // todo remove this
+            if ($this->verbose)
+            {
+                $this->log("Dom for debugging");
+                //file_put_contents("/home/chris/Downloads/output.html", $dom);
+                var_dump($dom);
+                //die;
+                $this->hrl();
+            }
 
             // todo remove these when no longer needed
             $dom = preg_replace('/\<li\s*>/', "\n - ", $dom);
@@ -1984,17 +1995,32 @@ class Console_Abstract extends Command
                     break;
 
                 default:
-                    // For Debugging
-                    //$_output.="\n[" . $node->nodeName . "]";
+                    if ($this->verbose)
+                    {
+                        // For Debugging
+                        //$_output.="[" . $node->nodeName . "]";
+                    }
                     break;
             }
 
-            // For Debugging:
-            $this->output(str_pad("", $depth*2) . $node->nodeName.':"'.$node->nodeValue.'"');
+            // todo remove this when no longer needed for debugging:
+            $this->log(str_pad("", $depth*2) . $node->nodeName.':"'.$node->nodeValue.'"');
+
+            if ($this->verbose)
+            {
+                // For Debugging
+                $_output.="[" . $node->nodeName . "]";
+            }
 
             if ($node->hasChildNodes())
             {
                 $_output.= $this->parseHtmlForTerminal($node, $depth+1);
+            }
+
+            if ($this->verbose)
+            {
+                // For Debugging
+                $_output.="[/" . $node->nodeName . "]";
             }
 
             // Decorate the output as needed
