@@ -1926,7 +1926,7 @@ class Console_Abstract extends Command
      *  - Underline styles
      *  - Less commonly supported terminal styles
      */
-    public function parseHtmlForTerminal($dom, $depth=0)
+    public function parseHtmlForTerminal($dom, $depth=0, $child_number=0, $li_depth=0, $_prefix="")
     {
         $output = "";
 
@@ -1963,6 +1963,7 @@ class Console_Abstract extends Command
         foreach ($dom->childNodes as $node)
         {
             $_output = "";
+            $_suffix = "";
 
             // Note coloring if needed
             $color_foreground = null;
@@ -1971,6 +1972,21 @@ class Console_Abstract extends Command
 
             switch($node->nodeName)
             {
+                case 'a':
+                    $color_other = 'underline';
+                    $href = trim($node->getAttribute('href'));
+                    $content = trim($node->nodeValue);
+                    if (strtolower(trim($href,"/")) != strtolower(trim($content,"/")))
+                    {
+                        $_suffix = " [$href]";
+                    }
+                    break;
+
+                case 'br':
+                case 'p':
+                    $_output.= "\n";
+                    break;
+
                 case 'b':
                 case 'strong':
                     $color_other = 'bold';
@@ -1980,15 +1996,12 @@ class Console_Abstract extends Command
                     $color_other = 'dim';
                     break;
             
-                // TODO
-                // Process Links
-                // Process Lists
-
-                case 'p':
-                case 'br':
-                    $_output.= "\n";
+                case 'li':
+                    // Update li_depth
+                    // Update prefix based on li_depth
+                    // Check if parent is ol
+                    // Output number for ol child, otherwise, default to "-"
                     break;
-
 
                 case '#text':
                     $_output.= $node->nodeValue;
@@ -2026,7 +2039,7 @@ class Console_Abstract extends Command
             // Decorate the output as needed
             $_output = $this->colorize($_output, $color_foreground, $color_background, $color_other);
             
-            $output.= $_output;
+            $output.= $_output . $_suffix;
         }
 
         // todo implement more generically if possible
