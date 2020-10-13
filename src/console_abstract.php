@@ -1926,7 +1926,7 @@ class Console_Abstract extends Command
      *  - Underline styles
      *  - Less commonly supported terminal styles
      */
-    public function parseHtmlForTerminal($dom, $depth=0, $child_number=0, $li_depth=0, $_prefix="")
+    public function parseHtmlForTerminal($dom, $depth=0, $_prefix="")
     {
         $output = "";
 
@@ -1946,11 +1946,14 @@ class Console_Abstract extends Command
             }
 
             // todo remove these when no longer needed
-            $dom = preg_replace('/\<li\s*>/', "\n - ", $dom);
-            $dom = preg_replace('/^\s*\-+\s*$/m', "", $dom);
+            //$dom = preg_replace('/\<li\s*>/', "\n - ", $dom);
+            //$dom = preg_replace('/^\s*\-+\s*$/m', "", $dom);
 
             $tmp = new DOMDocument();
-            $tmp->loadHTML(trim($dom));
+            if (! @$tmp->loadHTML(trim($dom)))
+            {
+                throw new Exception("Failed to parse HTML");
+            }
             $dom = $tmp;
         }
 
@@ -1960,10 +1963,11 @@ class Console_Abstract extends Command
             $this->error("Invalid type passed to parseHtmlForTerminal - $type");
         }
          
-        foreach ($dom->childNodes as $node)
+        foreach ($dom->childNodes as $child_index => $node)
         {
-            $_output = "";
-            $_suffix = "";
+            $_output = ""; // output for this child
+            $_prefix = ""; // prefix for this items children
+            $_suffix = ""; // suffix for end of this child
 
             // Note coloring if needed
             $color_foreground = null;
@@ -1984,7 +1988,7 @@ class Console_Abstract extends Command
 
                 case 'br':
                 case 'p':
-                    $_output.= "\n";
+                    $_output.= "\n" . $_prefix;
                     break;
 
                 case 'b':
@@ -1996,11 +2000,27 @@ class Console_Abstract extends Command
                     $color_other = 'dim';
                     break;
             
+                case 'ol':
+                case 'ul':
+                    $_output.="\n";
+                    break;
+
                 case 'li':
-                    // Update li_depth
-                    // Update prefix based on li_depth
-                    // Check if parent is ol
+
                     // Output number for ol child, otherwise, default to "-"
+                    $list_char = " - ";
+                    if ($dom->nodeName == "ol")
+                    {
+                        $list_char = " " . ($child_index + 1) . ". ";
+                    }
+
+                    $_output.= $_prefix . $list_char;
+
+                    // Update prefix for child elements
+                    $_prefix = str_pad("", strlen($list_char));
+
+                    $_suffix = "\n";
+
                     break;
 
                 case '#text':
@@ -2027,7 +2047,7 @@ class Console_Abstract extends Command
 
             if ($node->hasChildNodes())
             {
-                $_output.= $this->parseHtmlForTerminal($node, $depth+1);
+                $_output.= $this->parseHtmlForTerminal($node, $depth+1, $_prefix);
             }
 
             if ($this->verbose)
