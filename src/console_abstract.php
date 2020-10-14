@@ -1926,7 +1926,7 @@ class Console_Abstract extends Command
      *  - Underline styles
      *  - Less commonly supported terminal styles
      */
-    public function parseHtmlForTerminal($dom, $depth=0, $_prefix="")
+    public function parseHtmlForTerminal($dom, $depth=0, $prefix="")
     {
         $output = "";
 
@@ -1966,7 +1966,7 @@ class Console_Abstract extends Command
         foreach ($dom->childNodes as $child_index => $node)
         {
             $_output = ""; // output for this child
-            $_prefix = ""; // prefix for this items children
+            $_prefix = $prefix; // prefix for this child's children - start with current prefix, passed to function
             $_suffix = ""; // suffix for end of this child
 
             // Note coloring if needed
@@ -2017,7 +2017,8 @@ class Console_Abstract extends Command
                     $_output.= $_prefix . $list_char;
 
                     // Update prefix for child elements
-                    $_prefix = str_pad("", strlen($list_char));
+                    // todo figure out why the "." fixes things... must be some kind of trim somewhere....
+                    $_prefix = "." . $_prefix . str_pad("", strlen($list_char));
 
                     $_suffix = "\n";
 
