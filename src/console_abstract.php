@@ -1935,24 +1935,13 @@ class Console_Abstract extends Command
             // Deal with odd UTF8 characters that sneak in sometimes
             $dom = utf8_decode($dom);
 
-            // todo remove this
-            if ($this->verbose)
-            {
-                $this->log("Dom for debugging");
-                //file_put_contents("/home/chris/Downloads/output.html", $dom);
-                var_dump($dom);
-                //die;
-                $this->hrl();
-            }
-
-            // todo remove these when no longer needed
-            //$dom = preg_replace('/\<li\s*>/', "\n - ", $dom);
-            //$dom = preg_replace('/^\s*\-+\s*$/m', "", $dom);
-
             $tmp = new DOMDocument();
             if (! @$tmp->loadHTML(trim($dom)))
             {
-                throw new Exception("Failed to parse HTML");
+                return $dom;
+
+                var_dump($dom);
+                $this->error("Failed to parse HTML");
             }
             $dom = $tmp;
         }
@@ -2017,8 +2006,7 @@ class Console_Abstract extends Command
                     $_output.= $_prefix . $list_char;
 
                     // Update prefix for child elements
-                    // todo figure out why the "." fixes things... must be some kind of trim somewhere....
-                    $_prefix = "." . $_prefix . str_pad("", strlen($list_char));
+                    $_prefix = $_prefix . str_pad("", strlen($list_char));
 
                     $_suffix = "\n";
 
@@ -2029,20 +2017,14 @@ class Console_Abstract extends Command
                     break;
 
                 default:
-                    if ($this->verbose)
-                    {
-                        // For Debugging
-                        //$_output.="[" . $node->nodeName . "]";
-                    }
                     break;
             }
 
-            // todo remove this when no longer needed for debugging:
-            $this->log(str_pad("", $depth*2) . $node->nodeName.':"'.$node->nodeValue.'"');
-
+            // Output for Debugging
             if ($this->verbose)
             {
-                // For Debugging
+                $this->log(str_pad("", $depth*2) . $node->nodeName.':"'.$node->nodeValue.'"');
+
                 $_output.="[" . $node->nodeName . "]";
             }
 
@@ -2063,10 +2045,9 @@ class Console_Abstract extends Command
             $output.= $_output . $_suffix;
         }
 
-        // todo implement more generically if possible
-        $output = str_replace("\u{00a0}", " ", $output);
+        //$output = str_replace("\u{00a0}", " ", $output);
         $output = str_replace("\r", "\n", $output);
-        $output = preg_replace('/\n\s*[\n\s]{2,}/', "\n\n", $output);
+        $output = preg_replace('/\n(\s*\n){2,}/', "\n\n", $output);
 
         return htmlspecialchars_decode($output);
     }
