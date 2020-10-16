@@ -29,6 +29,7 @@ else
 if (!defined('PACKAGED') or !PACKAGED)
 {
     $lib_files = scandir(__DIR__ . DS . "lib");
+    sort($lib_files);
     foreach ($lib_files as $file)
     {
         $path = __DIR__ . DS . "lib" . DS . $file;
