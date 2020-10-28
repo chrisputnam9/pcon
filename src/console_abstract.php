@@ -693,7 +693,7 @@ class Console_Abstract extends Command
      */
     public function exec($command, $error=false)
     {
-        $this->log("exec: $command 2>&1");
+        $this->log("exec: $command");
         exec($command, $output, $return);
         $output = empty($output) ? "" : "\n\t" . implode("\n\t", $output);
         if ($return)
@@ -1915,16 +1915,16 @@ class Console_Abstract extends Command
     /**
      * Parse HTML for output to terminal
      * Supporting:
-     * Next:
      *  - Bold
      *  - Italic (showing as dim)
      *  - Links (Underlined with link in parentheses)
      *  - Unordered Lists ( - )
      *  - Ordered Lists ( 1. ) 
      *  - Hierarchical lists (via indentation)
-     * Maybe Later:
-     *  - Styled colors
+     * Not Yet:
+     *  - Text colors
      *  - Underline styles
+     *  - Indentation styles
      *  - Less commonly supported terminal styles
      */
     public function parseHtmlForTerminal($dom, $depth=0, $prefix="")
@@ -2051,6 +2051,22 @@ class Console_Abstract extends Command
         $output = preg_replace('/\n(\s*\n){2,}/', "\n\n", $output);
 
         return htmlspecialchars_decode($output);
+    }
+
+    /**
+     * Parse Markdown to HTML
+     * - uses Parsedown
+     * - uses some defaults based on common use
+     * - alternatively, can call Parsedown directly
+     */
+    public function parseMarkdownToHtml($text)
+    {
+        $html = Parsedown::instance()
+            ->setBreaksEnabled(true)
+            ->setMarkupEscaped(true)
+            ->setUrlsLinked(false)
+            ->text($text);
+        return $html;
     }
 
     // Prevent infinite loop of magic method handling
