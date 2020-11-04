@@ -1991,3 +1991,5 @@ class Parsedown
                    'wbr', 'time',
     );
 }
+
+// Note: leave this for packaging ?>

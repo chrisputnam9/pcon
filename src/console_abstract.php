@@ -2069,6 +2069,39 @@ class Console_Abstract extends Command
         return $html;
     }
 
+    /**
+     * JSON encode & decode, using HJSON
+     */
+    public function json_decode($json, $options=[])
+    {
+        // mimic json_decode behavior
+        if ($options === true)
+        {
+            $options = ['assoc' => true];
+        }
+
+        // default to preserve comments and whitespace
+        if (!isset($options['keepWsc']))
+        {
+            $options['keepWsc'] = true;
+        }
+
+        $parser = new HJSONParser;
+        return $parser->parse($json, $options);
+    }
+    public function json_encode($data, $options=[])
+    {
+
+        // default to preserve comments and whitespace
+        if (!isset($options['keepWsc']))
+        {
+            $options['keepWsc'] = true;
+        }
+
+        $stringifier = new HJSONStringifier;
+        return $stringifier->stringify($data, $options);
+    }
+
     // Prevent infinite loop of magic method handling
     public function __call($method, $arguments)
     {
