@@ -3,6 +3,9 @@
  * Console Abstract to be extended by specific console tools
  */
 
+use HJSON\HJSONParser;
+use HJSON\HJSONStringifier;
+
 // Global Constants
 if (!defined('DS'))
 {
@@ -157,6 +160,10 @@ class Console_Abstract extends Command
 
     protected $__verbose = "Enable verbose output";
 	public $verbose = false;
+
+    // HJSON Data
+    protected $____WSC__ = "HJSON Data for config file";
+    public $__WSC__ = null;
 
     /**
      * Config paths
@@ -1277,7 +1284,7 @@ class Console_Abstract extends Command
             {
                 // $this->log("Loading config file - $config_file");
                 $json = file_get_contents($config_file);
-                $config = json_decode($json, true);
+                $config = $this->json_decode($json, true);
                 if (empty($config))
                 {
                     $this->error("Likely syntax error: $config_file");
@@ -1330,7 +1337,7 @@ class Console_Abstract extends Command
             }
 
             // Rewrite config - pretty print
-            $json = json_encode($this->config_to_save, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            $json = $this->json_encode($this->config_to_save);
             file_put_contents($config_file, $json);
 
             // Fix permissions if needed
@@ -1448,7 +1455,10 @@ class Console_Abstract extends Command
         if (in_array($key, $public_properties))
         {
 
-            $value = preg_replace('/^\~/', $this->getHomeDir(), $value);
+            if (is_string($value))
+            {
+                $value = preg_replace('/^\~/', $this->getHomeDir(), $value);
+            }
 
             $this->{$key} = $value;
 
@@ -2099,7 +2109,7 @@ class Console_Abstract extends Command
         }
 
         $stringifier = new HJSONStringifier;
-        return $stringifier->stringify($data, $options);
+        return @$stringifier->stringify($data, $options);
     }
 
     // Prevent infinite loop of magic method handling
