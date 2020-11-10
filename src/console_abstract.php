@@ -526,10 +526,19 @@ class Console_Abstract extends Command
     protected $___version = [
         "Output version information"
     ];
-    public function version()
+    public function version($output=true)
     {
         $class = get_called_class();
-        $this->output($class::SHORTNAME . ' version ' . $class::VERSION);
+        $version_string = $class::SHORTNAME . ' version ' . $class::VERSION;
+
+        if ($output)
+        {
+            $this->output($version_string);
+        }
+        else
+        {
+            return $version_string;
+        }
     }
 
     /**
@@ -1204,7 +1213,7 @@ class Console_Abstract extends Command
         if (is_null($this->config_file))
         {
             $config_dir = $this->getConfigDir();
-            $this->config_file = $config_dir . DS . 'config.json';
+            $this->config_file = $config_dir . DS . 'config.hjson';
         }
 
         return $this->config_file;
@@ -1279,6 +1288,19 @@ class Console_Abstract extends Command
 
         try
         {
+            // Move old json file to hjson if needed
+            if (!is_file($config_file))
+            {
+                $old_json_config_file = str_ireplace('.hjson', '.json', $config_file);
+                if (is_file($old_json_config_file))
+                {
+                    if ( ! rename($old_json_config_file, $config_file) )
+                    {
+                        $this->warn("Old json config file found, but couldn't rename it.\nTo keep your config settings, move '$old_json_config_file' to '$config_file'.\nIf you continue now, a new config file will be created with default values at '$config_file'.", true);
+                    }
+                }
+            }
+
             // Loading specific config values from file
             if (is_file($config_file))
             {
@@ -1336,7 +1358,29 @@ class Console_Abstract extends Command
                 mkdir($config_dir, 0755);
             }
 
-            // Rewrite config - pretty print
+            // Update comments in config data
+            foreach ($this->config_to_save['__WSC__']['c'] as $key => $value)
+            {
+                if ($key == ' ')
+                {
+                    $value = "\n    /**\n     * " . $this->version(false) . " configuration\n     */\n";
+                }
+                else
+                {
+                    $help = $this->_help_var($key, 'option');
+                    if (empty($help)) continue;
+
+                    $help = $this->_help_param($help);
+                    $type = $help[1];
+                    $info = $help[0];
+                    
+                    $value = " // ($type) $info";
+                }
+
+                $this->config_to_save['__WSC__']['c'][$key] = $value;
+            }
+
+            // Rewrite config file
             $json = $this->json_encode($this->config_to_save);
             file_put_contents($config_file, $json);
 
@@ -1346,8 +1390,6 @@ class Console_Abstract extends Command
                 $success = true;
                 $success = ($success and chown($config_dir, $this->logged_in_user));
                 $success = ($success and chown($config_file, $this->logged_in_user));
-                # $success = ($success and chgrp($config_dir, $this->logged_in_user));
-                # $success = ($success and chgrp($config_file, $this->logged_in_user));
 
                 if (!$success)
                 {
@@ -2097,10 +2139,19 @@ class Console_Abstract extends Command
         }
 
         $parser = new HJSONParser;
-        return $parser->parse($json, $options);
+        $data = $parser->parse($json, $options);
+        return $data;
     }
     public function json_encode($data, $options=[])
     {
+
+        $options = array_merge([
+            'keepWsc' => true,
+            'bracesSameLine' => true,
+            'quotes' => 'always',
+            'space' => 4,
+            'eol' => PHP_EOL,
+        ], $options);
 
         // default to preserve comments and whitespace
         if (!isset($options['keepWsc']))
@@ -2108,8 +2159,40 @@ class Console_Abstract extends Command
             $options['keepWsc'] = true;
         }
 
+        if (empty($options['keepWsc']))
+        {
+            unset($data['__WSC__']);
+        }
+        else
+        {
+            $data['__WSC__'] = (object) $data['__WSC__'];
+            $data['__WSC__']->c = (object) $data['__WSC__']->c;
+        }
+
+        $this->_json_prep_for_encode($data);
+
         $stringifier = new HJSONStringifier;
-        return @$stringifier->stringify($data, $options);
+        $json = $stringifier->stringify($data, $options);
+        return $json;
+    }
+    protected function _json_prep_for_encode(&$data)
+    {
+        if (is_iterable($data))
+        {
+            foreach ($data as $key => &$value)
+            {
+                if (is_object($value))
+                {
+                    unset($value->__WSC__);
+                }
+                if (is_array($value))
+                {
+                    unset($value['__WSC__']);
+                }
+
+                $this->_json_prep_for_encode($value);
+            }
+        }
     }
 
     // Prevent infinite loop of magic method handling
