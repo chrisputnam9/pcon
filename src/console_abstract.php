@@ -1459,7 +1459,10 @@ class Console_Abstract extends Command
             }
             else if (is_array($value))
             {
-                $value = array_map('trim', $value);
+                if (isset($value[0]) and is_string($value[0]))
+                {
+                    $value = array_map('trim', $value);
+                }
             }
         }
 
@@ -2140,6 +2143,7 @@ class Console_Abstract extends Command
 
         $parser = new HJSONParser;
         $data = $parser->parse($json, $options);
+        $this->_json_cleanup($data);
         return $data;
     }
     public function json_encode($data, $options=[])
@@ -2169,13 +2173,13 @@ class Console_Abstract extends Command
             $data['__WSC__']->c = (object) $data['__WSC__']->c;
         }
 
-        $this->_json_prep_for_encode($data);
+        $this->_json_cleanup($data);
 
         $stringifier = new HJSONStringifier;
         $json = $stringifier->stringify($data, $options);
         return $json;
     }
-    protected function _json_prep_for_encode(&$data)
+    protected function _json_cleanup(&$data)
     {
         if (is_iterable($data))
         {
@@ -2190,7 +2194,7 @@ class Console_Abstract extends Command
                     unset($value['__WSC__']);
                 }
 
-                $this->_json_prep_for_encode($value);
+                $this->_json_cleanup($value);
             }
         }
     }
