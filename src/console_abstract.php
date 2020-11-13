@@ -1359,13 +1359,17 @@ class Console_Abstract extends Command
             }
 
             // Update comments in config data
-            foreach ($this->config_to_save['__WSC__']['c'] as $key => $value)
+            if (empty($this->config_to_save['__WSC__']))
             {
-                if ($key == ' ')
-                {
-                    $value = "\n    /**\n     * " . $this->version(false) . " configuration\n     */\n";
-                }
-                else
+                $this->config_to_save['__WSC__'] = [];
+                $this->config_to_save['__WSC__']['c'] = [];
+                $this->config_to_save['__WSC__']['o'] = [];
+            }
+
+            $this->config_to_save['__WSC__']['c'][" "] = "\n    /**\n     * " . $this->version(false) . " configuration\n     */\n";
+            foreach ($this->config_to_save as $key => $value)
+            {
+                if ($key != '__WSC__')
                 {
                     $help = $this->_help_var($key, 'option');
                     if (empty($help)) continue;
@@ -2129,6 +2133,8 @@ class Console_Abstract extends Command
      */
     public function json_decode($json, $options=[])
     {
+        $this->log("Running json_decode on console_abstract");
+
         // mimic json_decode behavior
         if ($options === true)
         {
@@ -2148,6 +2154,7 @@ class Console_Abstract extends Command
     }
     public function json_encode($data, $options=[])
     {
+        $this->log("Running json_encode on console_abstract");
 
         $options = array_merge([
             'keepWsc' => true,
@@ -2169,8 +2176,14 @@ class Console_Abstract extends Command
         }
         else
         {
-            $data['__WSC__'] = (object) $data['__WSC__'];
-            $data['__WSC__']->c = (object) $data['__WSC__']->c;
+            if (!empty($data['__WSC__']))
+            {
+                $data['__WSC__'] = (object) $data['__WSC__'];
+                if (!empty($data['__WSC__']->c))
+                {
+                    $data['__WSC__']->c = (object) $data['__WSC__']->c;
+                }
+            }
         }
 
         $this->_json_cleanup($data);

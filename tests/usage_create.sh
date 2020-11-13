@@ -38,7 +38,7 @@ if [ "$1" != "--no-use-test" ]; then
     "$TEST_SCRIPT" test "Custom Message" --verbose --stamp-lines
 
     pced "Testing 'backup' method by backing up config:"
-    "$TEST_SCRIPT" backup "$TEST_SCRIPT_CONFIG_DIR/config.json"
+    "$TEST_SCRIPT" backup "$TEST_SCRIPT_CONFIG_DIR/config.hjson"
 
     pced "Usage - Create - Tests Complete"
 fi

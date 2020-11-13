@@ -6,7 +6,7 @@
 Class PCon extends Console_Abstract
 {
 
-    const VERSION = "1.3.0";
+    const VERSION = "1.4.0";
     // Name of script and directory to store config
     const SHORTNAME = 'pcon';
 
@@ -130,6 +130,11 @@ Class PCon extends Console_Abstract
         $this->log('Creating tool path - ' . $tool_path);
         mkdir($tool_path, 0755, true);
 
+        $this->log('Symlinking PCon folder from configured path');
+        $pcon_dir = realpath(__DIR__ . DS . "..");
+        $symlink_command = 'ln -s "' . $pcon_dir . '" "' . $tool_path . DS . '"';
+        $this->exec($symlink_command);
+
         $this->log('Copying over template files');
 
         $package_dir = __DIR__ . DS . 'pkg' . DS;
@@ -156,7 +161,6 @@ Class PCon extends Console_Abstract
 
         $template_vars = [
             'class_name' => $class_name,
-            'console_abstract_path' => $this->console_abstract_path,
             'tool_name' => $tool_name,
             'tool_shortname' => $tool_shortname,
         ];
