@@ -1,12 +1,10 @@
 <?php
 
-namespace HJSON;
-
 /**
  * NOTE: this may return an empty string at the end of the array when the input
  * string ends with a newline character
  */
-function mb_str_split($string)
+function HJSON_mb_str_split($string)
 {
     return preg_split('/(?<!^)/u', $string);
 }
@@ -102,7 +100,7 @@ class HJSONStringifier
     {
         mb_ereg_search_init($string, $this->needsEscape);
         $r = mb_ereg_search();
-        $chars = mb_str_split($string);
+        $chars = HJSON_mb_str_split($string);
         $chars = array_map(function ($char) {
             if (preg_match($this->needsEscape, $char)) {
                 $a = $char;

@@ -1,7 +1,5 @@
 <?php
 
-namespace HJSON;
-
 class HJSONUtils
 {
 

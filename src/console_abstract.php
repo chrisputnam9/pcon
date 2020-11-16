@@ -3,9 +3,6 @@
  * Console Abstract to be extended by specific console tools
  */
 
-use HJSON\HJSONParser;
-use HJSON\HJSONStringifier;
-
 // Global Constants
 if (!defined('DS'))
 {
