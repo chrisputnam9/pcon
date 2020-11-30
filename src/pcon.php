@@ -139,6 +139,10 @@ Class PCon extends Console_Abstract
 
         $package_dir = __DIR__ . DS . 'pkg' . DS;
 
+        // Copy gitignore
+        $tool_gitignore = $tool_path . DS . '.gitignore';
+        copy($package_dir . '.gitignore', $tool_gitignore);
+
         // Copy primary executable sample
         $tool_exec_path = $tool_path . DS . $tool_shortname;
         copy($package_dir . 'sample', $tool_exec_path);
