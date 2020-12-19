@@ -1027,7 +1027,7 @@ class Console_Abstract extends Command
      * @param (any) $message (none) to show - prompt
      * @param (int) $default (0) index if no input
      */
-    public function select($list, $message=false,$default=0,$q_to_quit=true)
+    public function select($list, $message=false, $default=0, $q_to_quit=true)
     {
         $list = array_values($list);
         foreach ($list as $i => $item)
@@ -1356,12 +1356,9 @@ class Console_Abstract extends Command
             }
 
             // Update comments in config data
-            if (empty($this->config_to_save['__WSC__']))
-            {
-                $this->config_to_save['__WSC__'] = [];
-                $this->config_to_save['__WSC__']['c'] = [];
-                $this->config_to_save['__WSC__']['o'] = [];
-            }
+            $this->config_to_save['__WSC__'] = [];
+            $this->config_to_save['__WSC__']['c'] = [];
+            $this->config_to_save['__WSC__']['o'] = [];
 
             $this->config_to_save['__WSC__']['c'][" "] = "\n    /**\n     * " . $this->version(false) . " configuration\n     */\n";
             foreach ($this->config_to_save as $key => $value)
