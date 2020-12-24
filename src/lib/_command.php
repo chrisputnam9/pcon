@@ -187,7 +187,8 @@ class Command
     }
         protected function _run_error($e, $method)
         {
-            $error = (get_class($e) == 'Exception') ? $e->getMessage() : "Incorrect usage - see method help below:";
+            $class = get_class($e);
+            $error = in_array($class, ['Exception', 'HJSONException']) ? $e->getMessage() : "Incorrect usage - see method help below:";
             $this->error($error, false);
             $this->help($method);
             exit(500);
