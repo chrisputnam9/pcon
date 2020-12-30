@@ -45,7 +45,10 @@ Class {{class_name}} extends Console_Abstract
     }
 }
 
-// Kick it all off
-{{class_name}}::run($argv);
+if (empty($__no_direct_run__))
+{
+    // Kick it all off
+    {{class_name}}::run($argv);
+}
 
 // Note: leave this for packaging ?>

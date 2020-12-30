@@ -33,7 +33,7 @@ $src_includes = array(
 
 if (empty($_PACKAGING)) // defined when loading file to do packaging
 {
-    require_once CONSOLE_ABSTRACT_PATH;
+    require CONSOLE_ABSTRACT_PATH;
 }
 
 # vim: syntax=php
