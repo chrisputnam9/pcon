@@ -190,7 +190,9 @@ if (!class_exists("Command"))
             protected function _run_error($e, $method)
             {
                 $class = get_class($e);
-                $error = in_array($class, ['Exception', 'HJSONException']) ? $e->getMessage() : "Incorrect usage - see method help below:";
+                $error = in_array($class, ['Exception', 'HJSONException'])
+                    ? $e->getMessage()
+                    : "Incorrect usage - see method help below:";
                 $this->error($error, false);
                 $this->help($method);
                 exit(500);
