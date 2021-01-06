@@ -22,3 +22,11 @@ the same.  Here are some of the reasons I do reach for PHP:
 
 # Development Cookbook
 [See Wiki](https://github.com/chrisputnam9/pcon/wiki) for information on building custom PCon tools.
+
+# Tools Built With PCon
+ - [PACLI - Asana CLI](https://github.com/chrisputnam9/pacli)
+ - [PBCC - Basecamp Classic CLI](https://github.com/chrisputnam9/pbcc)
+ - [PSSH - Shared SSH Config](https://github.com/chrisputnam9/pssh)
+ - [PTFX - Internal TFX CLI Utility](https://www.webfx.com/)
+ - [PXBRO - XML Browser Tool](https://github.com/chrisputnam9/pxbro) - using a very early version of PCon, hasn't been updated
+ - [Quicknote - Personal note/todo helper tool](https://github.com/chrisputnam9/quicknote)
