@@ -3,7 +3,7 @@
 ##################################################
 # Config
 ##################################################
-define('ERRORS', false);
-define('PACKAGED', true);
+if (!defined('ERRORS')) define('ERRORS', false);
+if (!defined('PACKAGED')) define('PACKAGED', true);
 
 // Note: leave this for packaging ?>

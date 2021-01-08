@@ -26,14 +26,14 @@ else
     ini_set('display_errors', 0);
 }
 
-if (!defined('PACKAGED') or !PACKAGED)
+if (!defined('PACKAGED') or !PACKAGED and is_dir(__DIR__ . DS . "lib"))
 {
     $lib_files = scandir(__DIR__ . DS . "lib");
     sort($lib_files);
     foreach ($lib_files as $file)
     {
         $path = __DIR__ . DS . "lib" . DS . $file;
-        if (is_file($path))
+        if (is_file($path) and preg_match('/\.php$/', $path))
         {
             require($path);
         }
