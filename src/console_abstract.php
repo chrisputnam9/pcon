@@ -57,6 +57,9 @@ if (!class_exists("Console_Abstract"))
         const COL1_WIDTH = 20; // percentage of full width
         const COL2_WIDTH = 50; // percentage of full width - col1 + col2
 
+        // Line break for editing text
+        const EDIT_LINE_BREAK = "--------------------------------------------------";
+
         /**
         * Callable Methods
         */
