@@ -1998,8 +1998,11 @@ if (!class_exists("Console_Abstract"))
                 // Deal with odd UTF8 characters that sneak in sometimes
                 $dom = utf8_decode($dom);
 
+                $dom = trim($dom);
+                if (empty($dom)) return $dom;
+
                 $tmp = new DOMDocument();
-                if (! @$tmp->loadHTML(trim($dom)))
+                if (! @$tmp->loadHTML($dom))
                 {
                     return $dom;
 
