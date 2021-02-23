@@ -1031,8 +1031,10 @@ if (!class_exists("Console_Abstract"))
         * @param (array) $list of items to pick from
         * @param (any) $message (none) to show - prompt
         * @param (int) $default (0) index if no input
+        * @param (bool) $q_to_quit (true) enter q to quit select
+        * @param (string) $preselect (false) initial selection entry - eg. from command invocation
         */
-        public function select($list, $message=false, $default=0, $q_to_quit=true)
+        public function select($list, $message=false, $default=0, $q_to_quit=true, $preselect=false)
         {
             $list = array_values($list);
             foreach ($list as $i => $item)
@@ -1055,8 +1057,17 @@ if (!class_exists("Console_Abstract"))
                 {
                     $this->warn("Invalid selection $entry");
                 }
-                $this->output("Enter number or part of selection");
-                $entry = $this->input($message, $default);
+                if ( $preselect == false )
+                {
+                    $this->output("Enter number or part of selection");
+                    $entry = $this->input($message, $default);
+                }
+                else
+                {
+                    $entry = $preselect;
+                    $preselect = false;
+                }
+
                 if ($q_to_quit and (strtolower(trim($entry)) == 'q'))
                 {
                     $this->warn('Selection Canceled');
@@ -1927,48 +1938,44 @@ if (!class_exists("Console_Abstract"))
         }
 
         protected $_terminal_height = null;
+        // Note - fresh is being ignored now - always fresh
         public function getTerminalHeight($fresh=false)
         {
-            if (is_null($this->_terminal_height))
-            {
-                exec("tput lines", $output, $return);
+            exec("tput lines", $output, $return);
 
-                if (
-                    $return
-                    or empty($output)
-                    or empty($output[0])
-                    or !is_numeric($output[0])
-                ){
-                    $this->_terminal_height = static::DEFAULT_HEIGHT;
-                }
-                else
-                {
-                    $this->_terminal_height = (int) $output[0];
-                }
+            if (
+                $return
+                or empty($output)
+                or empty($output[0])
+                or !is_numeric($output[0])
+            ){
+                $this->_terminal_height = static::DEFAULT_HEIGHT;
+            }
+            else
+            {
+                $this->_terminal_height = (int) $output[0];
             }
 
             return $this->_terminal_height;
         }
 
         protected $_terminal_width = null;
+        // Note - fresh is being ignored now - always fresh
         public function getTerminalWidth($fresh=false)
         {
-            if (is_null($this->_terminal_width))
-            {
-                exec("tput cols", $output, $return);
+            exec("tput cols", $output, $return);
 
-                if (
-                    $return
-                    or empty($output)
-                    or empty($output[0])
-                    or !is_numeric($output[0])
-                ){
-                    $this->_terminal_width = static::DEFAULT_WIDTH;
-                }
-                else
-                {
-                    $this->_terminal_width = (int) $output[0];
-                }
+            if (
+                $return
+                or empty($output)
+                or empty($output[0])
+                or !is_numeric($output[0])
+            ){
+                $this->_terminal_width = static::DEFAULT_WIDTH;
+            }
+            else
+            {
+                $this->_terminal_width = (int) $output[0];
             }
 
             return $this->_terminal_width;
