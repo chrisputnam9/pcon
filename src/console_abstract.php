@@ -1032,9 +1032,10 @@ if (!class_exists("Console_Abstract"))
         * @param (any) $message (none) to show - prompt
         * @param (int) $default (0) index if no input
         * @param (bool) $q_to_quit (true) enter q to quit select
-        * @param (string) $preselect (false) initial selection entry - eg. from command invocation
+        * @param (array) &$preselects ([]) selection entries - will be shifted off one at a time
+        *  - passed by reference, so it can be used through a chain of selects
         */
-        public function select($list, $message=false, $default=0, $q_to_quit=true, $preselect=false)
+        public function select($list, $message=false, $default=0, $q_to_quit=true, &$preselects=[])
         {
             $list = array_values($list);
             foreach ($list as $i => $item)
@@ -1057,15 +1058,14 @@ if (!class_exists("Console_Abstract"))
                 {
                     $this->warn("Invalid selection $entry");
                 }
-                if ( $preselect == false )
+                if ( empty($preselects) )
                 {
                     $this->output("Enter number or part of selection");
                     $entry = $this->input($message, $default);
                 }
                 else
                 {
-                    $entry = $preselect;
-                    $preselect = false;
+                    $entry = array_shift($preselects);
                 }
 
                 if ($q_to_quit and (strtolower(trim($entry)) == 'q'))
@@ -1092,7 +1092,7 @@ if (!class_exists("Console_Abstract"))
                     }
                     elseif (!empty($filtered_items))
                     {
-                        return $this->select($filtered_items, $message, 0, $q_to_quit);
+                        return $this->select($filtered_items, $message, 0, $q_to_quit, $preselects);
                     }
                 }
 
