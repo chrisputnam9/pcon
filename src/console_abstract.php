@@ -1938,44 +1938,48 @@ if (!class_exists("Console_Abstract"))
         }
 
         protected $_terminal_height = null;
-        // Note - fresh is being ignored now - always fresh
         public function getTerminalHeight($fresh=false)
         {
-            exec("tput lines", $output, $return);
-
-            if (
-                $return
-                or empty($output)
-                or empty($output[0])
-                or !is_numeric($output[0])
-            ){
-                $this->_terminal_height = static::DEFAULT_HEIGHT;
-            }
-            else
+            if ($fresh or empty($this->_terminal_height))
             {
-                $this->_terminal_height = (int) $output[0];
+                exec("tput lines", $output, $return);
+
+                if (
+                    $return
+                    or empty($output)
+                    or empty($output[0])
+                    or !is_numeric($output[0])
+                ){
+                    $this->_terminal_height = static::DEFAULT_HEIGHT;
+                }
+                else
+                {
+                    $this->_terminal_height = (int) $output[0];
+                }
             }
 
             return $this->_terminal_height;
         }
 
         protected $_terminal_width = null;
-        // Note - fresh is being ignored now - always fresh
         public function getTerminalWidth($fresh=false)
         {
-            exec("tput cols", $output, $return);
-
-            if (
-                $return
-                or empty($output)
-                or empty($output[0])
-                or !is_numeric($output[0])
-            ){
-                $this->_terminal_width = static::DEFAULT_WIDTH;
-            }
-            else
+            if ($fresh or empty($this->_terminal_width))
             {
-                $this->_terminal_width = (int) $output[0];
+                exec("tput cols", $output, $return);
+
+                if (
+                    $return
+                    or empty($output)
+                    or empty($output[0])
+                    or !is_numeric($output[0])
+                ){
+                    $this->_terminal_width = static::DEFAULT_WIDTH;
+                }
+                else
+                {
+                    $this->_terminal_width = (int) $output[0];
+                }
             }
 
             return $this->_terminal_width;
