@@ -30,3 +30,14 @@ the same.  Here are some of the reasons I do reach for PHP:
  - [PTFX - Internal TFX CLI Utility](https://www.webfx.com/)
  - [PXBRO - XML Browser Tool](https://github.com/chrisputnam9/pxbro) - using a very early version of PCon, hasn't been updated
  - [Quicknote - Personal note/todo helper tool](https://github.com/chrisputnam9/quicknote)
+
+# Troubleshooting & Common Issues
+
+In WSL, you may be warned:
+
+    logname: no login name
+
+As a workaround (via [therealkenc](https://github.com/microsoft/WSL/issues/888#issuecomment-393846024)), run:
+
+    sudo touch /var/run/utmp
+    sudo login -f yourusername
