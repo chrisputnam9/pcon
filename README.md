@@ -41,3 +41,5 @@ As a workaround (via [therealkenc](https://github.com/microsoft/WSL/issues/888#i
 
     sudo touch /var/run/utmp
     sudo login -f yourusername
+
+After this, you may need to remove config files and/or re-install to be sure files are owned by the right user(s), and that correct paths are used.
