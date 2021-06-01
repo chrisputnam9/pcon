@@ -19,6 +19,7 @@ if (defined('ERRORS') and ERRORS)
     echo "* Displaying all errors & warnings *\n";
     echo "************************************\n\n";
     ini_set('display_errors', 1);
+    ini_set('html_errors', 0);
 }
 else
 {
