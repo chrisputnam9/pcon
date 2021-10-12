@@ -1036,8 +1036,24 @@ if (!class_exists("Console_Abstract"))
         * @param (array) &$preselects ([]) selection entries - will be shifted off one at a time
         *  - passed by reference, so it can be used through a chain of selects
         */
-        public function select($list, $message=false, $default=0, $q_to_quit=true, &$preselects=[])
+        public function select($list, $message=false, $default=0, $q_to_quit=true, &$preselects=[], $livefilter=true)
         {
+			/*
+			if ($livefilter)
+			{
+				$this->clear();
+
+				// todo - figure out how to detect backspace & enter
+				// - maybe focus on how to do it in bash
+				while (true) {
+					$char = $this->input("Enter char", null, false, 'single', 'single_hide');
+					if ($char == 'q') die;
+					var_dump($char);
+					echo "\n";
+				}
+
+			}
+			 */
             $list = array_values($list);
             foreach ($list as $i => $item)
             {
