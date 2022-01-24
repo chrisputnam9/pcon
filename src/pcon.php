@@ -3,10 +3,10 @@
  * PHP Console management tools
  * - helper to create and package your own PHP console tools
  */
-Class PCon extends Console_Abstract
+class PCon extends Console_Abstract
 {
 
-    const VERSION = "1.4.1";
+    const VERSION = "1.4.2";
     // Name of script and directory to store config
     const SHORTNAME = 'pcon';
 

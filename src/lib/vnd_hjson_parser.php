@@ -30,7 +30,7 @@ if (!class_exists("HJSONParser"))
         public function parse($source, $options = [])
         {
             $this->keepWsc = $options && isset($options['keepWsc']) && $options['keepWsc'];
-            $this->text_array = preg_split("//u", $source, null, PREG_SPLIT_NO_EMPTY);
+            $this->text_array = preg_split("//u", $source, -1, PREG_SPLIT_NO_EMPTY);
             $this->text_length_chars = count($this->text_array);
 
             $data = $this->rootValue();
