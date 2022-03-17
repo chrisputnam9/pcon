@@ -2023,14 +2023,12 @@ if (!class_exists("Console_Abstract"))
 
             if (is_string($dom))
             {
-                // Deal with odd UTF8 characters that sneak in sometimes
-                $dom = utf8_decode($dom);
-
                 $dom = trim($dom);
+
                 if (empty($dom)) return $dom;
 
                 $tmp = new DOMDocument();
-                if (! @$tmp->loadHTML($dom))
+                if (! @$tmp->loadHTML(mb_convert_encoding($dom, 'HTML-ENTITIES', 'UTF-8')))
                 {
                     return $dom;
 
@@ -2046,6 +2044,7 @@ if (!class_exists("Console_Abstract"))
                 $this->error("Invalid type passed to parseHtmlForTerminal - $type");
             }
             
+			$li_index=0;
             foreach ($dom->childNodes as $child_index => $node)
             {
                 $_output = ""; // output for this child
@@ -2094,7 +2093,7 @@ if (!class_exists("Console_Abstract"))
                         $list_char = " - ";
                         if ($dom->nodeName == "ol")
                         {
-                            $list_char = " " . ($child_index + 1) . ". ";
+                            $list_char = " " . ($li_index + 1) . ". ";
                         }
 
                         $_output.= $_prefix . $list_char;
@@ -2103,6 +2102,8 @@ if (!class_exists("Console_Abstract"))
                         $_prefix = $_prefix . str_pad("", strlen($list_char));
 
                         $_suffix = "\n";
+
+						$li_index++;
 
                         break;
 
@@ -2114,23 +2115,9 @@ if (!class_exists("Console_Abstract"))
                         break;
                 }
 
-                // Output for Debugging
-                if ($this->verbose)
-                {
-                    $this->log(str_pad("", $depth*2) . $node->nodeName.':"'.$node->nodeValue.'"');
-
-                    $_output.="[" . $node->nodeName . "]";
-                }
-
                 if ($node->hasChildNodes())
                 {
                     $_output.= $this->parseHtmlForTerminal($node, $depth+1, $_prefix);
-                }
-
-                if ($this->verbose)
-                {
-                    // For Debugging
-                    $_output.="[/" . $node->nodeName . "]";
                 }
 
                 // Decorate the output as needed
@@ -2143,7 +2130,7 @@ if (!class_exists("Console_Abstract"))
             $output = str_replace("\r", "\n", $output);
             $output = preg_replace('/\n(\s*\n){2,}/', "\n\n", $output);
 
-            return htmlspecialchars_decode($output);
+			return htmlspecialchars_decode($output);
         }
 
         /**
