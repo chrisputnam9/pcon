@@ -36,7 +36,7 @@ if (!defined('PACKAGED') or !PACKAGED and is_dir(__DIR__ . DS . "lib"))
         $path = __DIR__ . DS . "lib" . DS . $file;
         if (is_file($path) and preg_match('/\.php$/', $path))
         {
-            require($path);
+            require $path ;
         }
     }
 }
@@ -302,9 +302,13 @@ if (!class_exists("Console_Abstract"))
 
             try
             {
+				$instance->_startup($arg_list);
+
                 $instance->initConfig();
 
                 $instance->try_calling($arg_list, true);
+
+				$instance->_shutdown($arg_list);
 
             } catch (Exception $e) {
                 $instance->error($e->getMessage());
@@ -380,7 +384,7 @@ if (!class_exists("Console_Abstract"))
                 $this->error("File is not readable, check permissions: $file");
             }
 
-            require_once($file);
+            require_once $file;
         }
 
         protected $___install = [
@@ -896,9 +900,9 @@ if (!class_exists("Console_Abstract"))
 
                     foreach ($$type as $value_name)
                     {
-                        if (isset(CONSOLE_COLORS::$$type[$value_name]))
+                        if (isset(CONSOLE_COLORS::${$type}[$value_name]))
                         {
-                            $colored_string .= "\033[" . CONSOLE_COLORS::$$type[$value_name] . "m";
+                            $colored_string .= "\033[" . CONSOLE_COLORS::${$type}[$value_name] . "m";
                             $colored = true;
                         }
                         else
@@ -1793,7 +1797,8 @@ if (!class_exists("Console_Abstract"))
                 $wrapped_content = [];
                 foreach ($content as $line)
                 {
-                    while (strlen($line) > $max_width)
+					$line_length = strlen($line);
+                    while ($line_length > $max_width)
                     {
                         $wrapped_content[]= substr($line, 0, $max_width);
                         $line = substr($line, $max_width);
@@ -2031,9 +2036,6 @@ if (!class_exists("Console_Abstract"))
                 if (! @$tmp->loadHTML(mb_convert_encoding($dom, 'HTML-ENTITIES', 'UTF-8')))
                 {
                     return $dom;
-
-                    var_dump($dom);
-                    $this->error("Failed to parse HTML");
                 }
                 $dom = $tmp;
             }
@@ -2238,6 +2240,16 @@ if (!class_exists("Console_Abstract"))
         {
             throw new Exception("Invalid method '$method'");
         }
+
+		// Extendable method for startup logic
+		protected function _startup($arglist) {
+			// Nothing to do by default
+		}
+
+		// Extendable method for shutdown logic
+		protected function _shutdown($arglist) {
+			// Nothing to do by default
+		}
     }
 }
 
@@ -2246,8 +2258,8 @@ if (!empty($src_includes) and is_array($src_includes))
 {
     foreach ($src_includes as $src_include)
     {
-        require ($src_include);
+        require $src_include;
     }
 }
 
-// Note: leave this for packaging ?>
+// Note: leave this for packaging 
