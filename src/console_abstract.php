@@ -1802,6 +1802,7 @@ if (!class_exists("Console_Abstract"))
                     {
                         $wrapped_content[]= substr($line, 0, $max_width);
                         $line = substr($line, $max_width);
+						$line_length = strlen($line);
                     }
                     $wrapped_content[]= $line;
                 }
