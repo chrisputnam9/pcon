@@ -1,18 +1,19 @@
 <?php
+
 /**
  * Visual command that shows a list of items
  */
-if (!class_exists("Command_Visual_List"))
-{
+
+if (!class_exists("Command_Visual_List")) {
     class Command_Visual_List extends Command_Visual
     {
-        public $list=[];
-        public $list_original=[];
-        public $list_selection=[];
+        public $list = [];
+        public $list_original = [];
+        public $list_selection = [];
 
-        public $focus=0;
-        public $starting_line=1;
-        public $page_info=[];
+        public $focus = 0;
+        public $starting_line = 1;
+        public $page_info = [];
 
         public $multiselect = false;
         public $template = "{_KEY}: {_VALUE}";
@@ -20,12 +21,11 @@ if (!class_exists("Command_Visual_List"))
         /**
         * Constructor
         */
-        public function __construct($main_tool, $list, $options=[])
+        public function __construct($main_tool, $list, $options = [])
         {
             $this->setMainTool($main_tool);
 
-            if (empty($list))
-            {
+            if (empty($list)) {
                 $this->error("Empty list", false, true);
                 return false;
             }
@@ -33,13 +33,11 @@ if (!class_exists("Command_Visual_List"))
             $this->list_original = $list;
             $this->list = $list;
 
-            if (isset($options['multiselect']))
-            {
+            if (isset($options['multiselect'])) {
                 $this->multiselect = $options['multiselect'];
             }
 
-            if (isset($options['template']))
-            {
+            if (isset($options['template'])) {
                 $this->template = $options['template'];
             }
 
@@ -91,8 +89,7 @@ if (!class_exists("Command_Visual_List"))
                 ],
             ];
 
-            if (isset($options['commands']))
-            {
+            if (isset($options['commands'])) {
                 $commands = $this->mergeArraysRecursively($commands, $options['commands']);
             }
             $options['commands'] = $commands;
@@ -107,37 +104,31 @@ if (!class_exists("Command_Visual_List"))
         {
             $count = count($this->list);
 
-            $content_to_display=[];
-            $i=0;
-            foreach ($this->list as $key => $item)
-            {
+            $content_to_display = [];
+            $i = 0;
+            foreach ($this->list as $key => $item) {
                 // Prep output using template
                 $output = $this->template;
 
                 $key_start = strpos($output, '{_KEY}');
-                if ($key_start !== false)
-                {
+                if ($key_start !== false) {
                     $output = substr_replace($output, $key, $key_start, 6);
                 }
 
                 $value_start = strpos($output, '{_VALUE}');
-                if ($key_start !== false)
-                {
+                if ($key_start !== false) {
                     $output = substr_replace($output, $this->stringify($item), $value_start, 8);
                 }
 
                 $this->_fill_item = $item;
-                $content = preg_replace_callback('/\{[^\}]+\}/', [$this, '_fill_item_to_template'], $output );
-                if ($this->focus == $i)
-                {
+                $content = preg_replace_callback('/\{[^\}]+\}/', [$this, '_fill_item_to_template'], $output);
+                if ($this->focus == $i) {
                     $content = "[*] " . $content;
-                    $content = $this->colorize($content , 'blue', 'light_gray', ['bold']);
-                }
-                else
-                {
+                    $content = $this->colorize($content, 'blue', 'light_gray', ['bold']);
+                } else {
                     $content = "[ ] " . $content;
                 }
-                $content_to_display[]= $content;
+                $content_to_display[] = $content;
                 $i++;
             }
 
@@ -148,62 +139,54 @@ if (!class_exists("Command_Visual_List"))
 
             $continue_loop = $this->promptAndRunCommand($this->commands);
 
-            if ($continue_loop !== false)
-            {
+            if ($continue_loop !== false) {
                 $this->log("Looping!");
                 $this->pause();
                 $this->run();
             }
         }
 
-            /**
-            * Used to fill item data into template string
-            *  by preg_replace_callback
-            */
-            protected $_fill_item;
-            protected function _fill_item_to_template ($matches)
-            {
-                $value = "";
-                $format = false;
+        /**
+        * Used to fill item data into template string
+        *  by preg_replace_callback
+        */
+        protected $_fill_item;
+        protected function _fill_item_to_template($matches)
+        {
+            $value = "";
+            $format = false;
 
-                $match = $matches[0];
-                $match = substr($match, 1, -1);
+            $match = $matches[0];
+            $match = substr($match, 1, -1);
 
-                $match_exploded = explode("|", $match);
-                if (count($match_exploded) > 1)
-                {
-                    $format = array_pop($match_exploded);
-                }
-                $key_string = array_shift($match_exploded);
-
-                $keys = explode(":", $key_string);
-                $target = $this->_fill_item;
-                while (!empty($keys))
-                {
-                    $key = array_shift($keys);
-                    if (isset($target[$key]))
-                    {
-                        $target = $target[$key];
-                    }
-                    else
-                    {
-                        $keys = [];
-                    }
-                }
-                if (is_string($target))
-                {
-                    $value = $target;
-                }
-
-                //var_dump($value);
-                if (!empty($format) and !empty($value))
-                {
-                    $value = sprintf($format, $value);
-                }
-                //var_dump($value);
-
-                return $value;
+            $match_exploded = explode("|", $match);
+            if (count($match_exploded) > 1) {
+                $format = array_pop($match_exploded);
             }
+            $key_string = array_shift($match_exploded);
+
+            $keys = explode(":", $key_string);
+            $target = $this->_fill_item;
+            while (!empty($keys)) {
+                $key = array_shift($keys);
+                if (isset($target[$key])) {
+                    $target = $target[$key];
+                } else {
+                    $keys = [];
+                }
+            }
+            if (is_string($target)) {
+                $value = $target;
+            }
+
+            //var_dump($value);
+            if (!empty($format) and !empty($value)) {
+                $value = sprintf($format, $value);
+            }
+            //var_dump($value);
+
+            return $value;
+        }
 
         /**
         * Built-in commands
@@ -227,8 +210,7 @@ if (!class_exists("Command_Visual_List"))
         // Filter - by text/regex (search)
         public function filter_by_text()
         {
-            while (true)
-            {
+            while (true) {
                 $this->clear();
                 $this->hr();
                 $this->output("Filter by Text:");
@@ -241,51 +223,39 @@ if (!class_exists("Command_Visual_List"))
                 $filtered_list = [];
 
                 $search_pattern = trim($search_pattern);
-                if (empty($search_pattern))
-                {
+                if (empty($search_pattern)) {
                     return;
                 }
 
                 $is_regex = (substr($search_pattern, 0, 1) == '/');
                 $case_insensitive = (!$is_regex and (strtolower($search_pattern) == $search_pattern));
 
-                foreach ($current_list as $item)
-                {
+                foreach ($current_list as $item) {
                     $json = json_encode($item);
                     $match = false;
-                    if ($is_regex)
-                    {
+                    if ($is_regex) {
                         $match = preg_match($search_pattern, $json);
-                    }
-                    elseif ($case_insensitive)
-                    {
+                    } elseif ($case_insensitive) {
                         $match = ( stripos($json, $search_pattern) !== false );
-                    }
-                    else
-                    {
+                    } else {
                         $match = ( strpos($json, $search_pattern) !== false );
                     }
 
-                    if ($match)
-                    {
-                        $filtered_list[]= $item;
+                    if ($match) {
+                        $filtered_list[] = $item;
                     }
                 }
 
-                if (!empty($filtered_list))
-                {
+                if (!empty($filtered_list)) {
                     // Results found - display as the new current list
                     $this->list = $filtered_list;
                     $this->focus_top();
                     return;
-                }
-                else
-                {
+                } else {
                     // No results - offer to try a new search
                     $this->output("No Results found");
                     $new_search = $this->confirm("Try a new search?", "y", false, true);
-                    if ( ! $new_search)
-                    {
+                    if (! $new_search) {
                         return;
                     }
                     // Otherwise, will continue the loop
@@ -297,8 +267,7 @@ if (!class_exists("Command_Visual_List"))
         // Focus up/down/top/bottom
         public function focus_up()
         {
-            if ($this->focus > 0)
-            {
+            if ($this->focus > 0) {
                 $this->focus--;
             }
             $this->page_to_focus();
@@ -306,8 +275,7 @@ if (!class_exists("Command_Visual_List"))
         public function focus_down()
         {
             $max_focus = (count($this->list) - 1);
-            if ($this->focus < $max_focus)
-            {
+            if ($this->focus < $max_focus) {
                 $this->focus++;
             }
             $this->page_to_focus();
@@ -331,13 +299,11 @@ if (!class_exists("Command_Visual_List"))
         // Adjust page view to focus
         public function page_to_focus()
         {
-            $focus = $this->focus+1;
-            if ($focus < $this->starting_line)
-            {
+            $focus = $this->focus + 1;
+            if ($focus < $this->starting_line) {
                 $this->starting_line = $focus;
             }
-            if ($focus > $this->page_info['ending_line'])
-            {
+            if ($focus > $this->page_info['ending_line']) {
                 $this->starting_line = ($focus - $this->page_info['page_length']) + 1;
             }
         }

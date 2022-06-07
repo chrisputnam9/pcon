@@ -1,41 +1,35 @@
 <?php
+
 /**
  * Console Abstract to be extended by specific console tools
  */
 
 // Global Constants
-if (!defined('DS'))
-{
+if (!defined('DS')) {
     define('DS', DIRECTORY_SEPARATOR);
 }
 
 // Either log or display all errors
 error_reporting(E_ALL);
 
-if (defined('ERRORS') and ERRORS)
-{
+if (defined('ERRORS') and ERRORS) {
     // Enable and show errors
     echo "\n\n************************************\n";
     echo "* Displaying all errors & warnings *\n";
     echo "************************************\n\n";
     ini_set('display_errors', 1);
     ini_set('html_errors', 0);
-}
-else
-{
+} else {
     // Disable PHP Error display
     ini_set('display_errors', 0);
 }
 
-if (!defined('PACKAGED') or !PACKAGED and is_dir(__DIR__ . DS . "lib"))
-{
+if (!defined('PACKAGED') or !PACKAGED and is_dir(__DIR__ . DS . "lib")) {
     $lib_files = scandir(__DIR__ . DS . "lib");
     sort($lib_files);
-    foreach ($lib_files as $file)
-    {
+    foreach ($lib_files as $file) {
         $path = __DIR__ . DS . "lib" . DS . $file;
-        if (is_file($path) and preg_match('/\.php$/', $path))
-        {
+        if (is_file($path) and preg_match('/\.php$/', $path)) {
             require $path ;
         }
     }
@@ -45,21 +39,19 @@ if (!defined('PACKAGED') or !PACKAGED and is_dir(__DIR__ . DS . "lib"))
  * Console Abstract
  * Reusable abstract for creating PHP console utilities
  */
-if (!class_exists("Console_Abstract"))
-{
+if (!class_exists("Console_Abstract")) {
     class Console_Abstract extends Command
     {
-
         /**
         * Padding for output
         */
-        const DEFAULT_HEIGHT = 30; // lines - if not able to dynamically determine
-        const DEFAULT_WIDTH = 130; // characters - if not able to dynamically determine
-        const COL1_WIDTH = 20; // percentage of full width
-        const COL2_WIDTH = 50; // percentage of full width - col1 + col2
+        protected const DEFAULT_HEIGHT = 30; // lines - if not able to dynamically determine
+        protected const DEFAULT_WIDTH = 130; // characters - if not able to dynamically determine
+        protected const COL1_WIDTH = 20; // percentage of full width
+        protected const COL2_WIDTH = 50; // percentage of full width - col1 + col2
 
         // Line break for editing text
-        const EDIT_LINE_BREAK = "--------------------------------------------------";
+        protected const EDIT_LINE_BREAK = "--------------------------------------------------";
 
         /**
         * Callable Methods
@@ -196,7 +188,7 @@ if (!class_exists("Console_Abstract"))
         // Update behavior
         // - DOWNLOAD - download and install update
         // - Other - show text as a custom message
-        protected $update_behavior='DOWNLOAD';
+        protected $update_behavior = 'DOWNLOAD';
 
         // Set this to false in child class to disable updates
         protected $update_pattern_standard = "~
@@ -232,7 +224,7 @@ if (!class_exists("Console_Abstract"))
         //  to check the downloaded file
         protected $update_hash_algorithm = "md5";
         protected $update_hash = "";
-        
+
         /**
         * Constructor - set up basics
         */
@@ -242,15 +234,13 @@ if (!class_exists("Console_Abstract"))
             $this->run_stamp = $this->stamp();
 
             exec('logname', $logged_in_user, $return);
-            if ($return == 0 and !empty($logged_in_user))
-            {
+            if ($return == 0 and !empty($logged_in_user)) {
                 $this->logged_in_user = trim(implode($logged_in_user));
             }
             $this->logged_in_as_root = ($this->logged_in_user == 'root');
 
             exec('whoami', $current_user, $return);
-            if ($return == 0 and !empty($current_user))
-            {
+            if ($return == 0 and !empty($current_user)) {
                 $this->current_user = trim(implode($current_user));
             }
             $this->running_as_root = ($this->current_user == 'root');
@@ -264,7 +254,7 @@ if (!class_exists("Console_Abstract"))
         * Check requirements
         * - Extend in child if needed and pass problems to parent
         */
-        protected function checkRequirements($problems=[])
+        protected function checkRequirements($problems = [])
         {
             $this->log("PHP Version: " . PHP_VERSION);
             $this->log("OS: " . PHP_OS);
@@ -272,19 +262,16 @@ if (!class_exists("Console_Abstract"))
 
             $php_version = explode('.', PHP_VERSION);
             $major = (int) $php_version[0];
-            if ($major < $this->minimum_php_major_version)
-            {
-                $problems[]= "This tool is not well tested below PHP " . $this->minimum_php_major_version .
+            if ($major < $this->minimum_php_major_version) {
+                $problems[] = "This tool is not well tested below PHP " . $this->minimum_php_major_version .
                     " - please consider upgrading to PHP " . $this->minimum_php_major_version . ".0 or higher";
             }
 
-            if (!function_exists('curl_version'))
-            {
-                $problems[]= "This tool requires curl for many features such as update checks and installs - please install php-curl";
+            if (!function_exists('curl_version')) {
+                $problems[] = "This tool requires curl for many features such as update checks and installs - please install php-curl";
             }
 
-            if (!empty($problems))
-            {
+            if (!empty($problems)) {
                 $this->error("There are some problems with requirements: \n - " . implode("\n - ", $problems), false, true);
             }
         }
@@ -300,16 +287,14 @@ if (!class_exists("Console_Abstract"))
 
             $instance = new $class();
 
-            try
-            {
-				$instance->_startup($arg_list);
+            try {
+                $instance->_startup($arg_list);
 
                 $instance->initConfig();
 
                 $instance->try_calling($arg_list, true);
 
-				$instance->_shutdown($arg_list);
-
+                $instance->_shutdown($arg_list);
             } catch (Exception $e) {
                 $instance->error($e->getMessage());
             }
@@ -320,26 +305,24 @@ if (!class_exists("Console_Abstract"))
             ["Paths to back up", "string", "required"],
             ["Whether to output when backup is complete"]
         ];
-        public function backup($files, $output=true)
+        public function backup($files, $output = true)
         {
             $success = true;
 
             $files = $this->prepArg($files, []);
 
-            if (empty($this->backup_dir))
-            {
+            if (empty($this->backup_dir)) {
                 $this->warn('Backups are disabled - no backup_dir specified in config', true);
                 return;
             }
 
-            if (!is_dir($this->backup_dir))
+            if (!is_dir($this->backup_dir)) {
                 mkdir($this->backup_dir, 0755, true);
+            }
 
-            foreach ($files as $file)
-            {
+            foreach ($files as $file) {
                 $this->output("Backing up $file...", false);
-                if (!is_file($file))
-                {
+                if (!is_file($file)) {
                     $this->br();
                     $this->warn("$file does not exist - skipping", true);
                     continue;
@@ -350,12 +333,9 @@ if (!class_exists("Console_Abstract"))
 
                 // Back up target
                 $success = ($success and copy($file, $backup_file));
-                if ($success)
-                {
+                if ($success) {
                     $this->output('successful');
-                }
-                else
-                {
+                } else {
                     $this->br();
                     $this->warn("Failed to back up $file", true);
                     continue;
@@ -364,7 +344,7 @@ if (!class_exists("Console_Abstract"))
 
             // Clean up old backups - keep backup_age_limit days worth
             $this->exec("find \"{$this->backup_dir}\" -mtime +{$this->backup_age_limit} -type f -delete");
-            
+
             return $success;
         }
 
@@ -374,13 +354,11 @@ if (!class_exists("Console_Abstract"))
         ];
         public function eval_file($file, ...$evaluation_arguments)
         {
-            if (!is_file($file))
-            {
+            if (!is_file($file)) {
                 $this->error("File does not exist, check the path: $file");
             }
 
-            if (!is_readable($file))
-            {
+            if (!is_readable($file)) {
                 $this->error("File is not readable, check permissions: $file");
             }
 
@@ -391,54 +369,53 @@ if (!class_exists("Console_Abstract"))
             "Install a packaged PHP console tool",
             ["Install path", "string"],
         ];
-        public function install($install_path=null)
+        public function install($install_path = null)
         {
-            if (!defined('PACKAGED') or !PACKAGED)
-            {
+            if (!defined('PACKAGED') or !PACKAGED) {
                 $this->error('Only packaged tools may be installed - package first using PCon (https://cmp.onl/tjNJ)');
             }
 
             $install_path = $this->prepArg($install_path, null);
 
-            if (empty($install_path))
-            {
+            if (empty($install_path)) {
                 $install_path = $this->install_path;
             }
 
-            if ($this->is_windows)
-            {
+            if ($this->is_windows) {
                 $this->warn(
-                    "Since you appear to be running on Windows, you will very likely need to modify your install path" . 
-                    "\n - The current setting is: " . $install_path . 
+                    "Since you appear to be running on Windows, you will very likely need to modify your install path" .
+                    "\n - The current setting is: " . $install_path .
                     "\n - The desired setting will vay based on your environment, but you'll probably want to use a directory that's in your PATH" .
                     "\n - For example, if you're using Git Bash, you may want to use: C:\Program Files\Git\usr\local\bin as your install path " .
-                    "\n Enter 'y' if the install path is correct and you are ready to install" . 
-                    "\n Enter 'n' to halt now so you can edit 'install_path' in your config file (" . $this->getConfigFile() . ")", 
+                    "\n Enter 'y' if the install path is correct and you are ready to install" .
+                    "\n Enter 'n' to halt now so you can edit 'install_path' in your config file (" . $this->getConfigFile() . ")",
                     true
                 );
             }
 
-            if (!is_dir($install_path))
-            {
+            if (!is_dir($install_path)) {
                 $this->warn("Install path ($install_path) does not exist and will be created", true);
 
                 $success = mkdir($install_path, 0755, true);
 
-                if (!$success) $this->error("Failed to create install path ($install_path) - may need higher privileges (eg. sudo or run as admin)");
+                if (!$success) {
+                    $this->error("Failed to create install path ($install_path) - may need higher privileges (eg. sudo or run as admin)");
+                }
             }
 
             $tool_path = __FILE__;
             $filename = basename($tool_path);
             $install_tool_path = $install_path . DS . $filename;
 
-            if (file_exists($install_tool_path))
-            {
+            if (file_exists($install_tool_path)) {
                 $this->warn("This will overwrite the existing executable ($install_tool_path)", true);
             }
 
             $success = rename($tool_path, $install_tool_path);
 
-            if (!$success) $this->error("Install failed - may need higher privileges (eg. sudo or run as admin)");
+            if (!$success) {
+                $this->error("Install failed - may need higher privileges (eg. sudo or run as admin)");
+            }
 
             $this->configure('install_path', $install_path, true);
             $this->saveConfig();
@@ -452,30 +429,26 @@ if (!class_exists("Console_Abstract"))
         public function update()
         {
             // Make sure update is available
-            if (!$this->updateCheck(false, true)) // auto:false, output:true
-            {
+            if (!$this->updateCheck(false, true)) { // auto:false, output:true
                 return true;
             }
 
             // Check prescribed behavior
-            if ($this->update_behavior != 'DOWNLOAD')
-            {
+            if ($this->update_behavior != 'DOWNLOAD') {
                 $this->output($this->update_behavior);
                 return;
             }
 
-            if (!defined('PACKAGED') or !PACKAGED)
-            {
+            if (!defined('PACKAGED') or !PACKAGED) {
                 $this->error('Only packaged tools may be updated - package first using PCon (https://cmp.onl/tjNJ), then install');
             }
 
             // Check install path valid
             $this_filename = basename(__FILE__);
             $config_install_tool_path = $this->install_path . DS . $this_filename;
-            if ($config_install_tool_path != __FILE__)
-            {
+            if ($config_install_tool_path != __FILE__) {
                 $this->warn(
-                    "Install path mismatch.\n" . 
+                    "Install path mismatch.\n" .
                     " - Current tool path: " . __FILE__ . "\n" .
                     " - Configured install path: " . $config_install_tool_path . "\n" .
                     "Update will be installed to " . $config_install_tool_path,
@@ -484,37 +457,41 @@ if (!class_exists("Console_Abstract"))
             }
 
             // Create install path if needed
-            if (!is_dir($this->install_path))
-            {
+            if (!is_dir($this->install_path)) {
                 $this->warn("Install path ($this->install_path) does not exist and will be created", true);
 
                 $success = mkdir($this->install_path, 0755, true);
 
-                if (!$success) $this->error("Failed to create install path ($this->install_path) - may need higher privileges (eg. sudo or run as admin)");
+                if (!$success) {
+                    $this->error("Failed to create install path ($this->install_path) - may need higher privileges (eg. sudo or run as admin)");
+                }
             }
 
             $this->log('Downloading update to temp file, from ' . $this->update_url);
             $temp_dir = sys_get_temp_dir();
             $temp_path = $temp_dir . DS . $this_filename . time();
-            if (is_file($temp_path))
-            {
+            if (is_file($temp_path)) {
                 $success = unlink($temp_path);
-                if (!$success) $this->error("Failed to delete existing temp file ($temp_path) - may need higher privileges (eg. sudo or run as admin)");
+                if (!$success) {
+                    $this->error("Failed to delete existing temp file ($temp_path) - may need higher privileges (eg. sudo or run as admin)");
+                }
             }
 
             $curl = $this->getCurl($this->update_url, true);
             $updated_contents = $this->execCurl($curl);
-            if (empty($updated_contents)) $this->error("Download failed - no contents at " . $this->update_url);
+            if (empty($updated_contents)) {
+                $this->error("Download failed - no contents at " . $this->update_url);
+            }
 
             $success = file_put_contents($temp_path, $updated_contents);
-            if (!$success) $this->error("Failed to write to temp file ($temp_path) - may need higher privileges (eg. sudo or run as admin)");
+            if (!$success) {
+                $this->error("Failed to write to temp file ($temp_path) - may need higher privileges (eg. sudo or run as admin)");
+            }
 
-            if ($this->update_check_hash)
-            {
-                $this->log('Checking hash of downloaded file ('.$this->update_hash_algorithm.')');
+            if ($this->update_check_hash) {
+                $this->log('Checking hash of downloaded file (' . $this->update_hash_algorithm . ')');
                 $download_hash = hash_file($this->update_hash_algorithm, $temp_path);
-                if ($download_hash != $this->update_hash)
-                {
+                if ($download_hash != $this->update_hash) {
                     $this->log('Download Hash: ' . $download_hash);
                     $this->log('Update Hash: ' . $this->update_hash);
                     unlink($temp_path);
@@ -525,7 +502,9 @@ if (!class_exists("Console_Abstract"))
             $this->log('Installing downloaded file');
             $success = rename($temp_path, $config_install_tool_path);
             $success = $success and chmod($config_install_tool_path, 0755);
-            if (!$success) $this->error("Update failed - may need higher privileges (eg. sudo or run as admin)");
+            if (!$success) {
+                $this->error("Update failed - may need higher privileges (eg. sudo or run as admin)");
+            }
 
             $this->output('Update complete');
         }
@@ -533,17 +512,14 @@ if (!class_exists("Console_Abstract"))
         protected $___version = [
             "Output version information"
         ];
-        public function version($output=true)
+        public function version($output = true)
         {
             $class = get_called_class();
             $version_string = $class::SHORTNAME . ' version ' . $class::VERSION;
 
-            if ($output)
-            {
+            if ($output) {
                 $this->output($version_string);
-            }
-            else
-            {
+            } else {
                 return $version_string;
             }
         }
@@ -557,48 +533,43 @@ if (!class_exists("Console_Abstract"))
         *  - if auto, but not yet time to check or
         *  - if update is disabled
         */
-        protected function updateCheck($auto=true, $output=false)
+        protected function updateCheck($auto = true, $output = false)
         {
             $this->log("Running update check");
 
-            if (empty($this->update_version_url))
-            {
-                if (($output and !$auto) or $this->verbose) $this->output("Update is disabled - update_version_url is empty");
+            if (empty($this->update_version_url)) {
+                if (($output and !$auto) or $this->verbose) {
+                    $this->output("Update is disabled - update_version_url is empty");
+                }
                 return false; // update disabled
             }
 
-            if (is_null($this->update_exists))
-            {
+            if (is_null($this->update_exists)) {
                 $now = time();
 
                 // If this is an automatic check, make sure it's time to check again
-                if ($auto)
-                {
+                if ($auto) {
                     $this->log("Designated as auto-update");
 
                     // If disabled, return false
-                    if ($this->update_auto <= 0)
-                    {
+                    if ($this->update_auto <= 0) {
                         $this->log("Auto-update is disabled - update_auto <= 0");
                         return false; // auto-update disabled
                     }
 
                     // If we haven't checked before, we'll check now
                     // Otherwise...
-                    if (!empty($this->update_last_check))
-                    {
+                    if (!empty($this->update_last_check)) {
                         $last_check = strtotime($this->update_last_check);
 
                         // Make sure last check was a valid time
-                        if (empty($last_check) or $last_check < 0)
-                        {
+                        if (empty($last_check) or $last_check < 0) {
                             $this->error('Issue with update_last_check value (' . $this->update_last_check . ')');
                         }
 
                         // Has it been long enough? If not, we'll return false
                         $seconds_since_last_check = $now - $last_check;
-                        if ($seconds_since_last_check < $this->update_auto)
-                        {
+                        if ($seconds_since_last_check < $this->update_auto) {
                             $this->log("Only $seconds_since_last_check seconds since last check.  Configured auto-update is " . $this->update_auto . " seconds");
                             return false; // not yet time to check
                         }
@@ -610,12 +581,10 @@ if (!class_exists("Console_Abstract"))
                 $update_contents = $this->execCurl($curl);
 
                 // look for version match
-                if ($this->update_version_pattern[0] === true)
-                {
+                if ($this->update_version_pattern[0] === true) {
                     $this->update_version_pattern[0] = $this->update_pattern_standard;
                 }
-                if (!preg_match($this->update_version_pattern[0], $update_contents, $match))
-                {
+                if (!preg_match($this->update_version_pattern[0], $update_contents, $match)) {
                     $this->log($update_contents);
                     $this->log($this->update_version_pattern[0]);
                     $this->error('Issue with update version check - pattern not found at ' . $this->update_version_url, null, true);
@@ -628,59 +597,47 @@ if (!class_exists("Console_Abstract"))
                 $class = get_called_class();
                 $this->update_exists = version_compare($class::VERSION, $this->update_version, '<');
 
-                if ($output or $this->verbose)
-                {
-                    if ($this->update_exists)
-                    {
+                if ($output or $this->verbose) {
+                    if ($this->update_exists) {
                         $this->hr('>');
                         $this->output("An update is available: version " . $this->update_version . " (currently installed version is " . $class::VERSION . ")");
-                        if ($this->method != 'update')
-                        {
+                        if ($this->method != 'update') {
                             $this->output(" - Run 'update' to install latest version.");
                             $this->output(" - See 'help update' for more information.");
                         }
                         $this->hr('>');
-                    }
-                    else
-                    {
+                    } else {
                         $this->output("Already at latest version (" . $class::VERSION . ")");
                     }
                 }
 
                 // look for download match
-                if ($this->update_download_pattern[0] === true)
-                {
+                if ($this->update_download_pattern[0] === true) {
                     $this->update_download_pattern[0] = $this->update_pattern_standard;
                 }
-                if (!preg_match($this->update_download_pattern[0], $update_contents, $match))
-                {
+                if (!preg_match($this->update_download_pattern[0], $update_contents, $match)) {
                     $this->error('Issue with update download check - pattern not found at ' . $this->update_version_url, null, true);
                     return false;
                 }
                 $index = $this->update_download_pattern[1];
                 $this->update_url = $match[$index];
 
-                if ($this->update_check_hash)
-                {
+                if ($this->update_check_hash) {
                     // look for hash algorithm match
-                    if ($this->update_hash_algorithm_pattern[0] === true)
-                    {
+                    if ($this->update_hash_algorithm_pattern[0] === true) {
                         $this->update_hash_algorithm_pattern[0] = $this->hash_pattern_standard;
                     }
-                    if (!preg_match($this->update_hash_algorithm_pattern[0], $update_contents, $match))
-                    {
+                    if (!preg_match($this->update_hash_algorithm_pattern[0], $update_contents, $match)) {
                         $this->error('Issue with update hash algorithm check - pattern not found at ' . $this->update_version_url);
                     }
                     $index = $this->update_hash_algorithm_pattern[1];
                     $this->update_hash_algorithm = $match[$index];
 
                     // look for hash match
-                    if ($this->update_hash_pattern[0] === true)
-                    {
+                    if ($this->update_hash_pattern[0] === true) {
                         $this->update_hash_pattern[0] = $this->hash_pattern_standard;
                     }
-                    if (!preg_match($this->update_hash_pattern[0], $update_contents, $match))
-                    {
+                    if (!preg_match($this->update_hash_pattern[0], $update_contents, $match)) {
                         $this->error('Issue with update hash check - pattern not found at ' . $this->update_version_url);
                     }
                     $index = $this->update_hash_pattern[1];
@@ -714,20 +671,16 @@ if (!class_exists("Console_Abstract"))
         *  - return the output
         * @param $error - if true, throw error on bad return
         */
-        public function exec($command, $error=false)
+        public function exec($command, $error = false)
         {
             $this->log("exec: $command");
             exec($command, $output, $return);
             $output = empty($output) ? "" : "\n\t" . implode("\n\t", $output);
-            if ($return)
-            {
+            if ($return) {
                 $output = empty($output) ? $return : $output;
-                if ($error)
-                {
+                if ($error) {
                     $this->error($output);
-                }
-                else
-                {
+                } else {
                     $this->warn($output);
                 }
             }
@@ -737,29 +690,26 @@ if (!class_exists("Console_Abstract"))
 
         /**
         * Error output
-        * 
+        *
         * Code Guidelines:
         *  - 100 - expected error - eg. aborted due to user input
         *  - 200 - safety / caution error (eg. running as root)
         *  - 500 - misc. error
         */
-        public function error($data, $code=500, $prompt_to_continue=false)
+        public function error($data, $code = 500, $prompt_to_continue = false)
         {
             $this->br();
             $this->hr('!');
             $this->output('ERROR: ', false);
             $this->output($data);
             $this->hr('!');
-            if ($code)
-            {
+            if ($code) {
                 exit($code);
             }
 
-            if ($prompt_to_continue)
-            {
+            if ($prompt_to_continue) {
                 $yn = $this->input("Continue? (y/n)", 'n', false, true);
-                if (!in_array($yn, ['y', 'Y']))
-                {
+                if (!in_array($yn, ['y', 'Y'])) {
                     $this->error('Aborted', 100);
                 }
             }
@@ -770,7 +720,7 @@ if (!class_exists("Console_Abstract"))
         * @param $data to output as warning
         * @param $prompt_to_continue - whether to prompt with Continue? y/n
         */
-        public function warn($data, $prompt_to_continue=false)
+        public function warn($data, $prompt_to_continue = false)
         {
             $this->br();
             $this->hr('*');
@@ -778,16 +728,13 @@ if (!class_exists("Console_Abstract"))
             $this->output($data, true, false);
             $this->hr('*');
 
-            if ($prompt_to_continue)
-            {
+            if ($prompt_to_continue) {
                 $this->log("Getting input to continue");
                 $yn = $this->input("Continue? (y/n)", 'n', false, true);
-                if (!in_array($yn, ['y', 'Y']))
-                {
+                if (!in_array($yn, ['y', 'Y'])) {
                     $this->error('Aborted', 100);
                 }
             }
-
         }
 
         /**
@@ -795,21 +742,24 @@ if (!class_exists("Console_Abstract"))
         */
         public function log($data)
         {
-            if (!$this->verbose) return;
-            
+            if (!$this->verbose) {
+                return;
+            }
+
             $this->output($data);
         }
 
         /**
         * Output data
         */
-        public function output($data, $line_ending=true, $stamp_lines=null)
+        public function output($data, $line_ending = true, $stamp_lines = null)
         {
             $data = $this->stringify($data);
 
             $stamp_lines = is_null($stamp_lines) ? $this->stamp_lines : $stamp_lines;
-            if ($stamp_lines)
+            if ($stamp_lines) {
                 echo $this->stamp() . ' ... ';
+            }
 
             echo $data . ($line_ending ? "\n" : "");
         }
@@ -819,10 +769,8 @@ if (!class_exists("Console_Abstract"))
         */
         public function outputProgress($count, $total, $description = "remaining")
         {
-            if (!$this->verbose)
-            {
-                if ($count > 0)
-                {
+            if (!$this->verbose) {
+                if ($count > 0) {
                     // Set cursor to first column
                     echo chr(27) . "[0G";
                     // Set cursor up 2 lines
@@ -835,12 +783,10 @@ if (!class_exists("Console_Abstract"))
                 $output = "[";
                 $output = str_pad($output, $bar_count, "|");
                 $output = str_pad($output, $pad, " ");
-                $output.= "]";
+                $output .= "]";
                 $this->output($output);
                 $this->output(str_pad("$count/$total", $full_width, " ", STR_PAD_LEFT));
-            }
-            else
-            {
+            } else {
                 $this->output("$count/$total $description");
             }
         }
@@ -850,24 +796,15 @@ if (!class_exists("Console_Abstract"))
         */
         public function stringify($data)
         {
-            if (is_object($data) or is_array($data))
-            {
+            if (is_object($data) or is_array($data)) {
                 $data = print_r($data, true);
-            }
-            else if (is_bool($data))
-            {
+            } elseif (is_bool($data)) {
                 $data = $data ? "(Bool) True" : "(Bool) False";
-            }
-            elseif (is_null($data))
-            {
+            } elseif (is_null($data)) {
                 $data = "(NULL)";
-            }
-            elseif (is_int($data))
-            {
+            } elseif (is_int($data)) {
                 $data = "(int) $data";
-            }
-            else if (!is_string($data))
-            {
+            } elseif (!is_string($data)) {
                 ob_start();
                 var_dump($data);
                 $data = ob_get_clean();
@@ -882,42 +819,36 @@ if (!class_exists("Console_Abstract"))
         * Colorize a string for output to console
         *  - https://en.wikipedia.org/wiki/ANSI_escape_code
         */
-        public function colorize($string, $foreground=null, $background=null, $other=[])
+        public function colorize($string, $foreground = null, $background = null, $other = [])
         {
-            if (empty($foreground) and empty($background) and empty($other)) return $string;
+            if (empty($foreground) and empty($background) and empty($other)) {
+                return $string;
+            }
 
             $colored_string = "";
             $colored = false;
 
-            foreach (['foreground', 'background', 'other'] as $type)
-            {
-                if (!is_null($$type))
-                {
-                    if (!is_array($$type))
-                    {
+            foreach (['foreground', 'background', 'other'] as $type) {
+                if (!is_null($$type)) {
+                    if (!is_array($$type)) {
                         $$type = [$$type];
                     }
 
-                    foreach ($$type as $value_name)
-                    {
-                        if (isset(CONSOLE_COLORS::${$type}[$value_name]))
-                        {
+                    foreach ($$type as $value_name) {
+                        if (isset(CONSOLE_COLORS::${$type}[$value_name])) {
                             $colored_string .= "\033[" . CONSOLE_COLORS::${$type}[$value_name] . "m";
                             $colored = true;
-                        }
-                        else
-                        {
+                        } else {
                             $this->warn("Invalid '$type' color specification - " . $value_name);
                         }
                     }
                 }
             }
 
-            $colored_string.= $string;
+            $colored_string .= $string;
 
-            if ($colored)
-            {
-                $colored_string.="\033[0m";
+            if ($colored) {
+                $colored_string .= "\033[0m";
             }
 
             return $colored_string;
@@ -926,22 +857,20 @@ if (!class_exists("Console_Abstract"))
         /**
         * Output 3 Columns - for help for example
         */
-        public function output3col($col1, $col2=null, $col3=null)
+        public function output3col($col1, $col2 = null, $col3 = null)
         {
             $full_width = $this->getTerminalWidth();
             $col1_width = floor(($full_width * static::COL1_WIDTH) / 100);
             $col2_width = floor(($full_width * static::COL2_WIDTH) / 100);
 
             $string = str_pad($col1, $col1_width, " ");
-            if (!is_null($col2))
-            {
-                $string.= "| " . $col2;
+            if (!is_null($col2)) {
+                $string .= "| " . $col2;
             }
-            if (!is_null($col3))
-            {
+            if (!is_null($col3)) {
                 $string = str_pad($string, $col2_width, " ") . "| " . $col3;
             }
-            $string = str_pad("| $string", $full_width-1) . "|";
+            $string = str_pad("| $string", $full_width - 1) . "|";
             $this->output($string);
         }
 
@@ -958,14 +887,16 @@ if (!class_exists("Console_Abstract"))
         */
         public function brl()
         {
-            if (!$this->verbose) return;
+            if (!$this->verbose) {
+                return;
+            }
 
             $this->br;
         }
         /**
         * Output horizonal line - divider
         */
-        public function hr($c='=', $prefix="")
+        public function hr($c = '=', $prefix = "")
         {
             $string = str_pad($prefix, $this->getTerminalWidth(), $c);
             $this->output($string);
@@ -973,9 +904,11 @@ if (!class_exists("Console_Abstract"))
         /**
         * hr, but only if logging is on
         */
-        public function hrl($c='=', $prefix="")
+        public function hrl($c = '=', $prefix = "")
         {
-            if (!$this->verbose) return;
+            if (!$this->verbose) {
+                return;
+            }
 
             $this->hr($c, $prefix);
         }
@@ -984,9 +917,11 @@ if (!class_exists("Console_Abstract"))
         /**
         * Pause during output for debugging/stepthrough
         */
-        public function pause($message="[ ENTER TO STEP | 'FINISH' TO CONTINUE ]")
+        public function pause($message = "[ ENTER TO STEP | 'FINISH' TO CONTINUE ]")
         {
-            if (!$this->step) return;
+            if (!$this->step) {
+                return;
+            }
 
             $this->hr();
             $this->output($message);
@@ -994,8 +929,7 @@ if (!class_exists("Console_Abstract"))
 
             $line = $this->input();
 
-            if (strtolower(trim($line)) == 'finish')
-            {
+            if (strtolower(trim($line)) == 'finish') {
                 $this->step = false;
             }
         }
@@ -1005,26 +939,22 @@ if (!class_exists("Console_Abstract"))
         * @param $seconds - number of seconds to wait
         * @param $message - formatted string
         */
-        public function sleep($seconds=3, $message="Continuing in %s...")
+        public function sleep($seconds = 3, $message = "Continuing in %s...")
         {
             $seconds = (int) $seconds;
             $max_pad = 0;
-            while ($seconds > 0)
-            {
+            while ($seconds > 0) {
                 $output = sprintf($message, $seconds);
                 $pad = strlen($output);
-                if ($pad < $max_pad)
-                {
+                if ($pad < $max_pad) {
                     $output = str_pad($output, $max_pad);
-                }
-                else
-                {
+                } else {
                     $max_pad = $pad;
                 }
 
                 echo $output;
                 sleep(1);
-                $seconds-=1;
+                $seconds -= 1;
                 echo "\r";
             }
             echo str_pad("", $max_pad);
@@ -1040,79 +970,65 @@ if (!class_exists("Console_Abstract"))
         * @param (array) &$preselects ([]) selection entries - will be shifted off one at a time
         *  - passed by reference, so it can be used through a chain of selects
         */
-        public function select($list, $message=false, $default=0, $q_to_quit=true, &$preselects=[], $livefilter=true)
+        public function select($list, $message = false, $default = 0, $q_to_quit = true, &$preselects = [], $livefilter = true)
         {
-			/*
-			if ($livefilter)
-			{
-				$this->clear();
-
-				// todo - figure out how to detect backspace & enter
-				// - maybe focus on how to do it in bash
-				while (true) {
-					$char = $this->input("Enter char", null, false, 'single', 'single_hide');
-					if ($char == 'q') die;
-					var_dump($char);
-					echo "\n";
-				}
-
-			}
-			 */
-            $list = array_values($list);
-            foreach ($list as $i => $item)
+            /*
+            if ($livefilter)
             {
+                $this->clear();
+
+                // todo - figure out how to detect backspace & enter
+                // - maybe focus on how to do it in bash
+                while (true) {
+                    $char = $this->input("Enter char", null, false, 'single', 'single_hide');
+                    if ($char == 'q') die;
+                    var_dump($char);
+                    echo "\n";
+                }
+
+            }
+             */
+            $list = array_values($list);
+            foreach ($list as $i => $item) {
                 $this->output("$i. $item");
             }
 
-            if ($q_to_quit)
-            {
+            if ($q_to_quit) {
                 $this->output("q. Quit and exit");
             }
 
-            $max = count($list)-1;
-            $index=-1;
-            $entry=false;
+            $max = count($list) - 1;
+            $index = -1;
+            $entry = false;
 
-            while ($index < 0 or $index > $max)
-            {
-                if ($entry !== false)
-                {
+            while ($index < 0 or $index > $max) {
+                if ($entry !== false) {
                     $this->warn("Invalid selection $entry");
                 }
-                if ( empty($preselects) )
-                {
+                if (empty($preselects)) {
                     $this->output("Enter number or part of selection");
                     $entry = $this->input($message, $default);
-                }
-                else
-                {
+                } else {
                     $entry = array_shift($preselects);
                 }
 
-                if ($q_to_quit and (strtolower(trim($entry)) == 'q'))
-                {
+                if ($q_to_quit and (strtolower(trim($entry)) == 'q')) {
                     $this->warn('Selection Canceled');
                     exit;
                 }
 
-                if (!is_numeric($entry))
-                {
+                if (!is_numeric($entry)) {
                     $filtered_items = [];
 
-                    foreach ($list as $item)
-                    {
-                        if (stripos($item, $entry) !== false)
-                        {
+                    foreach ($list as $item) {
+                        if (stripos($item, $entry) !== false) {
                             $filtered_items[] = $item;
                         }
                     }
 
-                    if (count($filtered_items) == 1)
-                    {
+                    if (count($filtered_items) == 1) {
                         return $filtered_items[0];
-                    }
-                    elseif (!empty($filtered_items))
-                    {
+                    } elseif (!empty($filtered_items)) {
                         return $this->select($filtered_items, $message, 0, $q_to_quit, $preselects);
                     }
                 }
@@ -1121,8 +1037,7 @@ if (!class_exists("Console_Abstract"))
                 // Eg. avoid 1.2 => 1 or j => 0
                 //  - which would result in unwanted behavior for bad entries
                 $index = (int) $entry;
-                if ((string) $entry !== (string) $index)
-                {
+                if ((string) $entry !== (string) $index) {
                     $index = -1;
                 }
             }
@@ -1135,27 +1050,26 @@ if (!class_exists("Console_Abstract"))
         * @param Same params as input - see descriptions there
         * @return (bool) true/false
         */
-        public function confirm($message, $default='y', $required=false, $single=true, $single_hide=false)
+        public function confirm($message, $default = 'y', $required = false, $single = true, $single_hide = false)
         {
             $yn = $this->input($message, $default, $required, $single, $single_hide);
 
             // True if first letter of response is y or Y
-            return strtolower(substr($yn,0,1)) == 'y';
+            return strtolower(substr($yn, 0, 1)) == 'y';
         }
 
         /**
         * Edit some text in external editor
         * @param $text to edit
         */
-        public function edit($text="", $filename=null, $modify=false)
+        public function edit($text = "", $filename = null, $modify = false)
         {
-            if (is_null($filename))
-            {
+            if (is_null($filename)) {
                 $filename = "edit_" . date("YmdHis") . ".txt";
             }
             $filepath = $this->setTempContents($filename, $text);
 
-            $command = sprintf( ($modify ? $this->editor_modify_exec : $this->editor_exec), $filepath);
+            $command = sprintf(($modify ? $this->editor_modify_exec : $this->editor_exec), $filepath);
             $this->exec($command, true);
 
             return $this->getTempContents($filename);
@@ -1170,52 +1084,49 @@ if (!class_exists("Console_Abstract"))
         * @param $single_hide - hide input for single character (is this working?)
         * @return input text or default
         */
-        public function input($message=false, $default=null, $required=false, $single=false, $single_hide=false)
+        public function input($message = false, $default = null, $required = false, $single = false, $single_hide = false)
         {
-            if ($message)
-            {
-                if ($message === true) $message = "";
-
-                if (!is_null($default))
-                {
-                    $message.= " ($default)";
+            if ($message) {
+                if ($message === true) {
+                    $message = "";
                 }
-                $message.= ": ";
+
+                if (!is_null($default)) {
+                    $message .= " ($default)";
+                }
+                $message .= ": ";
             }
 
-            while (true)
-            {
-                if ($message) $this->output($message, false);
-                if ($single)
-                {
-                    $single_hide = $single_hide ? ' -s' : '';
-                    if ($this->is_windows)
-                    {
-                        $line = trim( `bash -c "read$single_hide -n1 CHAR && echo \$CHAR"` );
-                    }
-                    else
-                    {
-                        $line = trim( `bash -c 'read$single_hide -n1 CHAR && echo \$CHAR'` );
-                    }
+            while (true) {
+                if ($message) {
+                    $this->output($message, false);
                 }
-                else
-                {
+                if ($single) {
+                    $single_hide = $single_hide ? ' -s' : '';
+                    if ($this->is_windows) {
+                        $line = trim(`bash -c "read$single_hide -n1 CHAR && echo \$CHAR"`);
+                    } else {
+                        $line = trim(`bash -c 'read$single_hide -n1 CHAR && echo \$CHAR'`);
+                    }
+                } else {
                     $handle = $this->getCliInputHandle();
                     $line = fgets($handle);
                 }
                 $line = trim($line);
 
                 // Entered input - return
-                if ($line !== "") return $line;
+                if ($line !== "") {
+                    return $line;
+                }
 
                 // Input not required? Return default
-                if (!$required) return $default;
+                if (!$required) {
+                    return $default;
+                }
 
                 // otherwise, warn, loop and try again
                 $this->warn("Input required - please try again");
             }
-
-
         }
 
         /**
@@ -1231,8 +1142,7 @@ if (!class_exists("Console_Abstract"))
         */
         public function getConfigDir()
         {
-            if (is_null($this->config_dir))
-            {
+            if (is_null($this->config_dir)) {
                 $this->config_dir = $this->getHomeDir() . DS . '.' . static::SHORTNAME;
             }
 
@@ -1244,8 +1154,7 @@ if (!class_exists("Console_Abstract"))
         */
         public function getConfigFile()
         {
-            if (is_null($this->config_file))
-            {
+            if (is_null($this->config_file)) {
                 $config_dir = $this->getConfigDir();
                 $this->config_file = $config_dir . DS . 'config.hjson';
             }
@@ -1258,54 +1167,42 @@ if (!class_exists("Console_Abstract"))
         */
         public function getHomeDir()
         {
-            if (is_null($this->home_dir))
-            {
+            if (is_null($this->home_dir)) {
                 $return_error = false;
 
                 $sudo_user = "";
-                if ($this->running_as_root)
-                {
+                if ($this->running_as_root) {
                     // Check if run via sudo vs. natively running as root
                     exec('echo "$SUDO_USER"', $output, $return_error);
-                    if (!$return_error and !empty($output))
-                    {
+                    if (!$return_error and !empty($output)) {
                         $sudo_user = trim(array_pop($output));
                     }
                 }
 
                 // Not Sudo User?
-                if (empty($sudo_user))
-                {
+                if (empty($sudo_user)) {
                     // Windows doesn't have 'HOME' set necessarily
-                    if (empty($_SERVER['HOME']))
-                    {
+                    if (empty($_SERVER['HOME'])) {
                         $this->home_dir = $_SERVER['HOMEDRIVE'] . $_SERVER['HOMEDRIVE'];
-                    }
+
                     // Simplest and most typical - get home dir from env vars.
-                    else
-                    {
+                    } else {
                         $this->home_dir = $_SERVER['HOME'];
                     }
-                }
-                else // Running via sudo - get home dir of sudo user (if not root)
-                {
+                // Running via sudo - get home dir of sudo user (if not root)
+                } else {
                     exec('echo ~' . $sudo_user, $output, $return_error);
 
-                    if (!$return_error and !empty($output))
-                    {
+                    if (!$return_error and !empty($output)) {
                         $this->home_dir = trim(array_pop($output));
                     }
                 }
 
-                if (empty($this->home_dir))
-                {
+                if (empty($this->home_dir)) {
                     $this->error('Something odd about this environment... can\'t figure out your home directory; please submit an issue with details about your environment');
+                } elseif (!is_dir($this->home_dir)) {
+                    $this->error('Something odd about this environment... home directory looks like "' . $this->home_dir . '" but that is not a directory; please submit an issue with details about your environment');
                 }
-                else if (!is_dir($this->home_dir))
-                {
-                    $this->error('Something odd about this environment... home directory looks like "'.$this->home_dir.'" but that is not a directory; please submit an issue with details about your environment');
-                }
-
             }
 
             return $this->home_dir;
@@ -1320,41 +1217,33 @@ if (!class_exists("Console_Abstract"))
 
             $this->backup_dir = $this->getConfigDir() . DS . 'backups';
 
-            try
-            {
+            try {
                 // Move old json file to hjson if needed
-                if (!is_file($config_file))
-                {
+                if (!is_file($config_file)) {
                     $old_json_config_file = str_ireplace('.hjson', '.json', $config_file);
-                    if (is_file($old_json_config_file))
-                    {
-                        if ( ! rename($old_json_config_file, $config_file) )
-                        {
+                    if (is_file($old_json_config_file)) {
+                        if (! rename($old_json_config_file, $config_file)) {
                             $this->warn("Old json config file found, but couldn't rename it.\nTo keep your config settings, move '$old_json_config_file' to '$config_file'.\nIf you continue now, a new config file will be created with default values at '$config_file'.", true);
                         }
                     }
                 }
 
                 // Loading specific config values from file
-                if (is_file($config_file))
-                {
+                if (is_file($config_file)) {
                     // $this->log("Loading config file - $config_file");
                     $json = file_get_contents($config_file);
                     $config = $this->json_decode($json, true);
-                    if (empty($config))
-                    {
+                    if (empty($config)) {
                         $this->error("Likely syntax error: $config_file");
                     }
-                    foreach ($config as $key => $value)
-                    {
+                    foreach ($config as $key => $value) {
                         $this->configure($key, $value);
                     }
                 }
 
                 // Setting config to save, based on current values
                 $this->config_to_save = [];
-                foreach ($this->getPublicProperties() as $property)
-                {
+                foreach ($this->getPublicProperties() as $property) {
                     $this->config_to_save[$property] = $this->$property;
                 }
                 ksort($this->config_to_save);
@@ -1362,9 +1251,7 @@ if (!class_exists("Console_Abstract"))
                 $this->config_initialized = true;
 
                 $this->saveConfig();
-            }
-            catch (Exception $e)
-            {
+            } catch (Exception $e) {
                 // Notify user
                 $this->output('NOTICE: ' . $e->getMessage());
             }
@@ -1375,8 +1262,7 @@ if (!class_exists("Console_Abstract"))
         */
         public function saveConfig()
         {
-            if (!$this->config_initialized)
-            {
+            if (!$this->config_initialized) {
                 $this->warn('Config not initialized, refusing to save', true);
                 return false;
             }
@@ -1384,10 +1270,8 @@ if (!class_exists("Console_Abstract"))
             $config_dir = $this->getConfigDir();
             $config_file = $this->getConfigFile();
 
-            try
-            {
-                if (!is_dir($config_dir))
-                {
+            try {
+                if (!is_dir($config_dir)) {
                     // $this->log("Creating directory - $config_dir");
                     mkdir($config_dir, 0755);
                 }
@@ -1398,17 +1282,17 @@ if (!class_exists("Console_Abstract"))
                 $this->config_to_save['__WSC__']['o'] = [];
 
                 $this->config_to_save['__WSC__']['c'][" "] = "\n    /**\n     * " . $this->version(false) . " configuration\n     */\n";
-                foreach ($this->config_to_save as $key => $value)
-                {
-                    if ($key != '__WSC__')
-                    {
+                foreach ($this->config_to_save as $key => $value) {
+                    if ($key != '__WSC__') {
                         $help = $this->_help_var($key, 'option');
-                        if (empty($help)) continue;
+                        if (empty($help)) {
+                            continue;
+                        }
 
                         $help = $this->_help_param($help);
                         $type = $help[1];
                         $info = $help[0];
-                        
+
                         $value = " // ($type) $info";
                     }
 
@@ -1420,20 +1304,16 @@ if (!class_exists("Console_Abstract"))
                 file_put_contents($config_file, $json);
 
                 // Fix permissions if needed
-                if ($this->running_as_root and !$this->logged_in_as_root)
-                {
+                if ($this->running_as_root and !$this->logged_in_as_root) {
                     $success = true;
                     $success = ($success and chown($config_dir, $this->logged_in_user));
                     $success = ($success and chown($config_file, $this->logged_in_user));
 
-                    if (!$success)
-                    {
+                    if (!$success) {
                         $this->warn("There may have been an issue setting correct permissions on the config directory ($config_dir) or file ($config_file).  Review these permissions manually.", true);
                     }
                 }
-            }
-            catch (Exception $e)
-            {
+            } catch (Exception $e) {
                 // Notify user
                 $this->output('NOTICE: ' . $e->getMessage());
             }
@@ -1443,66 +1323,56 @@ if (!class_exists("Console_Abstract"))
         * Prepare shell argument for use
         * @param $value to prep
         * @param $default to return if $value is empty
-        * @param $force_type - whether to force a type for return value: 
+        * @param $force_type - whether to force a type for return value:
         *  'array': split and/or wrap to force it to be an array
         *  'boolean': parse as boolean (1/true/yes).
         * Note: defaults to 'array' if $default is an array
         * @param $trim (true) - whether to trim whitespace from value(s)
         */
-        public function prepArg($value, $default, $force_type=null, $trim=true)
+        public function prepArg($value, $default, $force_type = null, $trim = true)
         {
             $a = func_num_args();
-            if ($a < 2) $this->error('prepArg requires value & default');
+            if ($a < 2) {
+                $this->error('prepArg requires value & default');
+            }
 
-            if (is_null($force_type))
-            {
-                if (is_array($default))
-                {
+            if (is_null($force_type)) {
+                if (is_array($default)) {
                     $force_type = 'array';
                 }
             }
 
-            if ($force_type == 'bool')
-            {
+            if ($force_type == 'bool') {
                 $force_type = 'boolean';
             }
 
             // For backwards compatibility
-            if ($force_type === true)
-            {
+            if ($force_type === true) {
                 $force_type = 'array';
             }
 
             // Default?
-            if (empty($value))
-            {
+            if (empty($value)) {
                 $value = $default;
             }
 
             // Change to array if needed
-            if (is_string($value) and $force_type=='array')
-            {
+            if (is_string($value) and $force_type == 'array') {
                 $value = explode(",", $value);
             }
 
             // Trim
-            if ($trim)
-            {
-                if (is_string($value))
-                {
+            if ($trim) {
+                if (is_string($value)) {
                     $value = trim($value);
-                }
-                else if (is_array($value))
-                {
-                    if (isset($value[0]) and is_string($value[0]))
-                    {
+                } elseif (is_array($value)) {
+                    if (isset($value[0]) and is_string($value[0])) {
                         $value = array_map('trim', $value);
                     }
                 }
             }
 
-            if ($force_type == 'boolean')
-            {
+            if ($force_type == 'boolean') {
                 $value = in_array($value, [true, 'true', 'yes', '1', 1]);
             }
 
@@ -1521,43 +1391,35 @@ if (!class_exists("Console_Abstract"))
         /**
         * Configure property - if public
         */
-        public function configure($key, $value, $save_value=false)
+        public function configure($key, $value, $save_value = false)
         {
             $key = str_replace('-', '_', $key);
 
-            if (substr($key, 0, 3) == 'no_' and $value === true)
-            {
+            if (substr($key, 0, 3) == 'no_' and $value === true) {
                 $key = substr($key, 3);
                 $value = false;
             }
 
             $public_properties = $this->getPublicProperties();
-            if (in_array($key, $public_properties))
-            {
-
-                if (is_string($value))
-                {
+            if (in_array($key, $public_properties)) {
+                if (is_string($value)) {
                     $value = preg_replace('/^\~/', $this->getHomeDir(), $value);
                 }
 
                 $this->{$key} = $value;
 
-                if ($save_value)
-                {
+                if ($save_value) {
                     $this->config_to_save[$key] = $value;
                 }
-            }
-            else
-            {
+            } else {
                 $this->output("NOTICE: invalid config key - $key");
             }
         }
 
         // Get basic curl
-        public function getCurl($url, $fresh_no_cache=false)
+        public function getCurl($url, $fresh_no_cache = false)
         {
-            if (!$this->ssl_check)
-            {
+            if (!$this->ssl_check) {
                 $this->warn("Initializing unsafe connection to $url (no SSL check, as configured)", true);
             }
 
@@ -1573,8 +1435,7 @@ if (!class_exists("Console_Abstract"))
                 CURLOPT_SSL_VERIFYPEER => ($this->ssl_check ? 2 : 0),
             ]);
 
-            if ($fresh_no_cache)
-            {
+            if ($fresh_no_cache) {
                 curl_setopt($curl, CURLOPT_FRESH_CONNECT, true);
             }
 
@@ -1586,19 +1447,16 @@ if (!class_exists("Console_Abstract"))
         {
             $response = curl_exec($curl);
 
-            if (empty($response))
-            {
+            if (empty($response)) {
                 $number = curl_errno($curl);
 
                 // Was there an error?
-                if ($number)
-                {
+                if ($number) {
                     $message = curl_error($curl);
 
-                    if (stripos($message, 'ssl') !== false)
-                    {
-                        $message.= "\n\nFor some SSL issues, try downloading the latest CA bundle and pointing your PHP.ini to that (https://curl.haxx.se/docs/caextract.html)";
-                        $message.= "\n\nAlthough risky and not recommended, you can also consider re-running your command with the --no-ssl-check flag";
+                    if (stripos($message, 'ssl') !== false) {
+                        $message .= "\n\nFor some SSL issues, try downloading the latest CA bundle and pointing your PHP.ini to that (https://curl.haxx.se/docs/caextract.html)";
+                        $message .= "\n\nAlthough risky and not recommended, you can also consider re-running your command with the --no-ssl-check flag";
                     }
 
                     $this->warn($message, true);
@@ -1609,7 +1467,7 @@ if (!class_exists("Console_Abstract"))
         }
 
         // Update arguments for curl URL
-        public function updateCurlArgs($ch, $args, $overwrite=false)
+        public function updateCurlArgs($ch, $args, $overwrite = false)
         {
             // Get info from previous curl
             $curl_info = curl_getinfo($ch);
@@ -1618,20 +1476,15 @@ if (!class_exists("Console_Abstract"))
             $url = $curl_info['url'];
 
             $url_parsed = parse_url($url);
-            if (empty($url_parsed['query']))
-            {
+            if (empty($url_parsed['query'])) {
                 $query = [];
-            }
-            else
-            {
+            } else {
                 parse_str($url_parsed['query'], $query);
             }
 
             // Set new args
-            foreach ($args as $key=>$value)
-            {
-                if (!isset($query[$key]) or $overwrite)
-                {
+            foreach ($args as $key => $value) {
+                if (!isset($query[$key]) or $overwrite) {
                     $query[$key] = $value;
                 }
             }
@@ -1651,7 +1504,7 @@ if (!class_exists("Console_Abstract"))
         /**
         * Interact with cache files
         */
-        public function getCacheContents($subpath, $expiration=null)
+        public function getCacheContents($subpath, $expiration = null)
         {
             $expiration = $expiration ?? $this->cache_lifetime;
 
@@ -1660,20 +1513,17 @@ if (!class_exists("Console_Abstract"))
             $subpath = is_array($subpath) ? implode(DS, $subpath) : $subpath;
 
             $cache_file = $cache_dir . DS . $subpath;
-            $contents=false;
+            $contents = false;
 
-            if (is_file($cache_file))
-            {
+            if (is_file($cache_file)) {
                 $this->log("Cache file exists ($cache_file) - checking age");
                 $cache_modified = filemtime($cache_file);
                 $now = time();
                 $cache_age = $now - $cache_modified;
-                if ($cache_age < $expiration)
-                {
+                if ($cache_age < $expiration) {
                     $this->log("New enough - reading from cache file ($cache_file)");
                     $contents = file_get_contents($cache_file);
-                    if ($contents === false)
-                    {
+                    if ($contents === false) {
                         $this->warn("Failed to read cache file ($cache_file) - possible permissions issue", true);
                     }
                 }
@@ -1690,18 +1540,15 @@ if (!class_exists("Console_Abstract"))
             $cache_file = $cache_dir . DS . $subpath;
             $cache_dir = dirname($cache_file);
 
-            if (!is_dir($cache_dir))
-            {
+            if (!is_dir($cache_dir)) {
                 $success = mkdir($cache_dir, 0755, true);
-                if (!$success)
-                {
+                if (!$success) {
                     $this->error("Unable to create new directory - $cache_dir");
                 }
             }
 
             $written = file_put_contents($cache_file, $contents);
-            if ($written === false)
-            {
+            if ($written === false) {
                 $this->warn("Failed to write to cache file ($cache_file) - possible permissions issue", true);
                 return false;
             }
@@ -1719,14 +1566,12 @@ if (!class_exists("Console_Abstract"))
             $subpath = is_array($subpath) ? implode(DS, $subpath) : $subpath;
 
             $temp_file = $temp_dir . DS . $subpath;
-            $contents=false;
+            $contents = false;
 
-            if (is_file($temp_file))
-            {
+            if (is_file($temp_file)) {
                 $this->log("Temp file exists ($temp_file) - reading from temp file");
                 $contents = file_get_contents($temp_file);
-                if ($contents === false)
-                {
+                if ($contents === false) {
                     $this->warn("Failed to read temp file ($temp_file) - possible permissions issue", true);
                 }
             }
@@ -1742,14 +1587,12 @@ if (!class_exists("Console_Abstract"))
             $temp_file = $temp_dir . DS . $subpath;
             $temp_dir = dirname($temp_file);
 
-            if (!is_dir($temp_dir))
-            {
+            if (!is_dir($temp_dir)) {
                 mkdir($temp_dir, 0755, true);
             }
 
             $written = file_put_contents($temp_file, $contents);
-            if ($written === false)
-            {
+            if ($written === false) {
                 $this->warn("Failed to write to temp file ($temp_file) - possible permissions issue", true);
                 return false;
             }
@@ -1760,7 +1603,7 @@ if (!class_exists("Console_Abstract"))
         /**
         * Paginate some content for display on terminal
         */
-        public function paginate($content, $options=[])
+        public function paginate($content, $options = [])
         {
             $options = array_merge([
                 'starting_line' => 1,
@@ -1773,8 +1616,7 @@ if (!class_exists("Console_Abstract"))
             ], $options);
 
             // Split into lines if needed
-            if (is_string($content))
-            {
+            if (is_string($content)) {
                 $content = preg_split("/\r\n|\n|\r/", $content);
             }
 
@@ -1783,28 +1625,26 @@ if (!class_exists("Console_Abstract"))
             $max_height = $this->getTerminalHeight();
             $max_height = $max_height - $options['line_buffer'];
             $max_height = $max_height - 2; // for start/end line breaks
-            if ($options['include_page_info'])
-            {
+            if ($options['include_page_info']) {
                 $max_height = $max_height - 2; // for page info and extra line break
             }
 
-            if (!is_array($content)) $content = explode("\n");
+            if (!is_array($content)) {
+                $content = explode("\n");
+            }
             $content = array_values($content);
 
             // Pre-wrap lines if specified, to make sure pagination works based on real number of lines
-            if ($options['wrap'])
-            {
+            if ($options['wrap']) {
                 $wrapped_content = [];
-                foreach ($content as $line)
-                {
-					$line_length = strlen($line);
-                    while ($line_length > $max_width)
-                    {
-                        $wrapped_content[]= substr($line, 0, $max_width);
+                foreach ($content as $line) {
+                    $line_length = strlen($line);
+                    while ($line_length > $max_width) {
+                        $wrapped_content[] = substr($line, 0, $max_width);
                         $line = substr($line, $max_width);
-						$line_length = strlen($line);
+                        $line_length = strlen($line);
                     }
-                    $wrapped_content[]= $line;
+                    $wrapped_content[] = $line;
                 }
                 $content = $wrapped_content;
             }
@@ -1812,14 +1652,12 @@ if (!class_exists("Console_Abstract"))
             $content_length = count($content);
 
             $are_prev = false;
-            if ($options['starting_line'] > 1)
-            {
+            if ($options['starting_line'] > 1) {
                 $are_prev = true;
             }
 
             $are_next = false;
-            if (($options['starting_line'] + $max_height - 1) < $content_length)
-            {
+            if (($options['starting_line'] + $max_height - 1) < $content_length) {
                 $are_next = true;
             }
 
@@ -1827,42 +1665,32 @@ if (!class_exists("Console_Abstract"))
             $output = [];
 
             // Starting line break
-            if ($are_prev)
-            {
-                $output[]= $this->colorize(str_pad("==[MORE ABOVE]", $max_width, "="), 'green', null, 'bold');
-            }
-            else
-            {
-                $output[]= str_pad("", $max_width, "=");
+            if ($are_prev) {
+                $output[] = $this->colorize(str_pad("==[MORE ABOVE]", $max_width, "="), 'green', null, 'bold');
+            } else {
+                $output[] = str_pad("", $max_width, "=");
             }
 
             $l = $options['starting_line'] - 1;
             $final_line = $options['starting_line'];
-            while ($height < $max_height)
-            {
-                if ($l < ($content_length))
-                {
+            while ($height < $max_height) {
+                if ($l < ($content_length)) {
                     $final_line = $l + 1;
                     $line = $content[$l];
-                }
-                else
-                {
-                    if ($options['fill_height'])
-                    {
+                } else {
+                    if ($options['fill_height']) {
                         $line = "";
-                    }
-                    else
-                    {
+                    } else {
                         break;
                     }
                 }
 
 
-                if (!is_string($line)) $this->error("Bad type for line $l of content - string expected");
-                if (strlen($line) > $max_width)
-                {
-                    if ($options['wrap'])
-                    {
+                if (!is_string($line)) {
+                    $this->error("Bad type for line $l of content - string expected");
+                }
+                if (strlen($line) > $max_width) {
+                    if ($options['wrap']) {
                         $this->error("Something wrong with the following line - wrap was on, but it's still too long", false);
                         $this->output($line);
                         $this->error("Aborting");
@@ -1870,32 +1698,27 @@ if (!class_exists("Console_Abstract"))
 
                     $line = substr($line, 0, $max_width);
                 }
-                $output[]= $line;
+                $output[] = $line;
 
                 $l++;
                 $height++;
             }
 
             // Ending line break
-            if ($are_next)
-            {
-                $output[]= $this->colorize(str_pad("==[MORE BELOW]", $max_width, "="), 'green', null, 'bold');
-            }
-            else
-            {
-                $output[]= str_pad("", $max_width, "=");
+            if ($are_next) {
+                $output[] = $this->colorize(str_pad("==[MORE BELOW]", $max_width, "="), 'green', null, 'bold');
+            } else {
+                $output[] = str_pad("", $max_width, "=");
             }
 
-            if ($options['include_page_info'])
-            {
-                $output[]= str_pad($options['starting_line'] . " - " . $final_line . " of " . $content_length . " items", $max_width, " ");
-                $output[]= str_pad("", $max_width, "=");
+            if ($options['include_page_info']) {
+                $output[] = str_pad($options['starting_line'] . " - " . $final_line . " of " . $content_length . " items", $max_width, " ");
+                $output[] = str_pad("", $max_width, "=");
             }
 
             $output = implode("\n", $output);
 
-            if ($options['output'])
-            {
+            if ($options['output']) {
                 echo $output;
             }
 
@@ -1915,9 +1738,8 @@ if (!class_exists("Console_Abstract"))
             $r = new ReflectionObject($this);
             $rm = $r->getMethod($method);
             $params = [];
-            foreach ($rm->getParameters() as $param)
-            {
-                $params[]=$param->name;
+            foreach ($rm->getParameters() as $param) {
+                $params[] = $param->name;
             }
             return $params;
         }
@@ -1926,45 +1748,39 @@ if (!class_exists("Console_Abstract"))
         protected $_public_properties = null;
         public function getPublicProperties()
         {
-            if (is_null($this->_public_properties))
-            {
+            if (is_null($this->_public_properties)) {
                 $this->_public_properties = [];
                 $reflection = new ReflectionObject($this);
-                foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $prop)
-                {
-                    $this->_public_properties[]= $prop->getName();
+                foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $prop) {
+                    $this->_public_properties[] = $prop->getName();
                 }
                 sort($this->_public_properties);
             }
 
             return $this->_public_properties;
-
         }
 
         // Manage CLI Input Handle
         protected $_cli_input_handle = null;
         protected function getCliInputHandle()
         {
-            if (is_null($this->_cli_input_handle))
-            {
-                $this->_cli_input_handle = fopen ("php://stdin","r");
+            if (is_null($this->_cli_input_handle)) {
+                $this->_cli_input_handle = fopen("php://stdin", "r");
             }
 
             return $this->_cli_input_handle;
         }
         protected function close_cli_input_handle()
         {
-            if (!is_null($this->_cli_input_handle))
-            {
+            if (!is_null($this->_cli_input_handle)) {
                 fclose($this->_cli_input_handle);
             }
         }
 
         protected $_terminal_height = null;
-        public function getTerminalHeight($fresh=false)
+        public function getTerminalHeight($fresh = false)
         {
-            if ($fresh or empty($this->_terminal_height))
-            {
+            if ($fresh or empty($this->_terminal_height)) {
                 exec("tput lines", $output, $return);
 
                 if (
@@ -1972,11 +1788,9 @@ if (!class_exists("Console_Abstract"))
                     or empty($output)
                     or empty($output[0])
                     or !is_numeric($output[0])
-                ){
+                ) {
                     $this->_terminal_height = static::DEFAULT_HEIGHT;
-                }
-                else
-                {
+                } else {
                     $this->_terminal_height = (int) $output[0];
                 }
             }
@@ -1985,10 +1799,9 @@ if (!class_exists("Console_Abstract"))
         }
 
         protected $_terminal_width = null;
-        public function getTerminalWidth($fresh=false)
+        public function getTerminalWidth($fresh = false)
         {
-            if ($fresh or empty($this->_terminal_width))
-            {
+            if ($fresh or empty($this->_terminal_width)) {
                 exec("tput cols", $output, $return);
 
                 if (
@@ -1996,11 +1809,9 @@ if (!class_exists("Console_Abstract"))
                     or empty($output)
                     or empty($output[0])
                     or !is_numeric($output[0])
-                ){
+                ) {
                     $this->_terminal_width = static::DEFAULT_WIDTH;
-                }
-                else
-                {
+                } else {
                     $this->_terminal_width = (int) $output[0];
                 }
             }
@@ -2015,7 +1826,7 @@ if (!class_exists("Console_Abstract"))
         *  - Italic (showing as dim)
         *  - Links (Underlined with link in parentheses)
         *  - Unordered Lists ( - )
-        *  - Ordered Lists ( 1. ) 
+        *  - Ordered Lists ( 1. )
         *  - Hierarchical lists (via indentation)
         * Not Yet:
         *  - Text colors
@@ -2023,33 +1834,31 @@ if (!class_exists("Console_Abstract"))
         *  - Indentation styles
         *  - Less commonly supported terminal styles
         */
-        public function parseHtmlForTerminal($dom, $depth=0, $prefix="")
+        public function parseHtmlForTerminal($dom, $depth = 0, $prefix = "")
         {
             $output = "";
 
-            if (is_string($dom))
-            {
+            if (is_string($dom)) {
                 $dom = trim($dom);
 
-                if (empty($dom)) return $dom;
+                if (empty($dom)) {
+                    return $dom;
+                }
 
                 $tmp = new DOMDocument();
-                if (! @$tmp->loadHTML(mb_convert_encoding($dom, 'HTML-ENTITIES', 'UTF-8')))
-                {
+                if (! @$tmp->loadHTML(mb_convert_encoding($dom, 'HTML-ENTITIES', 'UTF-8'))) {
                     return $dom;
                 }
                 $dom = $tmp;
             }
 
-            if (!is_object($dom) or !in_array(get_class($dom), ["DOMDocumentType", "DOMDocument", "DOMElement"]))
-            {
+            if (!is_object($dom) or !in_array(get_class($dom), ["DOMDocumentType", "DOMDocument", "DOMElement"])) {
                 $type = is_object($dom) ? get_class($dom) : gettype($dom);
                 $this->error("Invalid type passed to parseHtmlForTerminal - $type");
             }
-            
-			$li_index=0;
-            foreach ($dom->childNodes as $child_index => $node)
-            {
+
+            $li_index = 0;
+            foreach ($dom->childNodes as $child_index => $node) {
                 $_output = ""; // output for this child
                 $_prefix = $prefix; // prefix for this child's children - start with current prefix, passed to function
                 $_suffix = ""; // suffix for end of this child
@@ -2059,21 +1868,19 @@ if (!class_exists("Console_Abstract"))
                 $color_background = null;
                 $color_other = null;
 
-                switch($node->nodeName)
-                {
+                switch ($node->nodeName) {
                     case 'a':
                         $color_other = 'underline';
                         $href = trim($node->getAttribute('href'));
                         $content = trim($node->nodeValue);
-                        if (strtolower(trim($href,"/")) != strtolower(trim($content,"/")))
-                        {
+                        if (strtolower(trim($href, "/")) != strtolower(trim($content, "/"))) {
                             $_suffix = " [$href]";
                         }
                         break;
 
                     case 'br':
                     case 'p':
-                        $_output.= "\n" . $_prefix;
+                        $_output .= "\n" . $_prefix;
                         break;
 
                     case 'b':
@@ -2084,56 +1891,53 @@ if (!class_exists("Console_Abstract"))
                     case 'em':
                         $color_other = 'dim';
                         break;
-                
+
                     case 'ol':
                     case 'ul':
-                        $_output.="\n";
+                        $_output .= "\n";
                         break;
 
                     case 'li':
-
                         // Output number for ol child, otherwise, default to "-"
                         $list_char = " - ";
-                        if ($dom->nodeName == "ol")
-                        {
+                        if ($dom->nodeName == "ol") {
                             $list_char = " " . ($li_index + 1) . ". ";
                         }
 
-                        $_output.= $_prefix . $list_char;
+                        $_output .= $_prefix . $list_char;
 
                         // Update prefix for child elements
                         $_prefix = $_prefix . str_pad("", strlen($list_char));
 
                         $_suffix = "\n";
 
-						$li_index++;
+                        $li_index++;
 
                         break;
 
                     case '#text':
-                        $_output.= $node->nodeValue;
+                        $_output .= $node->nodeValue;
                         break;
 
                     default:
                         break;
                 }
 
-                if ($node->hasChildNodes())
-                {
-                    $_output.= $this->parseHtmlForTerminal($node, $depth+1, $_prefix);
+                if ($node->hasChildNodes()) {
+                    $_output .= $this->parseHtmlForTerminal($node, $depth + 1, $_prefix);
                 }
 
                 // Decorate the output as needed
                 $_output = $this->colorize($_output, $color_foreground, $color_background, $color_other);
-                
-                $output.= $_output . $_suffix;
+
+                $output .= $_output . $_suffix;
             }
 
             //$output = str_replace("\u{00a0}", " ", $output);
             $output = str_replace("\r", "\n", $output);
             $output = preg_replace('/\n(\s*\n){2,}/', "\n\n", $output);
 
-			return htmlspecialchars_decode($output);
+            return htmlspecialchars_decode($output);
         }
 
         /**
@@ -2155,28 +1959,26 @@ if (!class_exists("Console_Abstract"))
         /**
         * JSON encode & decode, using HJSON
         */
-        public function json_decode($json, $options=[])
+        public function json_decode($json, $options = [])
         {
             $this->log("Running json_decode on console_abstract");
 
             // mimic json_decode behavior
-            if ($options === true)
-            {
+            if ($options === true) {
                 $options = ['assoc' => true];
             }
 
             // default to preserve comments and whitespace
-            if (!isset($options['keepWsc']))
-            {
+            if (!isset($options['keepWsc'])) {
                 $options['keepWsc'] = true;
             }
 
-            $parser = new HJSONParser;
+            $parser = new HJSONParser();
             $data = $parser->parse($json, $options);
             $this->_json_cleanup($data);
             return $data;
         }
-        public function json_encode($data, $options=[])
+        public function json_encode($data, $options = [])
         {
             $this->log("Running json_encode on console_abstract");
 
@@ -2189,22 +1991,16 @@ if (!class_exists("Console_Abstract"))
             ], $options);
 
             // default to preserve comments and whitespace
-            if (!isset($options['keepWsc']))
-            {
+            if (!isset($options['keepWsc'])) {
                 $options['keepWsc'] = true;
             }
 
-            if (empty($options['keepWsc']))
-            {
+            if (empty($options['keepWsc'])) {
                 unset($data['__WSC__']);
-            }
-            else
-            {
-                if (!empty($data['__WSC__']))
-                {
+            } else {
+                if (!empty($data['__WSC__'])) {
                     $data['__WSC__'] = (object) $data['__WSC__'];
-                    if (!empty($data['__WSC__']->c))
-                    {
+                    if (!empty($data['__WSC__']->c)) {
                         $data['__WSC__']->c = (object) $data['__WSC__']->c;
                     }
                 }
@@ -2212,22 +2008,18 @@ if (!class_exists("Console_Abstract"))
 
             $this->_json_cleanup($data);
 
-            $stringifier = new HJSONStringifier;
+            $stringifier = new HJSONStringifier();
             $json = $stringifier->stringify($data, $options);
             return $json;
         }
         protected function _json_cleanup(&$data)
         {
-            if (is_iterable($data))
-            {
-                foreach ($data as $key => &$value)
-                {
-                    if (is_object($value))
-                    {
+            if (is_iterable($data)) {
+                foreach ($data as $key => &$value) {
+                    if (is_object($value)) {
                         unset($value->__WSC__);
                     }
-                    if (is_array($value))
-                    {
+                    if (is_array($value)) {
                         unset($value['__WSC__']);
                     }
 
@@ -2242,25 +2034,25 @@ if (!class_exists("Console_Abstract"))
             throw new Exception("Invalid method '$method'");
         }
 
-		// Extendable method for startup logic
-		protected function _startup($arglist) {
-			// Nothing to do by default
-		}
+        // Extendable method for startup logic
+        protected function _startup($arglist)
+        {
+            // Nothing to do by default
+        }
 
-		// Extendable method for shutdown logic
-		protected function _shutdown($arglist) {
-			// Nothing to do by default
-		}
+        // Extendable method for shutdown logic
+        protected function _shutdown($arglist)
+        {
+            // Nothing to do by default
+        }
     }
 }
 
 // For working unpackaged
-if (!empty($src_includes) and is_array($src_includes))
-{
-    foreach ($src_includes as $src_include)
-    {
+if (!empty($src_includes) and is_array($src_includes)) {
+    foreach ($src_includes as $src_include) {
         require $src_include;
     }
 }
 
-// Note: leave this for packaging 
+// Note: leave this for packaging

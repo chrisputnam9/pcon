@@ -4,8 +4,8 @@
  * Color constants
  *  - https://en.wikipedia.org/wiki/ANSI_escape_code
  */
-if (!class_exists("CONSOLE_COLORS"))
-{
+
+if (!class_exists("CONSOLE_COLORS")) {
     class CONSOLE_COLORS
     {
         public static $foreground = [
