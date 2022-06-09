@@ -1053,6 +1053,7 @@ if (!class_exists("Console_Abstract")) {
         public function confirm($message, $default = 'y', $required = false, $single = true, $single_hide = false)
         {
             $yn = $this->input($message, $default, $required, $single, $single_hide);
+            $this->br();
 
             // True if first letter of response is y or Y
             return strtolower(substr($yn, 0, 1)) == 'y';
@@ -1104,10 +1105,17 @@ if (!class_exists("Console_Abstract")) {
                 if ($single) {
                     $single_hide = $single_hide ? ' -s' : '';
                     if ($this->is_windows) {
-                        $line = trim(`bash -c "read$single_hide -n1 CHAR && echo \$CHAR"`);
+                        $line = `bash -c "read$single_hide -n1 CHAR && echo \$CHAR"`;
                     } else {
-                        $line = trim(`bash -c 'read$single_hide -n1 CHAR && echo \$CHAR'`);
+                        $line = `bash -c 'read$single_hide -n1 CHAR && echo \$CHAR'`;
                     }
+
+                    // Single char entry doesn't result in a line break on its own
+                    // - unless the character entered was 'enter'
+                    if ( "\n" !== $line ) {
+                        $this->br();
+                    }
+
                 } else {
                     $handle = $this->getCliInputHandle();
                     $line = fgets($handle);
