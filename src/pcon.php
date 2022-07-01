@@ -30,7 +30,7 @@ class PCon extends Console_Abstract
 
     // Config Variables
     protected $__console_abstract_path = ["Path to console_abstract.php", "string"];
-    public $console_abstract_path = CONSOLE_ABSTRACT_PATH;
+    public $console_abstract_path      = CONSOLE_ABSTRACT_PATH;
 
     // Don't bother with hash, no download built in
     public $update_check_hash = false;
@@ -52,9 +52,9 @@ class PCon extends Console_Abstract
     {
         $this->output('Creating New PHP Console Tool');
 
-        $tool_name = $this->prepArg($tool_name, null);
-        $tool_folder = $this->prepArg($tool_folder, null);
-        $_parent_path = $this->prepArg($_parent_path, null);
+        $tool_name     = $this->prepArg($tool_name, null);
+        $tool_folder   = $this->prepArg($tool_folder, null);
+        $_parent_path  = $this->prepArg($_parent_path, null);
         $create_parent = $this->prepArg($create_parent, false, 'boolean');
 
         if (is_null($tool_name)) {
@@ -79,7 +79,7 @@ class PCon extends Console_Abstract
 
                 $parent_path = $this->prepArg($parent_path, null);
             } else {
-                $parent_path = $_parent_path;
+                $parent_path  = $_parent_path;
                 $_parent_path = null;
             }
 
@@ -87,20 +87,22 @@ class PCon extends Console_Abstract
                 $parent_path = rtrim($parent_path, '/');
             }
 
-            if (!is_dir($parent_path)) {
+            if (! is_dir($parent_path)) {
                 if ($create_parent) {
                     $this->log('Creating "' . $parent_path . '"');
                     $success = mkdir($parent_path, 0755, true);
-                    if (!$success) {
+                    if (! $success) {
                         $this->warn("Unable to create folder ($parent_path) - please try again");
-                        $parent_path = null; // invalidate to loop
+                        $parent_path = null;
+// invalidate to loop
                     }
                 } else {
                     $this->warn("This folder doesn't exist ($parent_path) - please specify an existing location");
-                    $parent_path = null; // invalidate to loop
+                    $parent_path = null;
+// invalidate to loop
                 }
             }
-        }
+        }//end while
 
         $tool_path = $parent_path . DS . $tool_folder;
 
@@ -118,7 +120,7 @@ class PCon extends Console_Abstract
         mkdir($tool_path, 0755, true);
 
         $this->log('Symlinking PCon folder from configured path');
-        $pcon_dir = realpath(__DIR__ . DS . "..");
+        $pcon_dir        = realpath(__DIR__ . DS . "..");
         $symlink_command = 'ln -s "' . $pcon_dir . '" "' . $tool_path . DS . '"';
         $this->exec($symlink_command);
 
@@ -167,7 +169,8 @@ class PCon extends Console_Abstract
         $this->hr();
         $this->output('Finished:');
         $this->output($created);
-    }
+    }//end create()
+
 
     protected $___package = [
         "Package a PHP console tool - interactive, or specify options",
@@ -187,7 +190,7 @@ class PCon extends Console_Abstract
                 $tool_path = $this->input("Enter path to primary file of console tool to package", null, true);
                 $tool_path = $this->prepArg($tool_path, null);
             } else {
-                $tool_path = $_tool_path;
+                $tool_path  = $_tool_path;
                 $_tool_path = null;
             }
 
@@ -195,13 +198,13 @@ class PCon extends Console_Abstract
                 $tool_path = rtrim($tool_path, '/');
             }
 
-            if (!is_file($tool_path)) {
+            if (! is_file($tool_path)) {
                 $this->warn("This file doesn't exist ($tool_path) - please specify the executable script an existing tool");
                 $tool_path = null;
             }
         }
 
-        $tool_dir = dirname($tool_path);
+        $tool_dir  = dirname($tool_path);
         $tool_file = basename($tool_path);
 
         $this->output('Details Summary:');
@@ -211,7 +214,7 @@ class PCon extends Console_Abstract
 
         $this->log('Creating dist folder');
         $dist_dir = $tool_dir . DS . 'dist';
-        if (!is_dir($dist_dir)) {
+        if (! is_dir($dist_dir)) {
             mkdir($dist_dir, 0755);
         }
         $tool_exec_path = $dist_dir . DS . $tool_file;
@@ -220,7 +223,7 @@ class PCon extends Console_Abstract
         $tool_exec_handle = fopen($tool_exec_path, 'w');
 
         // Start with basic template, hashbang
-        $package_dir = __DIR__ . DS . 'pkg' . DS;
+        $package_dir          = __DIR__ . DS . 'pkg' . DS;
         $package_template_src = file_get_contents($package_dir . 'package_template');
         fwrite($tool_exec_handle, $package_template_src);
 
@@ -259,7 +262,8 @@ class PCon extends Console_Abstract
 
         $this->output('Packaging complete to: ' . $tool_exec_path);
         $this->output('Package hash (' . $this->update_hash_algorithm . '): ' . $package_hash);
-    }
+    }//end package()
+
 
     protected $___test_colors = [
         "Test available colors and text decoration - escape codes",
@@ -279,21 +283,22 @@ class PCon extends Console_Abstract
             foreach (CONSOLE_COLORS::$$type as $text => $code) {
                 $foreground = null;
                 $background = null;
-                $other = null;
-                $$type = $text;
+                $other      = null;
+                $$type      = $text;
 
                 if ($type == 'background') {
                     $foreground = ($background == 'light_gray') ? 'dark_gray' : 'white';
-                    $text .= " ($foreground text)";
+                    $text      .= " ($foreground text)";
                 }
 
                 $this->output(str_pad(" - $text ", 35, ".") . " " . $this->colorize("In order to understand recursion, one must first understand recursion.", $foreground, $background, $other));
             }
-        }
+        }//end foreach
 
         $this->pause();
-    }
-}
+    }//end test_colors()
+}//end class
+
 
 // Kick it all off
 PCon::run($argv);
