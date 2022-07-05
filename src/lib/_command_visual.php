@@ -15,8 +15,8 @@ if (!class_exists("Command_Visual")) {
         public $reload_data;
 
         /**
-        * Constructor
-        */
+         * Constructor
+         */
         public function __construct($main_tool, $options = [])
         {
             parent::__construct($main_tool);
@@ -51,12 +51,13 @@ if (!class_exists("Command_Visual")) {
                 $this->commands = $this->mergeArraysRecursively($this->commands, $options['commands']);
             }
             $this->cleanCommandArray($this->commands);
-        }
+        }//end __construct()
+
 
         /**
-        * Clean an array of commands
-        *  - Make sure keys are set properly as array of single keys
-        */
+         * Clean an array of commands
+         *  - Make sure keys are set properly as array of single keys
+         */
         protected function cleanCommandArray(&$commands)
         {
             foreach ($commands as $command_slug => $command_details) {
@@ -77,13 +78,15 @@ if (!class_exists("Command_Visual")) {
 
                 $commands[$command_slug] = $command_details;
             }
-        }
+        }//end cleanCommandArray()
+
 
         /**
-        * Prompt for input and run the associated command if valid
-        * @param $commmands - the commands to select from
-        * @return boolean whether command was valid or not
-        */
+         * Prompt for input and run the associated command if valid
+         *
+         * @param  $commmands - the commands to select from
+         * @return boolean whether command was valid or not
+         */
         protected function promptAndRunCommand($commands, $show_options = false)
         {
             if (!is_array($commands) or empty($commands)) {
@@ -131,7 +134,7 @@ if (!class_exists("Command_Visual")) {
 
                         $this->error("Uncallable method for $input", false, true);
                         return true;
-                    }
+                    }//end if
 
                     $continue_loop = call_user_func($command_callable, $this);
 
@@ -148,17 +151,18 @@ if (!class_exists("Command_Visual")) {
                     }
 
                     return true;
-                }
-            }
+                }//end if
+            }//end foreach
 
             if (!$matched) {
                 $this->log("Invalid input $input");
             }
-        }
+        }//end promptAndRunCommand()
+
 
         /**
-        * Built-in commands
-        */
+         * Built-in commands
+         */
 
         // Help
         public function help($specific = false)
@@ -174,20 +178,24 @@ if (!class_exists("Command_Visual")) {
             }
             $this->hr();
             $this->input("Hit any key to exit help", null, false, true);
-        }
+        }//end help()
+
 
         // Quit
         public function quit()
         {
-            return false; // Back to previous area, basically
-        }
+            return false;
+// Back to previous area, basically
+        }//end quit()
+
 
         // Reload
         public function reload()
         {
             return call_user_func($this->reload_function, $this->reload_data, $this);
-        }
-    }
-}
+        }//end reload()
+    }//end class
+
+}//end if
 
 // Note: leave this for packaging ?>

@@ -4,7 +4,7 @@
  * Primary load file
  * Sets a few constants and loads in primary logic files
  *
- * @package   chrisputnam9/pcon
+ * @package   pcon
  * @copyright 2022
  * @author    chrisputnam9
  */

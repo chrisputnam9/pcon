@@ -46,16 +46,17 @@ if (!class_exists("CONSOLE_COLORS")) {
             'inverse' => '7',
 
             // Don't seem to work for the author at least:
-            //'italic' => '3',
-            //'blink_fast' => '6',
-            //'concealed' => '8',
-            //'strike' => '9',
-            //'double_underline' => '21',
-            //'frame' => '51',
-            //'encircled' => '52',
-            //'overlined' => '53',
+            // 'italic' => '3',
+            // 'blink_fast' => '6',
+            // 'concealed' => '8',
+            // 'strike' => '9',
+            // 'double_underline' => '21',
+            // 'frame' => '51',
+            // 'encircled' => '52',
+            // 'overlined' => '53',
         ];
-    }
-}
+    }//end class
+
+}//end if
 
 // Note: leave this for packaging ?>

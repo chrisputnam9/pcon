@@ -11,8 +11,8 @@ if (!class_exists("Command")) {
     class Command
     {
         /**
-        * Callable Methods
-        */
+         * Callable Methods
+         */
         protected static $METHODS = [
             'clear',
             'exit',
@@ -21,8 +21,8 @@ if (!class_exists("Command")) {
         ];
 
         /**
-        * Method aliases
-        */
+         * Method aliases
+         */
         protected static $METHOD_ALIASES = [
             'h' => 'help',
             '?' => 'help',
@@ -33,47 +33,49 @@ if (!class_exists("Command")) {
         ];
 
         /**
-        * Default method if none specified
-        */
+         * Default method if none specified
+         */
         protected static $DEFAULT_METHOD = "prompt";
 
         /**
-        * Methods that are OK to run as root without warning
-        */
+         * Methods that are OK to run as root without warning
+         */
         protected static $ROOT_METHODS = [];
 
         /**
-        * Config options that are hidden from help output
-        * - Add config values here that would not typically be overridden by a flag
-        * - Cleans up help output and avoids confusion
-        */
+         * Config options that are hidden from help output
+         * - Add config values here that would not typically be overridden by a flag
+         * - Cleans up help output and avoids confusion
+         */
         protected static $HIDDEN_CONFIG_OPTIONS = [];
 
         /**
-        * Main Tool instance
-        */
+         * Main Tool instance
+         */
         protected $main_tool;
 
         /**
-        * Constructor
-        */
+         * Constructor
+         */
         public function __construct($main_tool)
         {
             $this->setMainTool($main_tool);
-        }
+        }//end __construct()
+
 
         /**
-        * Set Main Tool
-        * - for shared functionality
-        */
+         * Set Main Tool
+         * - for shared functionality
+         */
         public function setMainTool($main_tool)
         {
             $this->main_tool = $main_tool;
-        }
+        }//end setMainTool()
+
 
         /**
-        * Run - parse args and run method specified
-        */
+         * Run - parse args and run method specified
+         */
         public function try_calling($arg_list, $initial = false, $prompt_when_done = false)
         {
             $this->log($arg_list);
@@ -140,7 +142,8 @@ if (!class_exists("Command")) {
 
 
                     // Run an update check
-                    if ($this->updateCheck(true, true)) { // auto:true, output:true
+                    if ($this->updateCheck(true, true)) {
+// auto:true, output:true
                         if ($method != 'update') {
                             $this->sleep(3);
                         }
@@ -165,12 +168,13 @@ if (!class_exists("Command")) {
                 $this->log("$call_info complete");
             } catch (Exception $e) {
                 $this->error($e->getMessage());
-            }
+            }//end try
 
             if ($prompt_when_done) {
                 $this->prompt(false, false);
             }
-        }
+        }//end try_calling()
+
         protected function _run_error($e, $method)
         {
             $class = get_class($e);
@@ -180,7 +184,8 @@ if (!class_exists("Command")) {
             $this->error($error, false);
             $this->help($method);
             exit(500);
-        }
+        }//end _run_error()
+
 
         protected $___clear = [
             "Clear the screen",
@@ -188,7 +193,8 @@ if (!class_exists("Command")) {
         public function clear()
         {
             $this->main_tool->clear();
-        }
+        }//end clear()
+
 
         protected $___exit = [
             "Exit the command prompt",
@@ -196,7 +202,8 @@ if (!class_exists("Command")) {
         public function exit()
         {
             exit();
-        }
+        }//end exit()
+
 
         protected $___help = [
             "Shows help/usage information.",
@@ -260,7 +267,8 @@ if (!class_exists("Command")) {
             if (!$this->verbose) {
                 $this->output($this->colorize("Less common options are hidden.  Use --verbose to show ALL options.", "yellow"));
             }
-        }
+        }//end help()
+
 
         protected $___prompt = [
             "Show interactive prompt"
@@ -281,11 +289,12 @@ if (!class_exists("Command")) {
             $arg_list = explode(" ", $command_string);
 
             $this->try_calling($arg_list, false, true);
-        }
+        }//end prompt()
+
 
             /**
-            * Show help for a specific method or option
-            */
+             * Show help for a specific method or option
+             */
         protected function _help_specific($specific)
         {
             $help = $this->_help_var($specific);
@@ -350,12 +359,13 @@ if (!class_exists("Command")) {
                 $this->hr('-');
                 $this->output3col("--$specific", "($help_param[1])", $help_param[0]);
                 $this->hr('-');
-            }
-        }
+            }//end if
+        }//end _help_specific()
+
 
             /**
-            * Get help var for specific method or option
-            */
+             * Get help var for specific method or option
+             */
         protected function _help_var($specific, $type = false)
         {
             $help = false;
@@ -376,11 +386,12 @@ if (!class_exists("Command")) {
                 }
             }
             return $help;
-        }
+        }//end _help_var()
+
 
             /**
-            * Clean help param - fill in defaults
-            */
+             * Clean help param - fill in defaults
+             */
         protected function _help_param($param)
         {
             if (!is_array($param)) {
@@ -401,11 +412,12 @@ if (!class_exists("Command")) {
             $param['string'] = ($param[1] == 'string');
 
             return $param;
-        }
+        }//end _help_param()
+
 
         /**
-        * Get static property by merging up with partent values
-        */
+         * Get static property by merging up with partent values
+         */
         protected static function getMergedProperty($property)
         {
             $value = [];
@@ -417,16 +429,17 @@ if (!class_exists("Command")) {
                 }
             }
             return array_unique($value);
-        }
+        }//end getMergedProperty()
+
 
         /**
-        * Merge arrays recursively, in the way we expect
-        * Primarily, we are expecting meaningful keys - eg. option arrays, commands/subcommands, etc.
-        *  - Start with array1
-        *  - Check each key - if that key exists in array2, overwrite with array2's value, EXCEPT:
-        *  - If both values are an array, merge the values instead - recursively
-        *  - Last, add keys that are in array2 only
-        */
+         * Merge arrays recursively, in the way we expect
+         * Primarily, we are expecting meaningful keys - eg. option arrays, commands/subcommands, etc.
+         *  - Start with array1
+         *  - Check each key - if that key exists in array2, overwrite with array2's value, EXCEPT:
+         *  - If both values are an array, merge the values instead - recursively
+         *  - Last, add keys that are in array2 only
+         */
         protected function mergeArraysRecursively($array1, $array2)
         {
             $merged_array = [];
@@ -447,11 +460,12 @@ if (!class_exists("Command")) {
             }
 
             return $merged_array;
-        }
+        }//end mergeArraysRecursively()
+
 
         /**
-        * Magic handling for subcommands to call main command methods
-        */
+         * Magic handling for subcommands to call main command methods
+         */
         public function __call($method, $arguments)
         {
             $callable = [$this->main_tool, $method];
@@ -460,8 +474,9 @@ if (!class_exists("Command")) {
             }
 
             throw new Exception("Invalid class method '$method'");
-        }
-    }
-}
+        }//end __call()
+    }//end class
+
+}//end if
 
 // Note: leave this for packaging ?>

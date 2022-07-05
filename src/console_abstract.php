@@ -2134,4 +2134,5 @@ if (! empty($src_includes) and is_array($src_includes)) {
     }
 }
 
-// Note: leave this for packaging ?>
+// Note: leave this for packaging
+?>

@@ -1,8 +1,15 @@
 <?php
+/**
+ * Class - PCon
+
+ * @package   chrisputnam9/pcon
+ * @copyright 2022
+ * @author    chrisputnam9
+ */
 
 /**
- * PHP Console management tools
- * - helper to create and package your own PHP console tools
+ * PHP Console management tool
+ * - A CLI helper tool to create and package your own PHP Console tools
  */
 class PCon extends Console_Abstract
 {
@@ -11,7 +18,9 @@ class PCon extends Console_Abstract
     public const SHORTNAME = 'pcon';
 
     /**
-     * Callable Methods
+     * List of methods that can be called via CLI
+     *
+     * @var array
      */
     protected static $METHODS = [
         'create',
@@ -23,14 +32,30 @@ class PCon extends Console_Abstract
      * Config options that are hidden from help output
      * - Add config values here that would not typically be overridden by a flag
      * - Cleans up help output and avoids confusion
+     *
+     * @var array
      */
     protected static $HIDDEN_CONFIG_OPTIONS = [
         'console_abstract_path',
     ];
 
-    // Config Variables
+    /*********************************
+     * Config Variables
+     ********************************/
+
+    /**
+     * Help info for $console_abstract_path
+     *
+     * @var array
+     */
     protected $__console_abstract_path = ["Path to console_abstract.php", "string"];
-    public $console_abstract_path      = CONSOLE_ABSTRACT_PATH;
+
+    /**
+     * Path to the console abstract class to be used
+     *
+     * @var array
+     */
+    public $console_abstract_path = CONSOLE_ABSTRACT_PATH;
 
     // Don't bother with hash, no download built in
     public $update_check_hash = false;

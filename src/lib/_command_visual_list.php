@@ -19,8 +19,8 @@ if (!class_exists("Command_Visual_List")) {
         public $template = "{_KEY}: {_VALUE}";
 
         /**
-        * Constructor
-        */
+         * Constructor
+         */
         public function __construct($main_tool, $list, $options = [])
         {
             $this->setMainTool($main_tool);
@@ -95,11 +95,12 @@ if (!class_exists("Command_Visual_List")) {
             $options['commands'] = $commands;
 
             parent::__construct($main_tool, $options);
-        }
+        }//end __construct()
+
 
         /**
-        * Run the listing subcommand
-        */
+         * Run the listing subcommand
+         */
         public function run()
         {
             $count = count($this->list);
@@ -130,7 +131,7 @@ if (!class_exists("Command_Visual_List")) {
                 }
                 $content_to_display[] = $content;
                 $i++;
-            }
+            }//end foreach
 
             $this->clear();
             $this->page_info = $this->paginate($content_to_display, [
@@ -144,12 +145,13 @@ if (!class_exists("Command_Visual_List")) {
                 $this->pause();
                 $this->run();
             }
-        }
+        }//end run()
+
 
         /**
-        * Used to fill item data into template string
-        *  by preg_replace_callback
-        */
+         * Used to fill item data into template string
+         *  by preg_replace_callback
+         */
         protected $_fill_item;
         protected function _fill_item_to_template($matches)
         {
@@ -179,18 +181,18 @@ if (!class_exists("Command_Visual_List")) {
                 $value = $target;
             }
 
-            //var_dump($value);
+            // var_dump($value);
             if (!empty($format) and !empty($value)) {
                 $value = sprintf($format, $value);
             }
-            //var_dump($value);
-
+            // var_dump($value);
             return $value;
-        }
+        }//end _fill_item_to_template()
+
 
         /**
-        * Built-in commands
-        */
+         * Built-in commands
+         */
 
         // Reload
         public function reload()
@@ -198,14 +200,16 @@ if (!class_exists("Command_Visual_List")) {
             $list = parent::reload();
             $this->list_original = $list;
             $this->list = $list;
-        }
+        }//end reload()
+
 
         // Filter - remove filters
         public function filter_remove()
         {
             $this->list = $this->list_original;
             $this->focus_top();
-        }
+        }//end filter_remove()
+
 
         // Filter - by text/regex (search)
         public function filter_by_text()
@@ -260,8 +264,9 @@ if (!class_exists("Command_Visual_List")) {
                     }
                     // Otherwise, will continue the loop
                 }
-            }
-        }
+            }//end while
+        }//end filter_by_text()
+
 
 
         // Focus up/down/top/bottom
@@ -271,7 +276,8 @@ if (!class_exists("Command_Visual_List")) {
                 $this->focus--;
             }
             $this->page_to_focus();
-        }
+        }//end focus_up()
+
         public function focus_down()
         {
             $max_focus = (count($this->list) - 1);
@@ -279,22 +285,25 @@ if (!class_exists("Command_Visual_List")) {
                 $this->focus++;
             }
             $this->page_to_focus();
-        }
+        }//end focus_down()
+
         public function focus_top()
         {
             $this->focus = 0;
             $this->page_to_focus();
-        }
+        }//end focus_top()
+
         public function focus_bottom()
         {
             $max_focus = (count($this->list) - 1);
             $this->focus = $max_focus;
             $this->page_to_focus();
-        }
+        }//end focus_bottom()
+
 
         /**
-        * Helper functions
-        */
+         * Helper functions
+         */
 
         // Adjust page view to focus
         public function page_to_focus()
@@ -306,20 +315,23 @@ if (!class_exists("Command_Visual_List")) {
             if ($focus > $this->page_info['ending_line']) {
                 $this->starting_line = ($focus - $this->page_info['page_length']) + 1;
             }
-        }
+        }//end page_to_focus()
+
 
         // Get Focused Data
         public function getFocusedKey()
         {
             $list_keys = array_keys($this->list);
             return $list_keys[$this->focus];
-        }
+        }//end getFocusedKey()
+
         public function getFocusedValue()
         {
             $list_values = array_values($this->list);
             return $list_values[$this->focus];
-        }
-    }
-}
+        }//end getFocusedValue()
+    }//end class
+
+}//end if
 
 // Note: leave this for packaging ?>
