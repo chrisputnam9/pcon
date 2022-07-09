@@ -3,10 +3,10 @@
 /**
  * Primary load file
  * Sets a few constants and loads in primary logic files
+ * NOTE: actual file has no extension - extension added for parsing
  *
- * @package   pcon
- * @copyright 2022
- * @author    chrisputnam9
+ * @package pcon
+ * @author  chrisputnam9
  */
 
 // Miscellaneous configuration

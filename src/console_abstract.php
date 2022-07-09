@@ -1,4 +1,12 @@
 <?php
+/**
+ * Primary logic entry file
+ *  - Contains some basic configuration - constants, errors, etc.
+ *  - Contians the Console_Abstract class
+ *
+ * @package pcon
+ * @author  chrisputnam9
+ */
 
 // Global Constants
 if (! defined('DS')) {
@@ -8,7 +16,6 @@ if (! defined('DS')) {
 // Either log or display all errors
 error_reporting(E_ALL);
 
-// TODO test
 if (defined('ERRORS') and ERRORS) {
     // Enable and show errors
     echo "\n\n************************************\n";
@@ -33,24 +40,54 @@ if (! defined('PACKAGED') or ! PACKAGED and is_dir(__DIR__ . DS . "lib")) {
 }
 
 if (! class_exists("Console_Abstract")) {
+    /**
+     * The main console abstract which all console tools extend
+     *  - Is itself an extension of the "Command" class
+     *  - Includes default commands that many tools might wish to use
+     *  - Includes default internal supporting functionality likely to be used by tools, but not by subcommands
+     */
     class Console_Abstract extends Command
     {
         /**
-         * Padding for output
+         * Default output height limit, if unable to determine
+         *
+         * @var int
          */
         protected const DEFAULT_HEIGHT = 30;
-// lines - if not able to dynamically determine
+
+        /**
+         * Default output width limit, if unable to determine
+         *
+         * @var int
+         */
         protected const DEFAULT_WIDTH = 130;
-// characters - if not able to dynamically determine
+
+        /**
+         * 
+         *
+         * @var int
+         */
         protected const COL1_WIDTH = 20;
-// percentage of full width
+
+        /**
+         * 
+         *
+         * @var int
+         */
         protected const COL2_WIDTH = 50;
-// percentage of full width - col1 + col2
-        // Line break for editing text
+
+        /**
+         * 
+         *
+         * @var string
+         */
         protected const EDIT_LINE_BREAK = "--------------------------------------------------";
 
         /**
          * Callable Methods
+         *  - Must be public methods defined on the class
+         *
+         * @var array
          */
         protected static $METHODS = [
             'backup',

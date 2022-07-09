@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-# shellcheck disable=SC1090
+# shellcheck disable=SC1091
 source "$DIR/common.sh"
 
 PAUSE=true

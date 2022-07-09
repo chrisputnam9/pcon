@@ -2,7 +2,7 @@
 
 clear
 
-# cp -f pcon pcon.php
+cp -f pcon pcon.php
 
 rm -rf docs/*
 
@@ -12,9 +12,4 @@ if [ "$1" == "-o" ]; then
     google-chrome "file:///home/chris/dev/personal/pcon/docs/index.html"
 fi
 
-# && rm pcon.php && exit 0
-
-# echo "==========================================="
-# echo "THERE HAS BEEN AN ISSUE - RESOLVE AND RERUN"
-# echo "==========================================="
-# exit 1
+rm pcon.php

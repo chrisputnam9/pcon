@@ -1,17 +1,28 @@
 <?php
-
 /**
- * Command abstract
- *  - primary or subcommand structure
- *  - main "run" method accepts and parses arguments
- *  - default run method checks for available sub-methods
+ * Command abstract class file
+ *
+ * @package pcon
+ * @author  chrisputnam9
  */
 
 if (!class_exists("Command")) {
+
+    /**
+     * Command abstract class
+     *  - primary or subcommand structure
+     *  - main "run" method accepts and parses arguments
+     *  - default run method checks for available sub-methods
+     *  - contains default sub-commands that many commands might wish to use
+     *  - contains default internal supporint functionality may commands might wish to use
+     */
     class Command
     {
         /**
-         * Callable Methods
+         * Callable Methods / Sub-commands
+         *  - Must be public methods defined on the class
+         *
+         * @var array
          */
         protected static $METHODS = [
             'clear',
@@ -22,6 +33,8 @@ if (!class_exists("Command")) {
 
         /**
          * Method aliases
+         *
+         * @var array
          */
         protected static $METHOD_ALIASES = [
             'h' => 'help',
@@ -33,7 +46,10 @@ if (!class_exists("Command")) {
         ];
 
         /**
-         * Default method if none specified
+         * Default method to run on command launch if none specified
+         *  - must be one of the values specified in static $METHODS
+         *
+         * @var string
          */
         protected static $DEFAULT_METHOD = "prompt";
 

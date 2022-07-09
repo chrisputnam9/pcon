@@ -3,7 +3,7 @@
         configVersion="3"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns="https://www.phpdoc.org"
-        xsi:noNamespaceSchemaLocation="https://docs.phpdoc.org/latest/phpdoc.xsd"
+        xsi:noNamespaceSchemaLocation="https://github.com/phpDocumentor/phpDocumentor/blob/master/data/xsd/phpdoc.xsd"
 >
     <title>PCon - PHP Console</title>
     <paths>
@@ -12,11 +12,13 @@
     </paths>
     <version number="1.4.2">
         <api>
-            <source dsn="./">
-                <path>pcon</path>
-                <path>src/**/*</path>
+            <source>
+                <path>.</path>
             </source>
+            <ignore>
+                <path>src/pkg/sample.php</path>
+            </ignore>
         </api>
     </version>
-
+    <!--<template name="clean" />-->
 </phpdocumentor>
