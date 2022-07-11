@@ -18,7 +18,8 @@ class PCon extends Console_Abstract
     public const SHORTNAME = 'pcon';
 
     /**
-     * List of methods that can be called via CLI
+     * Callable Methods / Sub-commands
+     *  - Must be public methods defined on the class
      *
      * @var array
      */

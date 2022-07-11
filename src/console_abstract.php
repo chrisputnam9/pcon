@@ -44,7 +44,19 @@ if (! class_exists("Console_Abstract")) {
      * The main console abstract which all console tools extend
      *  - Is itself an extension of the "Command" class
      *  - Includes default commands that many tools might wish to use
-     *  - Includes default internal supporting functionality likely to be used by tools, but not by subcommands
+     *  - Includes default internal supporting functionality likely to be used by tools,
+     *     but not by subcommands
+     *
+     *  Sub-commands should be defined as public methods,
+     *   and added to the static $METHODS property
+     *
+     *  All public non-static properties will be configurable
+     *   - They will have default values set here
+     *   - But, they will also be added to the tool's config file for modification
+     *
+     *  Dynamic help information should be added for each subcommand and configurable property
+     *   using the same name, with __ prepended - see default / built-in subcommands
+     *   and confiurable properties for syntax.
      */
     class Console_Abstract extends Command
     {
@@ -63,21 +75,21 @@ if (! class_exists("Console_Abstract")) {
         protected const DEFAULT_WIDTH = 130;
 
         /**
-         * 
+         * Screen percentage for first column of table output
          *
          * @var int
          */
         protected const COL1_WIDTH = 20;
 
         /**
-         * 
+         * Screen percentage for second column of table output
          *
          * @var int
          */
         protected const COL2_WIDTH = 50;
 
         /**
-         * 
+         * Separator for data entry via text editor
          *
          * @var string
          */
@@ -99,6 +111,9 @@ if (! class_exists("Console_Abstract")) {
 
         /**
          * Methods that are OK to run as root without warning
+         *  - Must be values specified in static $METHODS
+         *
+         * @var array
          */
         protected static $ROOT_METHODS = [
             'help',
@@ -111,6 +126,8 @@ if (! class_exists("Console_Abstract")) {
          * Config options that are hidden from help output
          * - Add config values here that would not typically be overridden by a flag
          * - Cleans up help output and avoids confusion
+         *
+         * @var array
          */
         protected static $HIDDEN_CONFIG_OPTIONS = [
             'backup_age_limit',
@@ -129,44 +146,131 @@ if (! class_exists("Console_Abstract")) {
         ];
 
         /**
-         * Config/option defaults
+         * Help info for $allow_root
+         *
+         * @var string
          */
-        protected $__allow_root = "OK to run as root";
-        public $allow_root      = false;
+        protected $__allow_root = "OK to run as root without warning";
 
-        protected $__backup_age_limit = ["Age limit of backups to keep- number of days", "string"];
-        public $backup_age_limit      = '30';
+        /**
+         * Whether or not to allow running the tool as root without any warning
+         *
+         * @var boolean
+         */
+        public $allow_root = false;
 
+        /**
+         * Help info for $backup_age_limit
+         *
+         * @var string
+         */
+        protected $__backup_age_limit = ["Age limit of backups to keep - number of days, 0 or greater", "string"];
+
+        /**
+         * How many days worth of backups to keep when cleaning up
+         * - Will be passed as X to: find -mtime +X
+         * - Anything but a non-negative integer could cause errors or unexpected behavior
+         *
+         * @var string
+         */
+        public $backup_age_limit = '30';
+
+        /**
+         * Help info for $backup_dir
+         *
+         * @var string
+         */
         protected $__backup_dir = ["Location to save backups", "string"];
-        public $backup_dir      = null;
 
+        /**
+         * Path in which to save backups
+         * - If null, backups are disabled
+         *
+         * @var string
+         */
+        public $backup_dir = null;
+
+        /**
+         * Help info for $
+         *
+         * @var string
+         */
         protected $__browser_exec = ["Command to open links in browser - %s for link placeholder via sprintf"];
+
         protected $browser_exec   = 'nohup google-chrome "%s" >/dev/null 2>&1 &';
 
+        /**
+         * Help info for $
+         *
+         * @var string
+         */
         protected $__cache_lifetime = ["Default time to cache data in seconds"];
         public $cache_lifetime      = 86400;
 // Default: 24 hours
+
+        /**
+         * Help info for $
+         *
+         * @var string
+         */
         protected $__editor_exec = ["Command to open file in editor - %s for filepath placeholder via sprintf"];
         protected $editor_exec   = '/usr/bin/vim -c "startinsert" "%s" > `tty`';
 // vim in insert mode
+
+        /**
+         * Help info for $
+         *
+         * @var string
+         */
         protected $__editor_modify_exec = ["Command to open file in editor to review/modify existing text - %s for filepath placeholder via sprintf"];
         protected $editor_modify_exec   = '/usr/bin/vim "%s" > `tty`';
 // vim in normal mode
+
+        /**
+         * Help info for $
+         *
+         * @var string
+         */
         protected $__install_path = ["Install path of this tool", "string"];
         public $install_path      = DS . "usr" . DS . "local" . DS . "bin";
 
+        /**
+         * Help info for $
+         *
+         * @var string
+         */
         protected $__ssl_check = "Whether to check SSL certificates with curl";
         public $ssl_check      = true;
 
+        /**
+         * Help info for $
+         *
+         * @var string
+         */
         protected $__stamp_lines = "Stamp output lines";
         public $stamp_lines      = false;
 
+        /**
+         * Help info for $
+         *
+         * @var string
+         */
         protected $__step = "Enable stepping points";
         public $step      = false;
 
+        /**
+         * Help info for $
+         *
+         * @var string
+         */
         protected $__timezone = ["Timezone - from http://php.net/manual/en/timezones.", "string"];
         public $timezone      = "US/Eastern";
 
+        /**
+         * Help info for $
+         *
+         * @var string
+         */
         /*
             Default: check every 24 hrs
             24 * 60 * 60 = 86400
@@ -174,23 +278,47 @@ if (! class_exists("Console_Abstract")) {
         protected $__update_auto = ["How often to automatically check for an update (seconds, 0 to disable)", "int"];
         public $update_auto      = 86400;
 
+        /**
+         * Help info for $
+         *
+         * @var string
+         */
         protected $__update_last_check = ["Formatted timestap of last update check", "string"];
         public $update_last_check      = "";
 
+        /**
+         * Help info for $
+         *
+         * @var string
+         */
         // Note: this is configurable, and the child class can also set a default
         // - empty string = not updatable
         // - Tip: if using Github md file, use raw URL for simpler parsing
         protected $__update_version_url = ["URL to check for latest version number info", "string"];
         public $update_version_url      = "";
 
+        /**
+         * Help info for $
+         *
+         * @var string
+         */
         // Note: this is configurable, and the child class can also set a default
         protected $__update_check_hash = ["Whether to check hash of download when updating", "binary"];
         public $update_check_hash      = true;
 
+        /**
+         * Help info for $
+         *
+         * @var string
+         */
         protected $__verbose = "Enable verbose output";
         public $verbose      = false;
 
-        // HJSON Data
+        /**
+         * Help info for $
+         *
+         * @var string
+         */
         protected $____WSC__ = "HJSON Data for config file";
         public $__WSC__      = null;
 

@@ -32,7 +32,7 @@ if (!class_exists("Command")) {
         ];
 
         /**
-         * Method aliases
+         * Alternate commands for callable methods
          *
          * @var array
          */
@@ -47,7 +47,7 @@ if (!class_exists("Command")) {
 
         /**
          * Default method to run on command launch if none specified
-         *  - must be one of the values specified in static $METHODS
+         *  - Must be one of the values specified in static $METHODS
          *
          * @var string
          */
@@ -55,6 +55,9 @@ if (!class_exists("Command")) {
 
         /**
          * Methods that are OK to run as root without warning
+         *  - Must be values specified in static $METHODS
+         *
+         *  @var array
          */
         protected static $ROOT_METHODS = [];
 
