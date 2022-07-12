@@ -2,8 +2,9 @@
 <?php
 /**
  * Primary load file
- * Sets a few constants and loads in primary logic files
- * NOTE: actual file has no extension - extension added for parsing
+ *
+ * - Sets a few constants and loads in primary logic files
+ * - **NOTE:** actual file is "pcon" with no extension - name temporarily modified for linting & doc generation
  *
  * @package pcon
  * @author  chrisputnam9

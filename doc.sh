@@ -2,7 +2,7 @@
 
 clear
 
-cp -f pcon pcon.php
+cp -f pcon pcon-load.php
 
 rm -rf docs/*
 
@@ -12,4 +12,4 @@ if [ "$1" == "-o" ]; then
     google-chrome "file:///home/chris/dev/personal/pcon/docs/index.html"
 fi
 
-rm pcon.php
+rm pcon-load.php

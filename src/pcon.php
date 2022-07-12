@@ -1,15 +1,15 @@
 <?php
 /**
- * Class - PCon
-
- * @package   chrisputnam9/pcon
- * @copyright 2022
- * @author    chrisputnam9
+ * PCon Class File
+ *
+ * @package pcon
+ * @author  chrisputnam9
  */
 
 /**
  * PHP Console management tool
- * - A CLI helper tool to create and package your own PHP Console tools
+ *
+ * - Defines a CLI helper tool to create and package your own PHP Console tools
  */
 class PCon extends Console_Abstract
 {

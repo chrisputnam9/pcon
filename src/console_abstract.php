@@ -1,8 +1,9 @@
 <?php
 /**
- * Primary logic entry file
- *  - Contains some basic configuration - constants, errors, etc.
- *  - Contians the Console_Abstract class
+ * Primary logic entry point file
+ *
+ *  - Defines global configuration & constants
+ *  - Defines the Console_Abstract class
  *
  * @package pcon
  * @author  chrisputnam9
@@ -42,6 +43,7 @@ if (! defined('PACKAGED') or ! PACKAGED and is_dir(__DIR__ . DS . "lib")) {
 if (! class_exists("Console_Abstract")) {
     /**
      * The main console abstract which all console tools extend
+     *
      *  - Is itself an extension of the "Command" class
      *  - Includes default commands that many tools might wish to use
      *  - Includes default internal supporting functionality likely to be used by tools,
@@ -97,6 +99,7 @@ if (! class_exists("Console_Abstract")) {
 
         /**
          * Callable Methods
+         *
          *  - Must be public methods defined on the class
          *
          * @var array
@@ -111,6 +114,7 @@ if (! class_exists("Console_Abstract")) {
 
         /**
          * Methods that are OK to run as root without warning
+         *
          *  - Must be values specified in static $METHODS
          *
          * @var array
@@ -124,8 +128,10 @@ if (! class_exists("Console_Abstract")) {
 
         /**
          * Config options that are hidden from help output
+         *
          * - Add config values here that would not typically be overridden by a flag
-         * - Cleans up help output and avoids confusion
+         * - Cleans up help output and avoids confusion about values that are more often
+         *    used in configuration than in flags.
          *
          * @var array
          */
@@ -191,16 +197,23 @@ if (! class_exists("Console_Abstract")) {
         public $backup_dir = null;
 
         /**
-         * Help info for $
+         * Help info for $browser_exec
          *
          * @var string
          */
         protected $__browser_exec = ["Command to open links in browser - %s for link placeholder via sprintf"];
 
+        /**
+         * Browser exec command to use when opening URLs
+         *
+         *  - %s placeholder is the URL to be opened
+         *
+         * @var string
+         */
         protected $browser_exec   = 'nohup google-chrome "%s" >/dev/null 2>&1 &';
 
         /**
-         * Help info for $
+         * Help info for $cache_lifetime
          *
          * @var string
          */
@@ -1466,7 +1479,8 @@ if (! class_exists("Console_Abstract")) {
                 // Notify user
                 $this->output('NOTICE: ' . $e->getMessage());
             }//end try
-        }//end initConfig()
+
+        }
 
 
         /**
