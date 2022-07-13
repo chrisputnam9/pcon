@@ -1,13 +1,27 @@
 <?php
-
 /**
- * Color constants
- *  - https://en.wikipedia.org/wiki/ANSI_escape_code
+ * Defines the CONSOLE_COLORS class
+ *
+ * @package pcon
+ * @author  chrisputnam9
  */
 
 if (!class_exists("CONSOLE_COLORS")) {
+    /**
+     * Reference for console colors and other formatting used by the application
+     *
+     *  - Allows colors to be used by name
+     *  - Allows 'bold', 'dim', etc. to be used by name
+     *  - See https://en.wikipedia.org/wiki/ANSI_escape_code for code reference
+     *  - See Console_Abstract::colorize for usage
+     */
     class CONSOLE_COLORS
     {
+        /**
+         * Reference of foreground colors by name
+         *
+         * @var array
+         */
         public static $foreground = [
             'black' => '0;30',
             'dark_gray' => '1;30',
@@ -27,6 +41,11 @@ if (!class_exists("CONSOLE_COLORS")) {
             'white' => '1;37',
         ];
 
+        /**
+         * Reference of background colors by name
+         *
+         * @var array
+         */
         public static $background = [
             'black' => '40',
             'red' => '41',
@@ -38,6 +57,12 @@ if (!class_exists("CONSOLE_COLORS")) {
             'light_gray' => '47',
         ];
 
+
+        /**
+         * Reference of other console formatting / decoration by name
+         *
+         * @var array
+         */
         public static $other = [
             'bold' => '1',
             'dim' => '2',
@@ -59,4 +84,5 @@ if (!class_exists("CONSOLE_COLORS")) {
 
 }//end if
 
-// Note: leave this for packaging ?>
+// Note: leave the end tag for packaging
+?>

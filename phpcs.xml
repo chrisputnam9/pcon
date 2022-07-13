@@ -23,8 +23,9 @@
         <exclude name="PSR1.Files.SideEffects"/>
         <exclude name="PSR2.Files.ClosingTag"/>
 
-        <!-- Conflicts with Squiz -->
+        <!-- Conflicts with our preferred commenting rules (Squiz) -->
         <exclude name="PSR12.Files.FileHeader"/>
+        <exclude name="PSR12.Classes.ClosingBrace"/>
 
         <!-- To be replaced by our own standards at some point -->
         <exclude name="Generic.Files.LineLength"/>

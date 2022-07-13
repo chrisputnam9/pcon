@@ -10,6 +10,8 @@
  * PHP Console management tool
  *
  * - Defines a CLI helper tool to create and package your own PHP Console tools
+ * - NOTE: PCon *itself* will not function as a packaged tool, though it may be
+ *    possible to package it. It relies on being run in unpackaged form.
  */
 class PCon extends Console_Abstract
 {
