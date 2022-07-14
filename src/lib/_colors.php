@@ -1,6 +1,6 @@
 <?php
 /**
- * Defines the CONSOLE_COLORS class
+ * Defines CONSOLE_COLORS class
  *
  * @package pcon
  * @author  chrisputnam9

@@ -44,7 +44,7 @@
 		<exclude name="Squiz.Commenting.FileComment.MissingSubpackageTag"/>
 		<exclude name="Squiz.Commenting.FileComment.SubpackageTagOrder"/>
 
-        <!-- A little less picky about inline comments -->
+        <!-- A little less picky in a few areas -->
         <exclude name="Squiz.Commenting.InlineComment.InvalidEndChar"/>
         <exclude name="Squiz.Commenting.InlineComment.NotCapital"/>
 	</rule>

@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /**
- * Primary load file
+ * Acts as the entry point; initializes the tool
  *
  * - Sets a few constants and loads in primary logic files
  * - **NOTE:** actual file is "pcon" with no extension - name temporarily modified for linting & doc generation

@@ -1,6 +1,6 @@
 <?php
 /**
- * Command abstract class file
+ * Defines Command class
  *
  * @package pcon
  * @author  chrisputnam9
@@ -10,16 +10,16 @@ if (!class_exists("Command")) {
 
     /**
      * Command abstract class
-     *  - primary or subcommand structure
-     *  - main "run" method accepts and parses arguments
-     *  - default run method checks for available sub-methods
-     *  - contains default sub-commands that many commands might wish to use
-     *  - contains default internal supporint functionality may commands might wish to use
+     *
+     *  - General command structure - both for primary and sub-commands
+     *  - Contains default sub-commands that many commands might wish to use
+     *  - Contains default internal supporting functionality many commands might wish to use
      */
     class Command
     {
         /**
          * Callable Methods / Sub-commands
+         *
          *  - Must be public methods defined on the class
          *
          * @var array
@@ -34,6 +34,8 @@ if (!class_exists("Command")) {
         /**
          * Alternate commands for callable methods
          *
+         *  - Keys are aliases and values are the original method to run
+         *
          * @var array
          */
         protected static $METHOD_ALIASES = [
@@ -47,6 +49,7 @@ if (!class_exists("Command")) {
 
         /**
          * Default method to run on command launch if none specified
+         *
          *  - Must be one of the values specified in static $METHODS
          *
          * @var string
@@ -55,38 +58,50 @@ if (!class_exists("Command")) {
 
         /**
          * Methods that are OK to run as root without warning
+         *
          *  - Must be values specified in static $METHODS
          *
-         *  @var array
+         * @var array
          */
         protected static $ROOT_METHODS = [];
 
         /**
          * Config options that are hidden from help output
-         * - Add config values here that would not typically be overridden by a flag
-         * - Cleans up help output and avoids confusion
+         *
+         *  - Add config values here that would not typically be overridden by a flag
+         *  - Cleans up help output and avoids confusion
+         *  - Must be values specified in static $METHODS
+         *
+         * @var array
          */
         protected static $HIDDEN_CONFIG_OPTIONS = [];
 
         /**
          * Main Tool instance
+         *
+         *  - Expected to be an instance of a class extending Console_Abstract
+         *
+         * @var Console_Abstract
          */
         protected $main_tool;
 
         /**
          * Constructor
+         *
+         * @param Console_Abstract $main_tool The instance of the main tool class - which should extend Console_Abstract.
          */
-        public function __construct($main_tool)
+        public function __construct(Console_Abstract $main_tool)
         {
             $this->setMainTool($main_tool);
         }//end __construct()
 
 
         /**
-         * Set Main Tool
-         * - for shared functionality
+         * Set Main Tool - needed backreference for some functionality
+         *
+         * @param Console_Abstract $main_tool The instance of the main tool class - which should extend Console_Abstract.
          */
-        public function setMainTool($main_tool)
+        public function setMainTool(Console_Abstract $main_tool)
         {
             $this->main_tool = $main_tool;
         }//end setMainTool()
