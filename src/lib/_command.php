@@ -100,6 +100,8 @@ if (!class_exists("Command")) {
          * Set Main Tool - needed backreference for some functionality
          *
          * @param Console_Abstract $main_tool The instance of the main tool class - which should extend Console_Abstract.
+         *
+         * @return void
          */
         public function setMainTool(Console_Abstract $main_tool)
         {
@@ -108,9 +110,21 @@ if (!class_exists("Command")) {
 
 
         /**
-         * Run - parse args and run method specified
+         * Given input from user, try running the requested command / method
+         *
+         *  - Parses out input (arg_list) into method and arguments
+         *  - Uses ancestor-merged $METHOD_ALIASES to allow shorter commands
+         *  - Restricts method to ancestor-merged $METHODS anything else gives an error
+         *  - Warns about running as root except for methods in ancestor-merged $ROOT_METHODS
+         *  - Runs initialization if $initial is true
+         *
+         * @param array   $arg_list         List of arguments from the user's input.
+         * @param boolean $initial          Whether this is the initial command run by the tool.
+         * @param boolean $prompt_when_done Whether to show command prompt when done.
+         *
+         * @return void
          */
-        public function try_calling($arg_list, $initial = false, $prompt_when_done = false)
+        public function try_calling(array $arg_list, bool $initial = false, bool $prompt_when_done = false)
         {
             $this->log($arg_list);
 
@@ -209,7 +223,22 @@ if (!class_exists("Command")) {
             }
         }//end try_calling()
 
-        protected function _run_error($e, $method)
+        /**
+         * Show an error message and help output
+         *
+         *  - Used for errors while trying to run a method, so incorrect usage is suspected
+         *  - Exits with a 500 error code
+         *  - Can be confusing during development - turn on verbose mode to throw the original
+         *     Exception as well for easier debugging.
+         *
+         * @param Exception $e      The exception object.
+         * @param string    $method The method being called.
+         *
+         * @return void
+         *
+         * @throws Exception Throws Exception $e that was passed if running in verbose mode.
+         */
+        protected function _run_error(Exception $e, string $method)
         {
             $class = get_class($e);
             $error = in_array($class, ['Exception', 'HJSONException'])
@@ -217,6 +246,9 @@ if (!class_exists("Command")) {
                 : "Incorrect usage - see method help below:";
             $this->error($error, false);
             $this->help($method);
+            if ($this->verbose) {
+                throw $e;
+            }
             exit(500);
         }//end _run_error()
 
@@ -450,7 +482,7 @@ if (!class_exists("Command")) {
 
 
         /**
-         * Get static property by merging up with partent values
+         * Get static property by merging up with ancestor values
          */
         protected static function getMergedProperty($property)
         {
