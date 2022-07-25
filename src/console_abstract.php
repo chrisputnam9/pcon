@@ -136,6 +136,7 @@ if (! class_exists("Console_Abstract")) {
          * @var array
          */
         protected static $HIDDEN_CONFIG_OPTIONS = [
+            '__WSC__',
             'backup_age_limit',
             'backup_dir',
             'browser_exec',
@@ -154,7 +155,7 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Help info for $allow_root
          *
-         * @var string
+         * @var mixed
          */
         protected $__allow_root = "OK to run as root without warning";
 
@@ -168,7 +169,7 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Help info for $backup_age_limit
          *
-         * @var string
+         * @var mixed
          */
         protected $__backup_age_limit = ["Age limit of backups to keep - number of days, 0 or greater", "string"];
 
@@ -184,7 +185,7 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Help info for $backup_dir
          *
-         * @var string
+         * @var mixed
          */
         protected $__backup_dir = ["Location to save backups", "string"];
 
@@ -199,7 +200,7 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Help info for $browser_exec
          *
-         * @var string
+         * @var mixed
          */
         protected $__browser_exec = ["Command to open links in browser - %s for link placeholder via sprintf"];
 
@@ -215,7 +216,7 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Help info for $cache_lifetime
          *
-         * @var string
+         * @var mixed
          */
         protected $__cache_lifetime = ["Default time to cache data in seconds"];
         public $cache_lifetime      = 86400;
@@ -224,7 +225,7 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Help info for $
          *
-         * @var string
+         * @var mixed
          */
         protected $__editor_exec = ["Command to open file in editor - %s for filepath placeholder via sprintf"];
         protected $editor_exec   = '/usr/bin/vim -c "startinsert" "%s" > `tty`';
@@ -233,7 +234,7 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Help info for $
          *
-         * @var string
+         * @var mixed
          */
         protected $__editor_modify_exec = ["Command to open file in editor to review/modify existing text - %s for filepath placeholder via sprintf"];
         protected $editor_modify_exec   = '/usr/bin/vim "%s" > `tty`';
@@ -242,7 +243,7 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Help info for $
          *
-         * @var string
+         * @var mixed
          */
         protected $__install_path = ["Install path of this tool", "string"];
         public $install_path      = DS . "usr" . DS . "local" . DS . "bin";
@@ -250,7 +251,7 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Help info for $
          *
-         * @var string
+         * @var mixed
          */
         protected $__ssl_check = "Whether to check SSL certificates with curl";
         public $ssl_check      = true;
@@ -258,7 +259,7 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Help info for $
          *
-         * @var string
+         * @var mixed
          */
         protected $__stamp_lines = "Stamp output lines";
         public $stamp_lines      = false;
@@ -266,7 +267,7 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Help info for $
          *
-         * @var string
+         * @var mixed
          */
         protected $__step = "Enable stepping points";
         public $step      = false;
@@ -274,7 +275,7 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Help info for $
          *
-         * @var string
+         * @var mixed
          */
         protected $__timezone = ["Timezone - from http://php.net/manual/en/timezones.", "string"];
         public $timezone      = "US/Eastern";
@@ -282,7 +283,7 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Help info for $
          *
-         * @var string
+         * @var mixed
          */
         /*
             Default: check every 24 hrs
@@ -294,7 +295,7 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Help info for $
          *
-         * @var string
+         * @var mixed
          */
         protected $__update_last_check = ["Formatted timestap of last update check", "string"];
         public $update_last_check      = "";
@@ -302,7 +303,7 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Help info for $
          *
-         * @var string
+         * @var mixed
          */
         // Note: this is configurable, and the child class can also set a default
         // - empty string = not updatable
@@ -313,7 +314,7 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Help info for $
          *
-         * @var string
+         * @var mixed
          */
         // Note: this is configurable, and the child class can also set a default
         protected $__update_check_hash = ["Whether to check hash of download when updating", "binary"];
@@ -322,7 +323,7 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Help info for $
          *
-         * @var string
+         * @var mixed
          */
         protected $__verbose = "Enable verbose output";
         public $verbose      = false;
@@ -330,7 +331,7 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Help info for $
          *
-         * @var string
+         * @var mixed
          */
         protected $____WSC__ = "HJSON Data for config file";
         public $__WSC__      = null;

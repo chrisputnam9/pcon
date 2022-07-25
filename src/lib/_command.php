@@ -118,13 +118,13 @@ if (!class_exists("Command")) {
          *  - Warns about running as root except for methods in ancestor-merged $ROOT_METHODS
          *  - Runs initialization if $initial is true
          *
-         * @param array   $arg_list         List of arguments from the user's input.
-         * @param boolean $initial          Whether this is the initial command run by the tool.
-         * @param boolean $prompt_when_done Whether to show command prompt when done.
+         * @param array $arg_list         List of arguments from the user's input.
+         * @param mixed $initial          Whether this is the initial command run by the tool.
+         * @param mixed $prompt_when_done Whether to show command prompt when done.
          *
          * @return void
          */
-        public function try_calling(array $arg_list, bool $initial = false, bool $prompt_when_done = false)
+        public function try_calling(array $arg_list, mixed $initial = false, mixed $prompt_when_done = false)
         {
             $this->log($arg_list);
 
@@ -252,29 +252,70 @@ if (!class_exists("Command")) {
             exit(500);
         }//end _run_error()
 
-
+        /**
+         * Help info for clear command
+         *
+         * @var mixed
+         */
         protected $___clear = [
             "Clear the screen",
         ];
+
+        /**
+         * Method to clear the console screen
+         *
+         *  - Most useful in built-in CLI / prompt interface
+         *
+         * @return void
+         */
         public function clear()
         {
             $this->main_tool->clear();
         }//end clear()
 
-
+        /**
+         * Help info for exit command
+         *
+         * @var mixed
+         */
         protected $___exit = [
             "Exit the command prompt",
         ];
+
+        /**
+         * Method to exit the tool / script runtime
+         *
+         *  - Most useful to exit built-in CLI / prompt interface
+         *
+         * @return void
+         */
         public function exit()
         {
             exit();
         }//end exit()
 
-
+        /**
+         * Help info for the help command itself
+         *
+         * @var mixed
+         */
         protected $___help = [
             "Shows help/usage information.",
             ["Method/option for specific help", "string"],
         ];
+
+        /**
+         * Method to show help information
+         *
+         *  - Shows list of available commands and descriptions
+         *  - Pass specific command to show more details for that command
+         *
+         *  - Shows list of commonly used configuration options
+         *     (those not listed in ancestor-merged $HIDDEN_CONFIG_OPTIONS)
+         *  - If verbose mode is on, will list ALL configuration options
+         *
+         * @return void
+         */
         public function help($specific = false)
         {
             // Specific help?
@@ -335,10 +376,20 @@ if (!class_exists("Command")) {
             }
         }//end help()
 
-
+        /**
+         * Help info for TODO command
+         *
+         * @var mixed
+         */
         protected $___prompt = [
             "Show interactive prompt"
         ];
+
+        /**
+         * Method to TODO
+         *
+         * @return void
+         */
         public function prompt($clear = false, $help = true)
         {
             if ($clear) {
@@ -358,9 +409,9 @@ if (!class_exists("Command")) {
         }//end prompt()
 
 
-            /**
-             * Show help for a specific method or option
-             */
+        /**
+         * Show help for a specific method or option
+         */
         protected function _help_specific($specific)
         {
             $help = $this->_help_var($specific);
@@ -403,8 +454,8 @@ if (!class_exists("Command")) {
                 $this->br();
 
                 if (!empty($params)) {
-                    $this->output3col("PARAMETER", "TYPE", "INFO");
                     $this->hr('-');
+                    $this->output3col("PARAMETER", "TYPE", "INFO");
                     $this->hr('-');
                     foreach ($params as $p => $param) {
                         $help_param = $this->_help_param($help[$p]);
@@ -483,6 +534,8 @@ if (!class_exists("Command")) {
 
         /**
          * Get static property by merging up with ancestor values
+         *
+         *  - Elsewhere referred to as 'ancestor-merge'
          */
         protected static function getMergedProperty($property)
         {
