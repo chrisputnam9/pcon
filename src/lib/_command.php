@@ -314,13 +314,17 @@ if (!class_exists("Command")) {
          *     (those not listed in ancestor-merged $HIDDEN_CONFIG_OPTIONS)
          *  - If verbose mode is on, will list ALL configuration options
          *
+         * @param string $specific A specific command to show detailed help for.
+         *
          * @return void
          */
-        public function help($specific = false)
+        public function help(string $specific = "")
         {
             // Specific help?
-            if ($specific) {
-                return $this->_help_specific($specific);
+            $specific = trim($specific);
+            if (!empty($specific)) {
+                $this->_help_specific($specific);
+                return;
             }
 
             $methods = static::getMergedProperty('METHODS');
@@ -377,7 +381,7 @@ if (!class_exists("Command")) {
         }//end help()
 
         /**
-         * Help info for TODO command
+         * Help info for prompt command
          *
          * @var mixed
          */
@@ -386,11 +390,17 @@ if (!class_exists("Command")) {
         ];
 
         /**
-         * Method to TODO
+         * Method to show interactive CLI prompt
+         *
+         *  - Typically used as default command to run, so that
+         *     if no command passed, prompt is shown
+         *
+         * @param mixed $clear Pass truthy value to clear screen before showing prompt.
+         * @param mixed $help  Pass trhthy value to show help at start of prompt.
          *
          * @return void
          */
-        public function prompt($clear = false, $help = true)
+        public function prompt(mixed $clear = false, mixed $help = true)
         {
             if ($clear) {
                 $this->clear();
@@ -408,11 +418,14 @@ if (!class_exists("Command")) {
             $this->try_calling($arg_list, false, true);
         }//end prompt()
 
-
         /**
-         * Show help for a specific method or option
+         * Helper method  for 'help' command - shows help details for a specific subcommand
+         *
+         * @param string $specific A specific command to show detailed help for.
+         *
+         * @return void
          */
-        protected function _help_specific($specific)
+        protected function _help_specific(string $specific)
         {
             $help = $this->_help_var($specific);
             if (empty($help)) {
@@ -480,12 +493,17 @@ if (!class_exists("Command")) {
         }//end _help_specific()
 
 
-            /**
-             * Get help var for specific method or option
-             */
-        protected function _help_var($specific, $type = false)
+        /**
+         * Helper method for _help_specific - get the help var (parameter) for specific method or option
+         *
+         * @param string $specific A specific method or option to show detailed help for.
+         * @param string $type     Type to look for - 'method' or 'option' (will check both by default)
+         *
+         * @return string help text, or empty string if none found
+         */
+        protected function _help_var(string $specific, string $type = "")
         {
-            $help = false;
+            $help = "";
             $specific = str_replace('-', '_', $specific);
 
             if ($type == 'method' or empty($type)) {
@@ -502,9 +520,9 @@ if (!class_exists("Command")) {
                     $help = [$help];
                 }
             }
+
             return $help;
         }//end _help_var()
-
 
             /**
              * Clean help param - fill in defaults
