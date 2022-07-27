@@ -314,7 +314,7 @@ if (!class_exists("Command")) {
          *     (those not listed in ancestor-merged $HIDDEN_CONFIG_OPTIONS)
          *  - If verbose mode is on, will list ALL configuration options
          *
-         * @param string $specific A specific command to show detailed help for.
+         * @param string $specific A specific method or option to show detailed help for.
          *
          * @return void
          */
@@ -421,7 +421,7 @@ if (!class_exists("Command")) {
         /**
          * Helper method  for 'help' command - shows help details for a specific subcommand
          *
-         * @param string $specific A specific command to show detailed help for.
+         * @param string $specific A specific method or option to show detailed help for.
          *
          * @return void
          */
@@ -434,7 +434,17 @@ if (!class_exists("Command")) {
 
             $specific = str_replace('-', '_', $specific);
 
-            if (is_callable([$this, $specific])) {
+            if (isset($this->$specific)) {
+                // Option info
+                $help_param = $this->_help_param($help);
+                $specific = str_replace('_', '-', $specific);
+
+                $this->hr('-');
+                $this->output3col("OPTION", "(TYPE)", "INFO");
+                $this->hr('-');
+                $this->output3col("--$specific", "($help_param[1])", $help_param[0]);
+                $this->hr('-');
+            } elseif (is_callable([$this, $specific])) {
                 // Method Usage
                 $help_text = array_shift($help);
 
@@ -479,16 +489,6 @@ if (!class_exists("Command")) {
                     $this->hr('-');
                     $this->output("* Required parameter");
                 }
-            } elseif (isset($this->$specific)) {
-                // Option info
-                $help_param = $this->_help_param($help);
-                $specific = str_replace('_', '-', $specific);
-
-                $this->hr('-');
-                $this->output3col("OPTION", "(TYPE)", "INFO");
-                $this->hr('-');
-                $this->output3col("--$specific", "($help_param[1])", $help_param[0]);
-                $this->hr('-');
             }//end if
         }//end _help_specific()
 
@@ -497,7 +497,7 @@ if (!class_exists("Command")) {
          * Helper method for _help_specific - get the help var (parameter) for specific method or option
          *
          * @param string $specific A specific method or option to show detailed help for.
-         * @param string $type     Type to look for - 'method' or 'option' (will check both by default)
+         * @param string $type     Type to look for - 'method' or 'option' (will check both by default).
          *
          * @return string help text, or empty string if none found
          */
@@ -524,10 +524,14 @@ if (!class_exists("Command")) {
             return $help;
         }//end _help_var()
 
-            /**
-             * Clean help param - fill in defaults
-             */
-        protected function _help_param($param)
+        /**
+         * Clean up / standardize a help parameter - fill in defaults from defaults
+         *
+         * @param mixed $param The original parameter value to clean up.
+         *
+         * @return string The cleaned paramater value.
+         */
+        protected function _help_param(mixed $param)
         {
             if (!is_array($param)) {
                 $param = [$param];
