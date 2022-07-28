@@ -501,7 +501,7 @@ if (!class_exists("Command")) {
          *
          * @return string help text, or empty string if none found
          */
-        protected function _help_var(string $specific, string $type = "")
+        protected function _help_var(string $specific, string $type = ""): string
         {
             $help = "";
             $specific = str_replace('-', '_', $specific);
@@ -531,7 +531,7 @@ if (!class_exists("Command")) {
          *
          * @return string The cleaned paramater value.
          */
-        protected function _help_param(mixed $param)
+        protected function _help_param(mixed $param): string
         {
             if (!is_array($param)) {
                 $param = [$param];
@@ -552,14 +552,17 @@ if (!class_exists("Command")) {
 
             return $param;
         }//end _help_param()
-
-
         /**
          * Get static property by merging up with ancestor values
          *
          *  - Elsewhere referred to as 'ancestor-merge'
+         *  - The value of the specified property (on the class and each ancestor) is expected to be an array.
+         *
+         * @param string $property The name of the property to merge.
+         *
+         * @return array The resulting merged value.
          */
-        protected static function getMergedProperty($property)
+        protected static function getMergedProperty(string $property): array
         {
             $value = [];
             $class = get_called_class();
@@ -572,16 +575,21 @@ if (!class_exists("Command")) {
             return array_unique($value);
         }//end getMergedProperty()
 
-
         /**
-         * Merge arrays recursively, in the way we expect
-         * Primarily, we are expecting meaningful keys - eg. option arrays, commands/subcommands, etc.
+         * Merge arrays recursively, in a special way
+         *
+         * Primarily, we are expecting meaningful keys - eg. option arrays, commands/subcommands, etc. So, we:
          *  - Start with array1
-         *  - Check each key - if that key exists in array2, overwrite with array2's value, EXCEPT:
-         *  - If both values are an array, merge the values instead - recursively
+         *  - Check each key - if that key exists in array2, overwrite with array2's value, UNLESS:
+         *     - If both values are an array, merge the values instead - recursively
          *  - Last, add keys that are in array2 only
+         *
+         * @param array $array1 Original array to merge values into - values may be overwritten by array2.
+         * @param array $array2 Array to merge into original - values may overwrite array1.
+         *
+         * @return array The resulting merged array.
          */
-        protected function mergeArraysRecursively($array1, $array2)
+        protected function mergeArraysRecursively(array $array1, array $array2): array
         {
             $merged_array = [];
             foreach ($array1 as $key => $value1) {
@@ -603,11 +611,21 @@ if (!class_exists("Command")) {
             return $merged_array;
         }//end mergeArraysRecursively()
 
-
         /**
          * Magic handling for subcommands to call main command methods
+         *
+         *  - Primarly used as an organization tool
+         *  - Allows us to keep some methods in console_abstract and still have them available in other places
+         *  - FWIW, not super happy with this approach, but it works for now
+         *
+         * @param string $method    The method that is being called.
+         * @param array  $arguments The arguments being passed to the method.
+         *
+         * @throws Exception If the method can't be found on the "main_tool" instance.
+         *
+         * @return mixed If able to call the method on the "main_tool" (instance of Console_Abstract) then, return the value from calling that method.
          */
-        public function __call($method, $arguments)
+        public function __call(string $method, array $arguments): mixed
         {
             $callable = [$this->main_tool, $method];
             if (is_callable($callable)) {
@@ -620,4 +638,5 @@ if (!class_exists("Command")) {
 
 }//end if
 
-// Note: leave this for packaging ?>
+// Note: leave this for packaging
+?>
