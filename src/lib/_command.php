@@ -137,6 +137,7 @@ if (!class_exists("Command")) {
             }
 
             $aliases = static::getMergedProperty('METHOD_ALIASES');
+
             if (isset($aliases[$method])) {
                 $method = $aliases[$method];
             }
@@ -501,7 +502,7 @@ if (!class_exists("Command")) {
          *
          * @return string help text, or empty string if none found
          */
-        protected function _help_var(string $specific, string $type = ""): string
+        protected function _help_var(string $specific, string $type = ""): array
         {
             $help = "";
             $specific = str_replace('-', '_', $specific);
@@ -531,7 +532,7 @@ if (!class_exists("Command")) {
          *
          * @return string The cleaned paramater value.
          */
-        protected function _help_param(mixed $param): string
+        protected function _help_param(mixed $param): array
         {
             if (!is_array($param)) {
                 $param = [$param];
@@ -572,7 +573,7 @@ if (!class_exists("Command")) {
                     $class = get_parent_class($class);
                 }
             }
-            return array_unique($value);
+            return $value;
         }//end getMergedProperty()
 
         /**
@@ -625,7 +626,7 @@ if (!class_exists("Command")) {
          *
          * @return mixed If able to call the method on the "main_tool" (instance of Console_Abstract) then, return the value from calling that method.
          */
-        public function __call(string $method, array $arguments): mixed
+        public function __call(string $method, array $arguments = []): mixed
         {
             $callable = [$this->main_tool, $method];
             if (is_callable($callable)) {

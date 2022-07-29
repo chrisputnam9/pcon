@@ -2285,7 +2285,7 @@ if (! class_exists("Console_Abstract")) {
 
 
         // Prevent infinite loop of magic method handling
-        public function __call($method, $arguments)
+        public function __call(string $method, array $arguments = []): mixed
         {
             throw new Exception("Invalid method '$method'");
         }//end __call()
