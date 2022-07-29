@@ -1,4 +1,10 @@
 <?php
+/**
+ * Defines Command_Visual class
+ *
+ * @package pcon
+ * @author  chrisputnam9
+ */
 
 /**
  * Visual Command type
@@ -7,11 +13,39 @@
  */
 
 if (!class_exists("Command_Visual")) {
+
+    /**
+     * Command_Visual abstract class
+     *
+     *  - Provides a structure for commands that show data / lists / etc. visually
+     *  - Provides subcommand structure for interacting with the data via keystrokes
+     */
     class Command_Visual extends Command
     {
+
+        /**
+         * Available subcommands / keystrokes
+         *
+         * @var array
+         */
         public $commands = [];
 
+        /**
+         * Reload function to be called when needed
+         *
+         *  - Passed to constructor via options
+         *
+         * @var callable
+         */
         public $reload_function;
+
+        /**
+         * Optional data to be passed to the reload function
+         *
+         *  - Passed to constructor via options
+         *
+         * @var callable
+         */
         public $reload_data;
 
         /**
@@ -37,12 +71,12 @@ if (!class_exists("Command_Visual")) {
                     'callback' => [$this, 'help'],
                 ],
                 'reload' => [
-                    'description' => 'Reload - refresh list',
+                    'description' => 'Reload - refresh this view',
                     'keys' => 'r',
                     'callback' => [$this, 'reload'],
                 ],
                 'quit' => [
-                    'description' => 'Quit - exit the list',
+                    'description' => 'Quit - exit this view',
                     'keys' => 'q',
                     'callback' => [$this, 'quit'],
                 ],
