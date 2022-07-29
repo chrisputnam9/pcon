@@ -553,6 +553,7 @@ if (!class_exists("Command")) {
 
             return $param;
         }//end _help_param()
+
         /**
          * Get static property by merging up with ancestor values
          *
@@ -565,15 +566,21 @@ if (!class_exists("Command")) {
          */
         protected static function getMergedProperty(string $property): array
         {
-            $value = [];
+            $merged_array = [];
             $class = get_called_class();
             while ($class and class_exists($class)) {
                 if (isset($class::$$property)) {
-                    $value = array_merge($value, $class::$$property);
+                    $merged_array = array_merge($merged_array, $class::$$property);
                     $class = get_parent_class($class);
                 }
             }
-            return $value;
+
+            // If integer keys, then make sure array values are uniuqe
+            if (is_int(array_key_first($merged_array))) {
+                $merged_array = array_unique($merged_array);
+            }
+
+            return $merged_array;
         }//end getMergedProperty()
 
         /**
