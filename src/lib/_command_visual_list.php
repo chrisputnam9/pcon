@@ -97,7 +97,6 @@ if (!class_exists("Command_Visual_List")) {
             parent::__construct($main_tool, $options);
         }//end __construct()
 
-
         /**
          * Run the listing subcommand
          */

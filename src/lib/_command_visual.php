@@ -22,7 +22,6 @@ if (!class_exists("Command_Visual")) {
      */
     class Command_Visual extends Command
     {
-
         /**
          * Available subcommands / keystrokes
          *
@@ -50,8 +49,13 @@ if (!class_exists("Command_Visual")) {
 
         /**
          * Constructor
+         *
+         * @param Console_Abstract $main_tool The instance of the main tool class - which should extend Console_Abstract.
+         * @param array            $options   Array of options to initialize for the visual interface.
+         *
+         * @return void
          */
-        public function __construct($main_tool, $options = [])
+        public function __construct(Console_Abstract $main_tool, array $options = [])
         {
             parent::__construct($main_tool);
 
@@ -90,9 +94,14 @@ if (!class_exists("Command_Visual")) {
 
         /**
          * Clean an array of commands
+         *
          *  - Make sure keys are set properly as array of single keys
+         *
+         * @param array $commands Array of commands to be cleaned. Passed by reference.
+         *
+         * @return void
          */
-        protected function cleanCommandArray(&$commands)
+        protected function cleanCommandArray(array &$commands)
         {
             foreach ($commands as $command_slug => $command_details) {
                 if (is_string($command_details['keys'])) {
@@ -116,18 +125,22 @@ if (!class_exists("Command_Visual")) {
 
 
         /**
-         * Prompt for input and run the associated command if valid
+         * Prompt for input and run the requested command if valid
          *
-         * @param  $commmands - the commands to select from
-         * @return boolean whether command was valid or not
+         *  - Expected to be called by a child class - eg. Command_Visual_List
+         *
+         * @param array $commands      The commands to select from.
+         * @param mixed $show_commands Whether to show the available commands.
+         *
+         * @return boolean Whether command was valid or not
          */
-        protected function promptAndRunCommand($commands, $show_options = false)
+        protected function promptAndRunCommand(array $commands, mixed $show_commands = false)
         {
             if (!is_array($commands) or empty($commands)) {
                 $this->error("Invalid commands passed - expecting array of command definitions");
             }
 
-            if ($show_options) {
+            if ($show_commands) {
                 foreach ($commands as $key => $details) {
                     $name = $details['description'];
                     $keys = $details['keys'];
@@ -160,7 +173,8 @@ if (!class_exists("Command_Visual")) {
                                         $continue_loop === false
                                         or (isset($command_details['continue']) and $command_details['continue'] === false)
                                     ) {
-                                        return;
+                                        // Finish - but not a failure
+                                        return true;
                                     }
                                 }
                             }
@@ -194,12 +208,18 @@ if (!class_exists("Command_Visual")) {
         }//end promptAndRunCommand()
 
 
-        /**
-         * Built-in commands
-         */
+        /****************************************************
+         * BUILT-IN COMMANDS
+         ***************************************************/
 
-        // Help
-        public function help($specific = false)
+        /**
+         * Help for the visual interface
+         *
+         *  - Lists all available commands to run in this area
+         *
+         * @return void
+         */
+        public function help()
         {
             $this->clear();
             $this->hr();
@@ -214,16 +234,26 @@ if (!class_exists("Command_Visual")) {
             $this->input("Hit any key to exit help", null, false, true);
         }//end help()
 
-
-        // Quit
+        /**
+         * Exit the visual interface
+         *
+         *  - Will return to previous area (eg. main prompt or exit tool perhaps)
+         *  - Returns false statically to let the prompt loop know not to continue
+         *
+         * @return false
+         */
         public function quit()
         {
             return false;
-// Back to previous area, basically
         }//end quit()
 
-
-        // Reload
+        /**
+         * Reload the visual interface
+         *
+         *  - Calls the configured reload_function with optional reload_data if any
+         *
+         * @return boolean Result of reload function call - whether to continue the prompt loop or not.
+         */
         public function reload()
         {
             return call_user_func($this->reload_function, $this->reload_data, $this);
@@ -232,4 +262,5 @@ if (!class_exists("Command_Visual")) {
 
 }//end if
 
-// Note: leave this for packaging ?>
+// Note: leave this for packaging
+?>
