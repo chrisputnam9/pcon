@@ -217,9 +217,11 @@ if (!class_exists("Command_Visual")) {
          *
          *  - Lists all available commands to run in this area
          *
+         * @param string $specific A specific method or option to show detailed help for. NOT YET IMPLEMENTED - specified mainly to line up with parent method.
+         *
          * @return void
          */
-        public function help()
+        public function help(string $specific = "")
         {
             $this->clear();
             $this->hr();
