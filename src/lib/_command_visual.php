@@ -6,17 +6,12 @@
  * @author  chrisputnam9
  */
 
-/**
- * Visual Command type
- *  - Think visual mode in vim
- *  - single letter commands, or sequences thereof
- */
-
 if (!class_exists("Command_Visual")) {
 
     /**
      * Command_Visual abstract class
      *
+     *  - A class to present a Visual interface in response to some command
      *  - Provides a structure for commands that show data / lists / etc. visually
      *  - Provides subcommand structure for interacting with the data via keystrokes
      */
@@ -50,8 +45,9 @@ if (!class_exists("Command_Visual")) {
         /**
          * Constructor
          *
-         * @param Console_Abstract $main_tool The instance of the main tool class - which should extend Console_Abstract.
-         * @param array            $options   Array of options to initialize for the visual interface.
+         * @param Console_Abstract $main_tool The instance of the main tool class
+         *  - which should extend Console_Abstract.
+         * @param array            $options   Array of options to initialize.
          *
          * @return void
          */

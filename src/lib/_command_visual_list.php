@@ -1,33 +1,84 @@
 <?php
-
 /**
- * Visual command that shows a list of items
+ * Defines Command_Visual_List class
+ *
+ * @package pcon
+ * @author  chrisputnam9
  */
 
 if (!class_exists("Command_Visual_List")) {
+
+    /**
+     * Command_Visual_List abstract class
+     *
+     *  - A class to present a List interface in response to some command
+     *  - Shows a list of data with keys to scroll, filter, search
+     */
     class Command_Visual_List extends Command_Visual
     {
+        /**
+         * The list of data currently being displayed
+         *
+         *  - Updated when filtering, etc.
+         *
+         * @var array
+         */
         public $list = [];
-        public $list_original = [];
-        public $list_selection = [];
 
+        /**
+         * The original list of data passed in
+         *
+         *  - Maintained to allow reverting from filters, etc.
+         *
+         * @var array
+         */
+        public $list_original = [];
+
+        /**
+         * The line index that currently has focus
+         *
+         * @var integer
+         */
         public $focus = 0;
+
+        /**
+         * The line index that is the start of the current view
+         *
+         * @var integer
+         */
         public $starting_line = 1;
+
+        /**
+         * Information regarding current pagination - ie. what lines are in view
+         *
+         * @var array
+         */
         public $page_info = [];
 
-        public $multiselect = false;
+        /**
+         * The template to use to display each line
+         *
+         * @var string
+         */
         public $template = "{_KEY}: {_VALUE}";
 
         /**
          * Constructor
+         *
+         * @param Console_Abstract $main_tool The instance of the main tool class
+         *  - which should extend Console_Abstract.
+         * @param array            $list      The list of data to be displayed.
+         * @param array            $options   Array of options to initialize.
+         *
+         * @return void
          */
-        public function __construct($main_tool, $list, $options = [])
+        public function __construct(Console_Abstract $main_tool, array $list, array $options = [])
         {
             $this->setMainTool($main_tool);
 
             if (empty($list)) {
                 $this->error("Empty list", false, true);
-                return false;
+                return;
             }
 
             $this->list_original = $list;
@@ -98,7 +149,9 @@ if (!class_exists("Command_Visual_List")) {
         }//end __construct()
 
         /**
-         * Run the listing subcommand
+         * Run the listing subcommand - display the list
+         *
+         * @return void
          */
         public function run()
         {
@@ -147,11 +200,11 @@ if (!class_exists("Command_Visual_List")) {
         }//end run()
 
 
+        protected $_fill_item;
         /**
          * Used to fill item data into template string
          *  by preg_replace_callback
          */
-        protected $_fill_item;
         protected function _fill_item_to_template($matches)
         {
             $value = "";

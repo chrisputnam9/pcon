@@ -88,7 +88,8 @@ if (!class_exists("Command")) {
         /**
          * Constructor
          *
-         * @param Console_Abstract $main_tool The instance of the main tool class - which should extend Console_Abstract.
+         * @param Console_Abstract $main_tool The instance of the main tool class
+         *  - which should extend Console_Abstract.
          */
         public function __construct(Console_Abstract $main_tool)
         {
