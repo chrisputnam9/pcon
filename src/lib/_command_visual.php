@@ -250,7 +250,7 @@ if (!class_exists("Command_Visual")) {
          *
          *  - Calls the configured reload_function with optional reload_data if any
          *
-         * @return boolean Result of reload function call - whether to continue the prompt loop or not.
+         * @return mixed Result of reload function call - can vary based on context.
          */
         public function reload()
         {

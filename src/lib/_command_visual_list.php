@@ -173,8 +173,42 @@ if (!class_exists("Command_Visual_List")) {
                     $output = substr_replace($output, $this->stringify($item), $value_start, 8);
                 }
 
-                $this->_fill_item = $item;
-                $content = preg_replace_callback('/\{[^\}]+\}/', [$this, '_fill_item_to_template'], $output);
+                // Swap out placeholder areas for dynamic item data
+                $content = preg_replace_callback('/\{[^\}]+\}/', function ($matches) use ($item) {
+                    $value = "";
+                    $format = false;
+
+                    $match = $matches[0];
+                    $match = substr($match, 1, -1);
+
+                    $match_exploded = explode("|", $match);
+                    if (count($match_exploded) > 1) {
+                        $format = array_pop($match_exploded);
+                    }
+                    $key_string = array_shift($match_exploded);
+
+                    $keys = explode(":", $key_string);
+                    $target = $item;
+                    while (!empty($keys)) {
+                        $key = array_shift($keys);
+                        if (isset($target[$key])) {
+                            $target = $target[$key];
+                        } else {
+                            $keys = [];
+                        }
+                    }
+                    if (is_string($target)) {
+                        $value = $target;
+                    }
+
+                    // var_dump($value);
+                    if (!empty($format) and !empty($value)) {
+                        $value = sprintf($format, $value);
+                    }
+                    // var_dump($value);
+                    return $value;
+                }, $output);
+
                 if ($this->focus == $i) {
                     $content = "[*] " . $content;
                     $content = $this->colorize($content, 'blue', 'light_gray', ['bold']);
@@ -200,53 +234,18 @@ if (!class_exists("Command_Visual_List")) {
         }//end run()
 
 
-        protected $_fill_item;
-        /**
-         * Used to fill item data into template string
-         *  by preg_replace_callback
-         */
-        protected function _fill_item_to_template($matches)
-        {
-            $value = "";
-            $format = false;
-
-            $match = $matches[0];
-            $match = substr($match, 1, -1);
-
-            $match_exploded = explode("|", $match);
-            if (count($match_exploded) > 1) {
-                $format = array_pop($match_exploded);
-            }
-            $key_string = array_shift($match_exploded);
-
-            $keys = explode(":", $key_string);
-            $target = $this->_fill_item;
-            while (!empty($keys)) {
-                $key = array_shift($keys);
-                if (isset($target[$key])) {
-                    $target = $target[$key];
-                } else {
-                    $keys = [];
-                }
-            }
-            if (is_string($target)) {
-                $value = $target;
-            }
-
-            // var_dump($value);
-            if (!empty($format) and !empty($value)) {
-                $value = sprintf($format, $value);
-            }
-            // var_dump($value);
-            return $value;
-        }//end _fill_item_to_template()
-
+        /****************************************************
+         * BUILT-IN COMMANDS
+         ***************************************************/
 
         /**
-         * Built-in commands
+         * Reload the list interface
+         *
+         *  - Calls parent reload method (see Command_Visual).
+         *  - Resets the list to value returned by reeload method.
+         *
+         * @return void
          */
-
-        // Reload
         public function reload()
         {
             $list = parent::reload();
@@ -254,8 +253,11 @@ if (!class_exists("Command_Visual_List")) {
             $this->list = $list;
         }//end reload()
 
-
-        // Filter - remove filters
+        /**
+         * Remove filters and reset list to original state
+         *
+         * @return void
+         */
         public function filter_remove()
         {
             $this->list = $this->list_original;
@@ -264,6 +266,11 @@ if (!class_exists("Command_Visual_List")) {
 
 
         // Filter - by text/regex (search)
+        /**
+         * Filter list by text or regex - eg. search
+         *
+         * @return void
+         */
         public function filter_by_text()
         {
             while (true) {
@@ -319,9 +326,11 @@ if (!class_exists("Command_Visual_List")) {
             }//end while
         }//end filter_by_text()
 
-
-
-        // Focus up/down/top/bottom
+        /**
+         * Move line focus up - eg. scroll up
+         *
+         * @return void
+         */
         public function focus_up()
         {
             if ($this->focus > 0) {
@@ -330,6 +339,11 @@ if (!class_exists("Command_Visual_List")) {
             $this->page_to_focus();
         }//end focus_up()
 
+        /**
+         * Move line focus down - eg. scroll down
+         *
+         * @return void
+         */
         public function focus_down()
         {
             $max_focus = (count($this->list) - 1);
@@ -339,12 +353,22 @@ if (!class_exists("Command_Visual_List")) {
             $this->page_to_focus();
         }//end focus_down()
 
+        /**
+         * Move line focus (scroll) to top of list
+         *
+         * @return void
+         */
         public function focus_top()
         {
             $this->focus = 0;
             $this->page_to_focus();
         }//end focus_top()
 
+        /**
+         * Move line focus (scroll) to bottom of list
+         *
+         * @return void
+         */
         public function focus_bottom()
         {
             $max_focus = (count($this->list) - 1);
@@ -353,11 +377,15 @@ if (!class_exists("Command_Visual_List")) {
         }//end focus_bottom()
 
 
-        /**
-         * Helper functions
-         */
+        /****************************************************
+         * HELPER FUNCTIONS
+         ***************************************************/
 
-        // Adjust page view to focus
+        /**
+         * Adjust starting_line based on set focus index
+         *
+         * @return void
+         */
         public function page_to_focus()
         {
             $focus = $this->focus + 1;
