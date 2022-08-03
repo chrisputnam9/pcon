@@ -17,6 +17,11 @@
             </source>
             <ignore>
                 <path>src/pkg/sample.php</path>
+                <path>src/lib/vnd_hjson_exception.php</path>
+                <path>src/lib/vnd_hjson_parser.php</path>
+                <path>src/lib/vnd_hjson_stringifier.php</path>
+                <path>src/lib/vnd_hjson_utils.php</path>
+                <path>src/lib/vnd_parsedown_class.php</path>
             </ignore>
         </api>
     </version>

@@ -1,11 +1,18 @@
 <?php
-
-# 
-# hjson-php
-# https://github.com/hjson/hjson-php
-# v 2.1.0+
+/**
+ * HJSON PHP Vendor Dependency
+ *
+ * - This tool helps PHP read and write HJSON format for config and data files
 #
 # MIT License
-#
+ *
+ * @package   hjson-php
+ * @see       https://github.com/hjson/hjson-php
+ * @author    hjson
+ * @copyright Unknown
+ * @license   MIT
+ * @version   2.1.0
+ */
 
-// Note: leave this for packaging ?>
+// Note: leave this for packaging
+?>

@@ -397,14 +397,22 @@ if (!class_exists("Command_Visual_List")) {
             }
         }//end page_to_focus()
 
-
-        // Get Focused Data
+        /**
+         * Get the key of the line in the list that currently has focus
+         *
+         * @return The focused line's key.
+         */
         public function getFocusedKey()
         {
             $list_keys = array_keys($this->list);
             return $list_keys[$this->focus];
         }//end getFocusedKey()
 
+        /**
+         * Get the value of the line in the list that currently has focus
+         *
+         * @return The focused line's value.
+         */
         public function getFocusedValue()
         {
             $list_values = array_values($this->list);
@@ -414,4 +422,5 @@ if (!class_exists("Command_Visual_List")) {
 
 }//end if
 
-// Note: leave this for packaging ?>
+// Note: leave this for packaging
+?>
