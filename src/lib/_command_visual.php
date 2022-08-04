@@ -130,7 +130,7 @@ if (!class_exists("Command_Visual")) {
          *
          * @return boolean Whether or not to continue the command prompt loop
          */
-        protected function promptAndRunCommand(array $commands, mixed $show_commands = false): boolean
+        protected function promptAndRunCommand(array $commands, mixed $show_commands = false): bool
         {
             if (!is_array($commands) or empty($commands)) {
                 $this->error("Invalid commands passed - expecting array of command definitions");
@@ -180,7 +180,7 @@ if (!class_exists("Command_Visual")) {
                         return true;
                     }//end if
 
-                    $continue_loop = call_user_func($command_callable, $this);
+                    $continue_loop = call_user_func($command_callable);
 
                     // Reload if set
                     if (!empty($command_details['reload'])) {
@@ -201,6 +201,8 @@ if (!class_exists("Command_Visual")) {
             if (!$matched) {
                 $this->log("Invalid input $input");
             }
+
+            return true;
         }//end promptAndRunCommand()
 
 
