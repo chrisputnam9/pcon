@@ -501,9 +501,9 @@ if (!class_exists("Command")) {
          * @param string $specific A specific method or option to show detailed help for.
          * @param string $type     Type to look for - 'method' or 'option' (will check both by default).
          *
-         * @return string help text, or empty string if none found
+         * @return mixed help information, or empty string if none found
          */
-        protected function _help_var(string $specific, string $type = ""): array
+        protected function _help_var(string $specific, string $type = ""): mixed
         {
             $help = "";
             $specific = str_replace('-', '_', $specific);
