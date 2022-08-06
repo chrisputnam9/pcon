@@ -1015,6 +1015,10 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Colorize a string for output to console
          *  - https://en.wikipedia.org/wiki/ANSI_escape_code
+         *
+         * @uses CONSOLE_COLORS::$foreground
+         * @uses CONSOLE_COLORS::$background
+         * @uses CONSOLE_COLORS::$other
          */
         public function colorize($string, $foreground = null, $background = null, $other = [])
         {

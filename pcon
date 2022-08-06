@@ -12,18 +12,36 @@
 
 // Miscellaneous configuration
 if (! defined('ERRORS')) {
+    /**
+     * @var boolean Whether to show errors or not.
+     * @global
+     * @used-by Console_Abstract
+     */
     define('ERRORS', true);
 }
 if (! defined('PACKAGED')) {
+    /**
+     * @var boolean Whether the tool is packaged (vs. unpackaged / development mode)
+     * @global
+     * @used-by Console_Abstract
+     */
     define('PACKAGED', false);
 }
 
 // Path to pcon console_abstract.php
 if (! defined('CONSOLE_ABSTRACT_PATH')) {
+    /**
+     * @var string The path the the Console_Abstract class file to be loaded below.
+     * @ignore
+     */
     define('CONSOLE_ABSTRACT_PATH', __DIR__ . '/src/console_abstract.php');
 }
 
-// Paths to other includes
+/**
+ * @var array Source files to be loaded for this tool.
+ * @global
+ * @used-by Console_Abstract
+ */
 $src_includes = array(
     __DIR__ . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'pcon.php',
 );

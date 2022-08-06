@@ -9,10 +9,6 @@
 	<exclude-pattern>*\.js$</exclude-pattern>
 	<exclude-pattern>*\.css$</exclude-pattern>
 
-	<!-- Exclude third-party files -->
-	<exclude-pattern>src/lib/vnd_hjson_*</exclude-pattern>
-	<exclude-pattern>src/lib/vnd_parsedown_*</exclude-pattern>
-
     <!-- Exclude template file -->
     <!-- TODO adjust this later on to allow it to be checked -->
 	<exclude-pattern>src/pkg/sample.php</exclude-pattern>
