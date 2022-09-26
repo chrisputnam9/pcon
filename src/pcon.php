@@ -297,6 +297,10 @@ class PCon extends Console_Abstract
         "Test available colors and text decoration - escape codes",
         ["Types to test - comma-separted - defaults to test all", "string"],
     ];
+    /**
+     *
+     * @uses CONSOLE_COLORS - tests all colors / styles defined therein
+     */
     public function test_colors($types = null)
     {
         $types = $this->prepArg($types, ["foreground","background","other"]);
