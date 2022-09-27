@@ -25,5 +25,11 @@
             </ignore>
         </api>
     </version>
-    <!--<template name="clean" />-->
+    <template name="clean" />
+    <!--
+    <template name="clean" />
+    <template name="default" />
+    <template name="responsive-twig" />
+    <template name="xml" />
+    -->
 </phpdocumentor>
