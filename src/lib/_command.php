@@ -269,6 +269,7 @@ if (!class_exists("Command")) {
          *  - Most useful in built-in CLI / prompt interface
          *
          * @api
+         *
          * @return void
          */
         public function clear()
@@ -291,6 +292,7 @@ if (!class_exists("Command")) {
          *  - Most useful to exit built-in CLI / prompt interface
          *
          * @api
+         *
          * @return void
          */
         public function exit()
@@ -321,6 +323,7 @@ if (!class_exists("Command")) {
          * @param string $specific A specific method or option to show detailed help for.
          *
          * @api
+         *
          * @return void
          */
         public function help(string $specific = "")

@@ -215,6 +215,8 @@ if (!class_exists("Command_Visual")) {
          *
          *  - Lists all available commands to run in this area
          *
+         * @api
+         *
          * @param string $specific A specific method or option to show detailed help for. NOT YET IMPLEMENTED - specified mainly to line up with parent method.
          *
          * @return void
@@ -240,6 +242,8 @@ if (!class_exists("Command_Visual")) {
          *  - Will return to previous area (eg. main prompt or exit tool perhaps)
          *  - Returns false statically to let the prompt loop know not to continue
          *
+         * @api
+         *
          * @return false
          */
         public function quit()
@@ -251,6 +255,8 @@ if (!class_exists("Command_Visual")) {
          * Reload the visual interface
          *
          *  - Calls the configured reload_function with optional reload_data if any
+         *
+         * @api
          *
          * @return mixed Result of reload function call - can vary based on context.
          */
