@@ -400,7 +400,7 @@ if (!class_exists("Command_Visual_List")) {
          *
          * @return void
          */
-        public function page_to_focus()
+        private function page_to_focus()
         {
             $focus = $this->focus + 1;
             if ($focus < $this->starting_line) {
@@ -416,7 +416,7 @@ if (!class_exists("Command_Visual_List")) {
          *
          * @return The focused line's key.
          */
-        public function getFocusedKey()
+        private function getFocusedKey()
         {
             $list_keys = array_keys($this->list);
             return $list_keys[$this->focus];
@@ -427,7 +427,7 @@ if (!class_exists("Command_Visual_List")) {
          *
          * @return The focused line's value.
          */
-        public function getFocusedValue()
+        private function getFocusedValue()
         {
             $list_values = array_values($this->list);
             return $list_values[$this->focus];
