@@ -245,7 +245,6 @@ if (!class_exists("Command_Visual_List")) {
          *  - Resets the list to value returned by reeload method.
          *
          * @api
-         *
          * @return void
          */
         public function reload()
@@ -259,7 +258,6 @@ if (!class_exists("Command_Visual_List")) {
          * Remove filters and reset list to original state
          *
          * @api
-         *
          * @return void
          */
         public function filter_remove()
@@ -274,7 +272,6 @@ if (!class_exists("Command_Visual_List")) {
          * Filter list by text or regex - eg. search
          *
          * @api
-         *
          * @return void
          */
         public function filter_by_text()
@@ -336,7 +333,6 @@ if (!class_exists("Command_Visual_List")) {
          * Move line focus up - eg. scroll up
          *
          * @api
-         *
          * @return void
          */
         public function focus_up()
@@ -351,7 +347,6 @@ if (!class_exists("Command_Visual_List")) {
          * Move line focus down - eg. scroll down
          *
          * @api
-         *
          * @return void
          */
         public function focus_down()
@@ -367,7 +362,6 @@ if (!class_exists("Command_Visual_List")) {
          * Move line focus (scroll) to top of list
          *
          * @api
-         *
          * @return void
          */
         public function focus_top()
@@ -380,7 +374,6 @@ if (!class_exists("Command_Visual_List")) {
          * Move line focus (scroll) to bottom of list
          *
          * @api
-         *
          * @return void
          */
         public function focus_bottom()

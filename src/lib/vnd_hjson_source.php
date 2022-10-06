@@ -11,7 +11,7 @@
  * @license   MIT
  * @version   2.1.0
  *
- * @ignore
+ * @ignore Since this is a third-party library with documentation of its own
  * phpcs:disable
  */
 

@@ -237,7 +237,6 @@ if (!class_exists("Command")) {
          * @param string    $method The method being called.
          *
          * @return void
-         *
          * @throws Exception Throws Exception $e that was passed if running in verbose mode.
          */
         protected function _run_error(Exception $e, string $method)
@@ -269,7 +268,6 @@ if (!class_exists("Command")) {
          *  - Most useful in built-in CLI / prompt interface
          *
          * @api
-         *
          * @return void
          */
         public function clear()
@@ -292,7 +290,6 @@ if (!class_exists("Command")) {
          *  - Most useful to exit built-in CLI / prompt interface
          *
          * @api
-         *
          * @return void
          */
         public function exit()
@@ -323,7 +320,6 @@ if (!class_exists("Command")) {
          * @param string $specific A specific method or option to show detailed help for.
          *
          * @api
-         *
          * @return void
          */
         public function help(string $specific = "")
@@ -637,7 +633,6 @@ if (!class_exists("Command")) {
          * @param array  $arguments The arguments being passed to the method.
          *
          * @throws Exception If the method can't be found on the "main_tool" instance.
-         *
          * @return mixed If able to call the method on the "main_tool" (instance of Console_Abstract) then, return the value from calling that method.
          */
         public function __call(string $method, array $arguments = []): mixed

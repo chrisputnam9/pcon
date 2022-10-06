@@ -1484,8 +1484,8 @@ if (! class_exists("Console_Abstract")) {
                 // Notify user
                 $this->output('NOTICE: ' . $e->getMessage());
             }//end try
+        }//end initConfig()
 
-        }
 
 
         /**
