@@ -11,6 +11,10 @@
 
 // Global Constants
 if (! defined('DS')) {
+    /*
+     * @var string Directory separator for this OS
+     * @global
+     */
     define('DS', DIRECTORY_SEPARATOR);
 }
 

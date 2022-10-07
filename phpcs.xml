@@ -9,10 +9,6 @@
 	<exclude-pattern>*\.js$</exclude-pattern>
 	<exclude-pattern>*\.css$</exclude-pattern>
 
-    <!-- Exclude template file -->
-    <!-- TODO adjust this later on to allow it to be checked -->
-	<exclude-pattern>src/pkg/sample.php</exclude-pattern>
-
 	<!-- Include the main standard. -->
 	<rule ref="PSR12">
 		<!-- Ignore some rules based on our organization & packaging strategies-->

@@ -30,11 +30,35 @@ if (! defined('PACKAGED')) {
 
 // Path to pcon console_abstract.php
 if (! defined('CONSOLE_ABSTRACT_PATH')) {
+
+    // For PCon specifically, check src
+    $console_path =
+        __DIR__ . DIRECTORY_SEPARATOR .
+        'src' . DIRECTORY_SEPARATOR .
+        'console_abstract.php';
+
+    // For other tools, check pcon
+    if ( !is_file($console_path)) {
+        $console_path =
+            __DIR__ . DIRECTORY_SEPARATOR .
+            'pcon' .DIRECTORY_SEPARATOR .
+            'src' .DIRECTORY_SEPARATOR .
+            'console_abstract.php';
+    }
+
+    if (!is_file($console_path))
+    {
+        echo "ERROR: Console Abstract not found - '" . $console_path . "'\n";
+        echo " - Symlink your pcon folder to '" . __DIR__ . DIRECTORY_SEPARATOR . "pcon' to resolve this issue\n";
+        echo "----------------------------------------\n";
+        throw new Exception("Missing console abstract");
+    }
+
     /*
      * @var string The path the the Console_Abstract class file to be loaded below.
      * @ignore
      */
-    define('CONSOLE_ABSTRACT_PATH', __DIR__ . '/src/console_abstract.php');
+    define('CONSOLE_ABSTRACT_PATH', $console_path);
 }
 
 /*
@@ -43,7 +67,9 @@ if (! defined('CONSOLE_ABSTRACT_PATH')) {
  * @used-by Console_Abstract
  */
 $src_includes = array(
-    __DIR__ . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'pcon.php',
+    __DIR__ . DIRECTORY_SEPARATOR .
+    'src' . DIRECTORY_SEPARATOR .
+    /*TOOLNAME{*/ 'pcon.php' /*}TOOLNAME*/,
 );
 
 
