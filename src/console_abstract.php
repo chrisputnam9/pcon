@@ -67,30 +67,30 @@ if (! class_exists("Console_Abstract")) {
     class Console_Abstract extends Command
     {
         /**
-         * Default output height limit, if unable to determine
+         * Default output height limit, if unable to determine dynamically
          *
-         * @var int
+         * @var integer
          */
         protected const DEFAULT_HEIGHT = 30;
 
         /**
-         * Default output width limit, if unable to determine
+         * Default output width limit, if unable to determine dynamically
          *
-         * @var int
+         * @var integer
          */
         protected const DEFAULT_WIDTH = 130;
 
         /**
          * Screen percentage for first column of table output
          *
-         * @var int
+         * @var integer
          */
         protected const COL1_WIDTH = 20;
 
         /**
          * Screen percentage for second column of table output
          *
-         * @var int
+         * @var integer
          */
         protected const COL2_WIDTH = 50;
 
@@ -179,6 +179,7 @@ if (! class_exists("Console_Abstract")) {
 
         /**
          * How many days worth of backups to keep when cleaning up
+         *
          * - Will be passed as X to: find -mtime +X
          * - Anything but a non-negative integer could cause errors or unexpected behavior
          *
@@ -195,6 +196,7 @@ if (! class_exists("Console_Abstract")) {
 
         /**
          * Path in which to save backups
+         *
          * - If null, backups are disabled
          *
          * @var string
@@ -223,86 +225,163 @@ if (! class_exists("Console_Abstract")) {
          * @var mixed
          */
         protected $__cache_lifetime = ["Default time to cache data in seconds"];
-        public $cache_lifetime      = 86400;
-// Default: 24 hours
 
         /**
-         * Help info for $
+         * Default lifetime of cached data in seconds - when to expire
+         *
+         *  - Defaults to 86400 (24 hours)
+         *
+         * @var integer
+         */
+        public $cache_lifetime      = 86400;
+
+        /**
+         * Help info for $editor_exec
          *
          * @var mixed
          */
         protected $__editor_exec = ["Command to open file in editor - %s for filepath placeholder via sprintf"];
-        protected $editor_exec   = '/usr/bin/vim -c "startinsert" "%s" > `tty`';
-// vim in insert mode
 
         /**
-         * Help info for $
+         * Editor executable - command to be run when opening a new file
+         *
+         *  - %s is the filepath placeholder
+         *  - Defaults to vim in *insert* mode
+         *
+         * @var string
+         */
+        protected $editor_exec   = '/usr/bin/vim -c "startinsert" "%s" > `tty`';
+
+        /**
+         * Help info for $editor_modify_exec
          *
          * @var mixed
          */
         protected $__editor_modify_exec = ["Command to open file in editor to review/modify existing text - %s for filepath placeholder via sprintf"];
-        protected $editor_modify_exec   = '/usr/bin/vim "%s" > `tty`';
-// vim in normal mode
 
         /**
-         * Help info for $
+         * Editor executable - command to be run when opening a file for *modification*
+         *
+         *  - Eg. existing file that is being modified
+         *  - %s is the filepath placeholder
+         *  - Defaults to vim in *normal* mode - preferred for modification
+         *
+         * @var string
+         */
+        protected $editor_modify_exec   = '/usr/bin/vim "%s" > `tty`';
+
+        /**
+         * Help info for $install_path
          *
          * @var mixed
          */
         protected $__install_path = ["Install path of this tool", "string"];
+
+        /**
+         * Install path for packaged tool executables
+         *
+         * @var string
+         */
         public $install_path      = DS . "usr" . DS . "local" . DS . "bin";
 
         /**
-         * Help info for $
+         * Help info for $ssl_check
          *
          * @var mixed
          */
         protected $__ssl_check = "Whether to check SSL certificates with curl";
-        public $ssl_check      = true;
 
         /**
-         * Help info for $
+         * Whether to check SSL certificates on network connections
+         *
+         *  - Defaults to true
+         *
+         * @var boolean
+         */
+        public $ssl_check = true;
+
+        /**
+         * Help info for $stamp_lines
          *
          * @var mixed
          */
-        protected $__stamp_lines = "Stamp output lines";
-        public $stamp_lines      = false;
+        protected $__stamp_lines = "Stamp / prefix output lines with the date and time";
 
         /**
-         * Help info for $
+         * Whether to prefix output lines with date and time
+         *
+         *  - Defaults to false
+         *
+         * @var boolean
+         */
+        public $stamp_lines = false;
+
+        /**
+         * Help info for $step
          *
          * @var mixed
          */
-        protected $__step = "Enable stepping points";
-        public $step      = false;
+        protected $__step = "Enable stepping/pause points for debugging";
 
         /**
-         * Help info for $
+         * Whether to enable stepping / pause points for debugging
+         *
+         *  - Defaults to false
+         *
+         * @var boolean
+         */
+        public $step = false;
+
+        /**
+         * Help info for $timezone
          *
          * @var mixed
          */
         protected $__timezone = ["Timezone - from http://php.net/manual/en/timezones.", "string"];
-        public $timezone      = "US/Eastern";
 
         /**
-         * Help info for $
+         * Timezone - from http://php.net/manual/en/timezones.
+         *
+         *  - Defaults to "US/Eastern"
+         *
+         * @var string
+         */
+        public $timezone = "US/Eastern";
+
+        /**
+         * Help info for $update_auto
          *
          * @var mixed
          */
-        /*
-            Default: check every 24 hrs
-            24 * 60 * 60 = 86400
-        */
         protected $__update_auto = ["How often to automatically check for an update (seconds, 0 to disable)", "int"];
-        public $update_auto      = 86400;
 
         /**
-         * Help info for $
+         * How often (in seconds) to automatically check for an update
+         *
+         *  - Defaults to 86400 (24 hours)
+         *  - Set to 0 to disable updates
+         *
+         * @var integer
+         */
+        public $update_auto = 86400;
+
+        /**
+         * Help info for $update_last_check
          *
          * @var mixed
          */
         protected $__update_last_check = ["Formatted timestap of last update check", "string"];
-        public $update_last_check      = "";
+
+        /**
+         * Timestamp of last update check
+         *
+         *  - Not typically set manually
+         *  - Stored in config for easy reference and simplicity
+         *  - Defaults to "" - no update check completed yet
+         *
+         * @var string
+         */
+        public $update_last_check = "";
 
         /**
          * Help info for $
@@ -313,7 +392,7 @@ if (! class_exists("Console_Abstract")) {
         // - empty string = not updatable
         // - Tip: if using Github md file, use raw URL for simpler parsing
         protected $__update_version_url = ["URL to check for latest version number info", "string"];
-        public $update_version_url      = "";
+        public $update_version_url = "";
 
         /**
          * Help info for $
@@ -322,7 +401,7 @@ if (! class_exists("Console_Abstract")) {
          */
         // Note: this is configurable, and the child class can also set a default
         protected $__update_check_hash = ["Whether to check hash of download when updating", "binary"];
-        public $update_check_hash      = true;
+        public $update_check_hash = true;
 
         /**
          * Help info for $
@@ -330,7 +409,7 @@ if (! class_exists("Console_Abstract")) {
          * @var mixed
          */
         protected $__verbose = "Enable verbose output";
-        public $verbose      = false;
+        public $verbose = false;
 
         /**
          * Help info for $
@@ -338,30 +417,30 @@ if (! class_exists("Console_Abstract")) {
          * @var mixed
          */
         protected $____WSC__ = "HJSON Data for config file";
-        public $__WSC__      = null;
+        public $__WSC__ = null;
 
         /**
          * Config paths
          */
-        protected $config_dir  = null;
+        protected $config_dir = null;
         protected $config_file = null;
-        protected $home_dir    = null;
+        protected $home_dir = null;
 
         /**
          * Stuff
          * Child class can override all as needed
          */
         protected $config_initialized = false;
-        protected $config_to_save     = null;
-        protected $dt                 = null;
-        protected $run_stamp          = '';
-        protected $method             = '';
+        protected $config_to_save = null;
+        protected $dt = null;
+        protected $run_stamp = '';
+        protected $method = '';
 
-        protected $logged_in_user    = '';
-        protected $current_user      = '';
+        protected $logged_in_user = '';
+        protected $current_user = '';
         protected $logged_in_as_root = false;
-        protected $running_as_root   = false;
-        protected $is_windows        = false;
+        protected $running_as_root = false;
+        protected $is_windows = false;
 
         protected $minimum_php_major_version = '7';
 
@@ -390,20 +469,20 @@ if (! class_exists("Console_Abstract")) {
 
         // True to use the standard
         // - otherwise, specify pattern string as needed
-        protected $update_version_pattern        = [ true, 1 ];
-        protected $update_download_pattern       = [ true, 2 ];
+        protected $update_version_pattern = [ true, 1 ];
+        protected $update_download_pattern = [ true, 2 ];
         protected $update_hash_algorithm_pattern = [ true, 1 ];
-        protected $update_hash_pattern           = [ true, 2 ];
+        protected $update_hash_pattern = [ true, 2 ];
 
-        protected $update_exists  = null;
+        protected $update_exists = null;
         protected $update_version = "0";
-        protected $update_url     = "";
+        protected $update_url = "";
 
         // This is used when packaging via pcon, for convenience,
         // but will be read dynamically from the download page
         // to check the downloaded file
         protected $update_hash_algorithm = "md5";
-        protected $update_hash           = "";
+        protected $update_hash = "";
 
         public function __construct()
         {
