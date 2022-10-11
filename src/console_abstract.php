@@ -384,56 +384,121 @@ if (! class_exists("Console_Abstract")) {
         public $update_last_check = "";
 
         /**
-         * Help info for $
+         * Help info for $update_version_url
          *
          * @var mixed
          */
-        // Note: this is configurable, and the child class can also set a default
-        // - empty string = not updatable
-        // - Tip: if using Github md file, use raw URL for simpler parsing
         protected $__update_version_url = ["URL to check for latest version number info", "string"];
+
+        /**
+         * The URL to check for updates
+         *
+         *  - Empty string will disable checking for updates
+         *  - The tool child class itself should set a default
+         *  - Common choice would be to use raw URL of Github readme file
+         *  - Set in config to set up a custom update methodology or disable updates
+         *
+         * @var string
+         *
+         * @see PCon::update_version_url
+         */
         public $update_version_url = "";
 
         /**
-         * Help info for $
+         * Help info for $update_check_hash
          *
          * @var mixed
          */
-        // Note: this is configurable, and the child class can also set a default
         protected $__update_check_hash = ["Whether to check hash of download when updating", "binary"];
+
+        /**
+         * Whether to check the hash when downloading updates
+         *
+         *  - Defaults to true
+         *
+         * @var boolean
+         */
         public $update_check_hash = true;
 
         /**
-         * Help info for $
+         * Help info for $verbose
          *
          * @var mixed
          */
         protected $__verbose = "Enable verbose output";
+
+        /**
+         * Whether to show log messages - verbose output
+         *
+         *  - Defaults to false
+         *
+         * @var boolean
+         */
         public $verbose = false;
 
         /**
-         * Help info for $
+         * Help info for $__WSC__
          *
          * @var mixed
          */
         protected $____WSC__ = "HJSON Data for config file";
+
+        /**
+         * HJSON Data for the config file
+         *
+         * @var array
+         */
         public $__WSC__ = null;
 
         /**
-         * Config paths
+         * Config directory
+         *
+         * @var string
          */
         protected $config_dir = null;
+
+        /**
+         * Config file
+         *
+         * @var string
+         */
         protected $config_file = null;
+
+        /**
+         * Home directory
+         *
+         * @var string
+         */
         protected $home_dir = null;
 
         /**
-         * Stuff
-         * Child class can override all as needed
+         * Config initialized flag
+         *
+         * @var boolean
          */
         protected $config_initialized = false;
+
+        /**
+         * Config data to be saved
+         *
+         * @var array
+         */
         protected $config_to_save = null;
-        protected $dt = null;
+
+        /**
+         * Timestamp when the tool was initilized - eg. when constructor ran
+         *
+         * @var string
+         */
         protected $run_stamp = '';
+
+        /**
+         * The method being called
+         *
+         *  - set by Command::try_calling
+         *
+         * @var string
+         */
         protected $method = '';
 
         protected $logged_in_user = '';
