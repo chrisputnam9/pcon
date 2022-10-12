@@ -501,20 +501,78 @@ if (! class_exists("Console_Abstract")) {
          */
         protected $method = '';
 
+        /**
+         * The user that initially logged in to the current session
+         *
+         *  - as reported by logname
+         *
+         * @var string
+         */
         protected $logged_in_user = '';
+
+        /**
+         * The currently active user
+         *
+         *  - as reported by whoami
+         *
+         * @var string
+         */
         protected $current_user = '';
+
+        /**
+         * Whether the user is logged in as root
+         *
+         *  - Ie. is logged_in_user === 'root'
+         *
+         * @var boolean
+         */
         protected $logged_in_as_root = false;
+
+        /**
+         * Whether user is currently root
+         *
+         *  - Ie. current_user === 'root'
+         *
+         * @var boolean
+         */
         protected $running_as_root = false;
+
+        /**
+         * Whether tool is running on a Windows operating system
+         *
+         * @var boolean
+         */
         protected $is_windows = false;
 
-        protected $minimum_php_major_version = '7';
+        /**
+         * The minimum PHP major version required for this tool
+         *
+         * @var integer
+         */
+        protected $minimum_php_major_version = 7;
 
-        // Update behavior
-        // - DOWNLOAD - download and install update
-        // - Other - show text as a custom message
+        /**
+         * Update behavior - either "DOWNLOAD" or custom text
+         *
+         *  - If set to "DOWNLOAD" then the update will download if available
+         *  - Otherwise, whatever text is set here will show as a message - ie. instructions
+         *    on how to update the tool manually.
+         *  - Defaults to 'DOWNLOAD' as that is what most tools will use
+         *  - However, as an example, PCon::update_behavior instructs users to pull the git repository to update it
+         *
+         * @var string
+         */
         protected $update_behavior = 'DOWNLOAD';
 
-        // Set this to false in child class to disable updates
+        /**
+         * The standard/default pattern to identify the latest version and URL
+         * within the text found at $this->update_version_url.
+         *
+         *  - By default, group 1 is the version
+         *  - By default, group 2 is the URL
+         *
+         * @var string
+         */
         protected $update_pattern_standard = "~
             download\ latest\ version \s*
             \( \s*
@@ -558,13 +616,13 @@ if (! class_exists("Console_Abstract")) {
             if ($return == 0 and ! empty($logged_in_user)) {
                 $this->logged_in_user = trim(implode($logged_in_user));
             }
-            $this->logged_in_as_root = ($this->logged_in_user == 'root');
+            $this->logged_in_as_root = ($this->logged_in_user === 'root');
 
             exec('whoami', $current_user, $return);
             if ($return == 0 and ! empty($current_user)) {
                 $this->current_user = trim(implode($current_user));
             }
-            $this->running_as_root = ($this->current_user == 'root');
+            $this->running_as_root = ($this->current_user === 'root');
 
             $this->is_windows = (strtolower(substr(PHP_OS, 0, 3)) === 'win');
 
@@ -583,7 +641,7 @@ if (! class_exists("Console_Abstract")) {
             $this->log("Windows: " . ($this->is_windows ? "Yes" : "No"));
 
             $php_version = explode('.', PHP_VERSION);
-            $major       = (int)$php_version[0];
+            $major       = (int) $php_version[0];
             if ($major < $this->minimum_php_major_version) {
                 $problems[] = "This tool is not well tested below PHP " . $this->minimum_php_major_version .
                     " - please consider upgrading to PHP " . $this->minimum_php_major_version . ".0 or higher";
