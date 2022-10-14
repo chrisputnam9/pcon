@@ -160,6 +160,8 @@ if (! class_exists("Console_Abstract")) {
          * Help info for $allow_root
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $__allow_root = "OK to run as root without warning";
 
@@ -568,8 +570,11 @@ if (! class_exists("Console_Abstract")) {
          * The standard/default pattern to identify the latest version and URL
          * within the text found at $this->update_version_url.
          *
-         *  - By default, group 1 is the version
-         *  - By default, group 2 is the URL
+         *  - By default, group 1 is the version - see $this->update_version_pattern
+         *  - By default, group 2 is the download URL - see $this->pdate_download_pattern
+         *  - Defaults to look for a string like:
+         *        Download Latest Version (1.1.1):
+         *        https://example.com
          *
          * @var string
          */
@@ -581,7 +586,18 @@ if (! class_exists("Console_Abstract")) {
             \s* ( \S* ) \s*$
         ~ixm";
 
-        // Set this to false in child class to disable hash check
+        /**
+         * The standard/default pattern to identify the hash of the latest version download
+         * within the text found at $this->update_version_url.
+         *
+         *  - By default, group 1 is the algorithm - see $this->update_hash_algorithm_pattern
+         *  - By default, group 2 is the hash - see $this->update_hash_pattern
+         *  - Defaults to look for a string like:
+         *        Latest Version Hash (md5):
+         *        hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
+         *
+         * @var string
+         */
         protected $hash_pattern_standard = "~
             latest\ version\ hash \s*
             \( \s*
@@ -590,11 +606,52 @@ if (! class_exists("Console_Abstract")) {
             \s* ([0-9a-f]+)
         ~ixm";
 
-        // True to use the standard
-        // - otherwise, specify pattern string as needed
+        /**
+         * Instructions to find update version at $this->update_version_url.
+         *
+         *  - First element is pattern
+         *      - Defaults to true to use $update_pattern_standard
+         *  - Second element is match index
+         *      - Defaults to 1 to use first match group as version
+         *
+         * @var array
+         */
         protected $update_version_pattern = [ true, 1 ];
+
+        /**
+         * Instructions to find update download URL at $this->update_version_url.
+         *
+         *  - First element is pattern
+         *      - Defaults to true to use $update_pattern_standard
+         *  - Second element is match index
+         *      - Defaults to 2 to use second match group as version
+         *
+         * @var array
+         */
         protected $update_download_pattern = [ true, 2 ];
+
+        /**
+         * Instructions to find download hash algorithm at $this->update_version_url.
+         *
+         *  - First element is pattern
+         *      - Defaults to true to use $hash_pattern_standard
+         *  - Second element is match index
+         *      - Defaults to 1 to use first match group as version
+         *
+         * @var array
+         */
         protected $update_hash_algorithm_pattern = [ true, 1 ];
+
+        /**
+         * Instructions to find download hash at $this->update_version_url.
+         *
+         *  - First element is pattern
+         *      - Defaults to true to use $hash_pattern_standard
+         *  - Second element is match index
+         *      - Defaults to 2 to use second match group as version
+         *
+         * @var array
+         */
         protected $update_hash_pattern = [ true, 2 ];
 
         protected $update_exists = null;
