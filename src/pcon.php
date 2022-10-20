@@ -50,6 +50,8 @@ class PCon extends Console_Abstract
      * Help info for $console_abstract_path
      *
      * @var array
+     *
+     * @internal
      */
     protected $__console_abstract_path = ["Path to console_abstract.php", "string"];
 

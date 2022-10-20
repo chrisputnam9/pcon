@@ -176,6 +176,8 @@ if (! class_exists("Console_Abstract")) {
          * Help info for $backup_age_limit
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $__backup_age_limit = ["Age limit of backups to keep - number of days, 0 or greater", "string"];
 
@@ -193,6 +195,8 @@ if (! class_exists("Console_Abstract")) {
          * Help info for $backup_dir
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $__backup_dir = ["Location to save backups", "string"];
 
@@ -209,6 +213,8 @@ if (! class_exists("Console_Abstract")) {
          * Help info for $browser_exec
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $__browser_exec = ["Command to open links in browser - %s for link placeholder via sprintf"];
 
@@ -225,6 +231,8 @@ if (! class_exists("Console_Abstract")) {
          * Help info for $cache_lifetime
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $__cache_lifetime = ["Default time to cache data in seconds"];
 
@@ -241,6 +249,8 @@ if (! class_exists("Console_Abstract")) {
          * Help info for $editor_exec
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $__editor_exec = ["Command to open file in editor - %s for filepath placeholder via sprintf"];
 
@@ -258,6 +268,8 @@ if (! class_exists("Console_Abstract")) {
          * Help info for $editor_modify_exec
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $__editor_modify_exec = ["Command to open file in editor to review/modify existing text - %s for filepath placeholder via sprintf"];
 
@@ -276,6 +288,8 @@ if (! class_exists("Console_Abstract")) {
          * Help info for $install_path
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $__install_path = ["Install path of this tool", "string"];
 
@@ -290,6 +304,8 @@ if (! class_exists("Console_Abstract")) {
          * Help info for $ssl_check
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $__ssl_check = "Whether to check SSL certificates with curl";
 
@@ -306,6 +322,8 @@ if (! class_exists("Console_Abstract")) {
          * Help info for $stamp_lines
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $__stamp_lines = "Stamp / prefix output lines with the date and time";
 
@@ -322,6 +340,8 @@ if (! class_exists("Console_Abstract")) {
          * Help info for $step
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $__step = "Enable stepping/pause points for debugging";
 
@@ -338,6 +358,8 @@ if (! class_exists("Console_Abstract")) {
          * Help info for $timezone
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $__timezone = ["Timezone - from http://php.net/manual/en/timezones.", "string"];
 
@@ -354,6 +376,8 @@ if (! class_exists("Console_Abstract")) {
          * Help info for $update_auto
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $__update_auto = ["How often to automatically check for an update (seconds, 0 to disable)", "int"];
 
@@ -371,6 +395,8 @@ if (! class_exists("Console_Abstract")) {
          * Help info for $update_last_check
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $__update_last_check = ["Formatted timestap of last update check", "string"];
 
@@ -389,6 +415,8 @@ if (! class_exists("Console_Abstract")) {
          * Help info for $update_version_url
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $__update_version_url = ["URL to check for latest version number info", "string"];
 
@@ -410,6 +438,8 @@ if (! class_exists("Console_Abstract")) {
          * Help info for $update_check_hash
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $__update_check_hash = ["Whether to check hash of download when updating", "binary"];
 
@@ -426,6 +456,8 @@ if (! class_exists("Console_Abstract")) {
          * Help info for $verbose
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $__verbose = "Enable verbose output";
 
@@ -442,6 +474,8 @@ if (! class_exists("Console_Abstract")) {
          * Help info for $__WSC__
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $____WSC__ = "HJSON Data for config file";
 
@@ -654,6 +688,13 @@ if (! class_exists("Console_Abstract")) {
          */
         protected $update_hash_pattern = [ true, 2 ];
 
+        /**
+         * Whether an update exists or not - to avoid multiple checks
+         *
+         * @var boolean
+         *
+         * @internal
+         */
         protected $update_exists = null;
         protected $update_version = "0";
         protected $update_url = "";

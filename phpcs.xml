@@ -41,6 +41,7 @@
         <exclude name="Squiz.Commenting.InlineComment.InvalidEndChar"/>
         <exclude name="Squiz.Commenting.InlineComment.NotCapital"/>
         <exclude name="Squiz.Commenting.BlockComment.NoEmptyLineAfter"/>
+        <exclude name="Squiz.Commenting.VariableComment.TagNotAllowed"/>
 	</rule>
 
     <rule ref="Generic.Commenting"/>

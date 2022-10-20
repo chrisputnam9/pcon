@@ -257,6 +257,8 @@ if (!class_exists("Command")) {
          * Help info for clear command
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $___clear = [
             "Clear the screen",
@@ -279,6 +281,8 @@ if (!class_exists("Command")) {
          * Help info for exit command
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $___exit = [
             "Exit the command prompt",
@@ -301,6 +305,8 @@ if (!class_exists("Command")) {
          * Help info for the help command itself
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $___help = [
             "Shows help/usage information.",
@@ -388,6 +394,8 @@ if (!class_exists("Command")) {
          * Help info for prompt command
          *
          * @var mixed
+         *
+         * @internal
          */
         protected $___prompt = [
             "Show interactive prompt"
