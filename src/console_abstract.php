@@ -696,15 +696,51 @@ if (! class_exists("Console_Abstract")) {
          * @internal
          */
         protected $update_exists = null;
+
+        /**
+         * Latest version available for update
+         *
+         * @var string
+         *
+         * @internal
+         */
         protected $update_version = "0";
+
+        /**
+         * URL of latest version available for update
+         *
+         * @var string
+         *
+         * @internal
+         */
         protected $update_url = "";
 
-        // This is used when packaging via pcon, for convenience,
-        // but will be read dynamically from the download page
-        // to check the downloaded file
+        /**
+         * Hash algorithm to use for packaging and update verification
+         *
+         *  - Defaults to md5
+         *
+         * @var string
+         */
         protected $update_hash_algorithm = "md5";
+
+        /**
+         * Hash of latest version available for update
+         *
+         * @var string
+         *
+         * @internal
+         */
         protected $update_hash = "";
 
+        /**
+         * Constructor
+         *
+         *  - Sets default timezone for date functions to use
+         *  - Sets run_stamp
+         *  - Determines runtime details - user, OS
+         *  - Calls parent (Command) constructor
+         */
         public function __construct()
         {
             date_default_timezone_set($this->timezone);
@@ -727,12 +763,17 @@ if (! class_exists("Console_Abstract")) {
             parent::__construct($this);
         }//end __construct()
 
-
         /**
          * Check requirements
-         * - Extend in child if needed and pass problems to parent
+         *
+         *  - PHP Version & Modules
+         *  - Extend in child if needed and pass problems to parent
+         *
+         * @param array $problems Existing problems passed by child class.
+         *
+         * @return void
          */
-        protected function checkRequirements($problems = [])
+        protected function checkRequirements(array $problems = [])
         {
             $this->log("PHP Version: " . PHP_VERSION);
             $this->log("OS: " . PHP_OS);
@@ -754,11 +795,17 @@ if (! class_exists("Console_Abstract")) {
             }
         }//end checkRequirements()
 
-
         /**
          * Run - parse args and run method specified
+         *
+         *  - Entry point for the tool - child class will run this
+         *  - Eg. see Pcon class
+         *
+         * @param array $arg_list Array of args passed via command line (Ie. built-in $argv).
+         *
+         * @return void
          */
-        public static function run($arg_list)
+        public static function run(array $arg_list = [])
         {
             $class = get_called_class();
 
@@ -779,12 +826,23 @@ if (! class_exists("Console_Abstract")) {
             }
         }//end run()
 
-
+        /**
+         * Help info for backup method
+         *
+         * @var mixed
+         *
+         * @internal
+         */
         protected $___backup = [
             "Backup a file or files to the configured backup folder",
             ["Paths to back up", "string", "required"],
             ["Whether to output when backup is complete"]
         ];
+
+        /**
+         * Method to backup key files for the tool
+         *
+         */
         public function backup($files, $output = true)
         {
             $success = true;
