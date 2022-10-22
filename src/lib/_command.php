@@ -541,7 +541,7 @@ if (!class_exists("Command")) {
          *
          * @param mixed $param The original parameter value to clean up.
          *
-         * @return string The cleaned paramater value.
+         * @return array The cleaned and standardized paramater information array.
          */
         protected function _help_param(mixed $param): array
         {

@@ -840,10 +840,16 @@ if (! class_exists("Console_Abstract")) {
         ];
 
         /**
-         * Method to backup key files for the tool
+         * Method to backup files used by the tool
          *
+         * @param array   $files  Files to back up.
+         * @param boolean $output Whether to output information while running.
+         *
+         * @return boolean Whether backup was successful.
+         *
+         * @api
          */
-        public function backup($files, $output = true)
+        public function backup(array $files, bool $output = true): bool
         {
             $success = true;
 
@@ -851,7 +857,7 @@ if (! class_exists("Console_Abstract")) {
 
             if (empty($this->backup_dir)) {
                 $this->warn('Backups are disabled - no backup_dir specified in config', true);
-                return;
+                return false;
             }
 
             if (! is_dir($this->backup_dir)) {
@@ -887,11 +893,31 @@ if (! class_exists("Console_Abstract")) {
         }//end backup()
 
 
+        /**
+         * Help info for eval_file method
+         *
+         * @var mixed
+         *
+         * @internal
+         */
         protected $___eval_file = [
             "Evaluate a php script file, which will have access to all internal methods via '\$this'",
             ["File to evaluate", "string", "required"]
         ];
-        public function eval_file($file, ...$evaluation_arguments)
+
+        /**
+         * Evaluate a script file in the tool environment.
+         *
+         *  - Use this to write scripts that can use the tool's methods
+         *
+         * @param string $file                    Path to the script file to run.
+         * @param array  ...$evaluation_arguments Arguments to pass to the script file being run.
+         *
+         * @return void
+         *
+         * @api
+         */
+        public function eval_file(string $file, array ...$evaluation_arguments)
         {
             if (! is_file($file)) {
                 $this->error("File does not exist, check the path: $file");
@@ -905,11 +931,28 @@ if (! class_exists("Console_Abstract")) {
         }//end eval_file()
 
 
+        /**
+         * Help info for install method
+         *
+         * @var mixed
+         *
+         * @internal
+         */
         protected $___install = [
             "Install a packaged PHP console tool",
             ["Install path", "string"],
         ];
-        public function install($install_path = null)
+
+        /**
+         * Install the packaged tool.
+         *
+         * @param string $install_path Path to which to install the tool.  Defaults to configured install path.
+         *
+         * @return void
+         *
+         * @api
+         */
+        public function install(string $install_path = null)
         {
             if (! defined('PACKAGED') or ! PACKAGED) {
                 $this->error('Only packaged tools may be installed - package first using PCon (https://cmp.onl/tjNJ)');
@@ -964,15 +1007,28 @@ if (! class_exists("Console_Abstract")) {
         }//end install()
 
 
+        /**
+         * Help info for update method
+         *
+         * @var mixed
+         *
+         * @internal
+         */
         protected $___update = [
             "Update an installed PHP console tool"
         ];
+
+        /**
+         * Update the tool - check for an update and install if available
+         *
+         * @return void
+         */
         public function update()
         {
             // Make sure update is available
+            // - Not automatic, Show output
             if (! $this->updateCheck(false, true)) {
-// auto:false, output:true
-                return true;
+                return;
             }
 
             // Check prescribed behavior
@@ -1052,33 +1108,50 @@ if (! class_exists("Console_Abstract")) {
         }//end update()
 
 
+        /**
+         * Help info for version method
+         *
+         * @var mixed
+         *
+         * @internal
+         */
         protected $___version = [
             "Output version information"
         ];
-        public function version($output = true)
+
+        /**
+         * Show the current version of the running/local tool.
+         *
+         * @param boolean $output Whether to output information while running.
+         *
+         * @return mixed The version string if output is false, otherwise false.
+         */
+        public function version(bool $output = true): mixed
         {
             $class          = get_called_class();
             $version_string = $class::SHORTNAME . ' version ' . $class::VERSION;
 
             if ($output) {
                 $this->output($version_string);
+                return false;
             } else {
                 return $version_string;
             }
         }//end version()
 
-
         /**
          * Check for an update, and parse out all relevant information if one exists
          *
-         * @param  $auto Whether this is an automatic check or triggered intentionally
+         * @param boolean $auto   Whether this is an automatic check or triggered intentionally.
+         * @param boolean $output Whether to output information while running..
+         *
          * @return boolean True if newer version exists. False if:
          *  - no new version or
          *  - if auto, but auto check is disabled or
          *  - if auto, but not yet time to check or
          *  - if update is disabled
          */
-        protected function updateCheck($auto = true, $output = false)
+        protected function updateCheck(bool $auto = true, bool $output = false): bool
         {
             $this->log("Running update check");
 
@@ -1205,24 +1278,30 @@ if (! class_exists("Console_Abstract")) {
             return $this->update_exists;
         }//end updateCheck()
 
-
         /**
          * Clear - clear the CLI output
+         *
+         *  - Provides the functionality for Command::clear()
+         *
+         * @return void
          */
         public function clear()
         {
             system('clear');
         }//end clear()
 
-
         /**
          * Exec - run bash command
+         *
          *  - run a command
          *  - return the output
          *
-         * @param $error - if true, throw error on bad return
+         * @param string  $command The bash command to be run.
+         * @param boolean $error   Whether to show an error if return code indicates error - otherwise, will show a warning.
+         *
+         * @return array Output resulting from the command run.
          */
-        public function exec($command, $error = false)
+        protected function exec(string $command, bool $error = false): array
         {
             $this->log("exec: $command");
             exec($command, $output, $return);
@@ -1238,7 +1317,6 @@ if (! class_exists("Console_Abstract")) {
             $this->log($output);
             return $output;
         }//end exec()
-
 
         /**
          * Error output
