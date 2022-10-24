@@ -1319,14 +1319,19 @@ if (! class_exists("Console_Abstract")) {
         }//end exec()
 
         /**
-         * Error output
+         * Error output.  Shows a message with ERROR prefix and either exits with the specified error code or prompts whether to continue.
          *
-         * Code Guidelines:
          *  - 100 - expected error - eg. aborted due to user input
          *  - 200 - safety / caution error (eg. running as root)
          *  - 500 - misc. error
+         *
+         * @param mixed   $data               Error message/data to output.
+         * @param integer $code               Error code to exit with - false = no exit.
+         * @param boolean $prompt_to_continue Whether to prompt/ask user whether to continue.
+         *
+         * @return void
          */
-        public function error($data, $code = 500, $prompt_to_continue = false)
+        public function error(mixed $data, int $code = 500, bool $prompt_to_continue = false)
         {
             $this->br();
             $this->hr('!');
@@ -1345,14 +1350,15 @@ if (! class_exists("Console_Abstract")) {
             }
         }//end error()
 
-
         /**
-         * Warn output
+         * Warn output.  Shows a message with WARNING prefix and optionally prompts whether to continue.
          *
-         * @param $data to output as warning
-         * @param $prompt_to_continue - whether to prompt with Continue? y/n
+         * @param mixed   $data               Error message/data to output.
+         * @param boolean $prompt_to_continue Whether to prompt/ask user whether to continue.
+         *
+         * @return void
          */
-        public function warn($data, $prompt_to_continue = false)
+        public function warn(mixed $data, bool $prompt_to_continue = false)
         {
             $this->br();
             $this->hr('*');
@@ -1369,11 +1375,14 @@ if (! class_exists("Console_Abstract")) {
             }
         }//end warn()
 
-
         /**
-         * Logging output - only when verbose=true
+         * Log output - outputs data if $this->verbose is true - otherwise, does nothing.
+         *
+         * @param mixed $data Message/data to output.
+         *
+         * @return void
          */
-        public function log($data)
+        public function log(mixed $data)
         {
             if (! $this->verbose) {
                 return;
@@ -1382,11 +1391,16 @@ if (! class_exists("Console_Abstract")) {
             $this->output($data);
         }//end log()
 
-
         /**
-         * Output data
+         * Output data to console.
+         *
+         * @param mixed   $data        Message/data to output.
+         * @param boolean $line_ending Whether to output a line ending.
+         * @param boolean $stamp_lines Whether to prefix each line with a timestamp.
+         *
+         * @return void
          */
-        public function output($data, $line_ending = true, $stamp_lines = null)
+        public function output(mixed $data, bool $line_ending = true, bool $stamp_lines = null)
         {
             $data = $this->stringify($data);
 
@@ -1398,11 +1412,19 @@ if (! class_exists("Console_Abstract")) {
             echo $data . ($line_ending ? "\n" : "");
         }//end output()
 
-
         /**
-         * Progress Bar Output
+         * Output a progress bar to the console.
+         *
+         *  - If $this-verbose is set to true, then this shows text progress instead
+         *  - $count/$total $description
+         *
+         * @param integer $count       The index of current progress - eg. current item index - start with 0.
+         * @param integer $total       The total amount of progress to be worked through - eg. total number of items.
+         * @param string  $description The description to be shown for verbose output.
+         *
+         * @return void
          */
-        public function outputProgress($count, $total, $description = "remaining")
+        public function outputProgress(int $count, int $total, string $description = "remaining")
         {
             if (! $this->verbose) {
                 if ($count > 0) {
@@ -1426,11 +1448,14 @@ if (! class_exists("Console_Abstract")) {
             }
         }//end outputProgress()
 
-
         /**
-         * Stringify some data for output
+         * Stringify some data for output.  Processes differently depending on the type of data.
+         *
+         * @param mixed $data Message/data to output.
+         *
+         * @return string The stringified data - ready for output.
          */
-        public function stringify($data)
+        public function stringify(mixed $data): string
         {
             if (is_object($data) or is_array($data)) {
                 $data = print_r($data, true);
@@ -1451,16 +1476,21 @@ if (! class_exists("Console_Abstract")) {
             return $data;
         }//end stringify()
 
-
         /**
-         * Colorize a string for output to console
-         *  - https://en.wikipedia.org/wiki/ANSI_escape_code
+         * Colorize/decorate/format a string for output to console.
+         *
+         * @param string $string     The string to be colorized.
+         * @param mixed  $foreground The foreground color(s)/decoration(s) to use.
+         * @param mixed  $background The background color(s)/decoration(s) to use.
+         * @param mixed  $other      Other color(s)/decoration(s) to use.
          *
          * @uses CONSOLE_COLORS::$foreground
          * @uses CONSOLE_COLORS::$background
          * @uses CONSOLE_COLORS::$other
+         *
+         * @return string The colorized / decorated string, ready for output to console.
          */
-        public function colorize($string, $foreground = null, $background = null, $other = [])
+        public function colorize(string $string, mixed $foreground = null, mixed $background = null, mixed $other = [])
         {
             if (empty($foreground) and empty($background) and empty($other)) {
                 return $string;
@@ -1494,7 +1524,6 @@ if (! class_exists("Console_Abstract")) {
 
             return $colored_string;
         }//end colorize()
-
 
         /**
          * Output 3 Columns - for help for example
