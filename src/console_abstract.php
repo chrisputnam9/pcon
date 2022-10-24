@@ -911,13 +911,13 @@ if (! class_exists("Console_Abstract")) {
          *  - Use this to write scripts that can use the tool's methods
          *
          * @param string $file                    Path to the script file to run.
-         * @param array  ...$evaluation_arguments Arguments to pass to the script file being run.
+         * @param mixed  ...$evaluation_arguments Arguments to pass to the script file being run.
          *
          * @return void
          *
          * @api
          */
-        public function eval_file(string $file, array ...$evaluation_arguments)
+        public function eval_file(string $file, mixed ...$evaluation_arguments)
         {
             if (! is_file($file)) {
                 $this->error("File does not exist, check the path: $file");
