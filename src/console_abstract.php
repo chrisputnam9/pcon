@@ -1294,20 +1294,20 @@ if (! class_exists("Console_Abstract")) {
          * Exec - run bash command
          *
          *  - run a command
-         *  - return the output
+         *  - return the output as a string
          *
          * @param string  $command The bash command to be run.
          * @param boolean $error   Whether to show an error if return code indicates error - otherwise, will show a warning.
          *
-         * @return array Output resulting from the command run.
+         * @return string Output resulting from the command run.
          */
-        public function exec(string $command, bool $error = false): array
+        public function exec(string $command, bool $error = false): string
         {
             $this->log("exec: $command");
             exec($command, $output, $return);
             $output = empty($output) ? "" : "\n\t" . implode("\n\t", $output);
             if ($return) {
-                $output = empty($output) ? $return : $output;
+                $output = empty($output) ? "Return Code: " . $return : $output;
                 if ($error) {
                     $this->error($output);
                 } else {
