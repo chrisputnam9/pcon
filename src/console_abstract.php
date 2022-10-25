@@ -1301,7 +1301,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return array Output resulting from the command run.
          */
-        protected function exec(string $command, bool $error = false): array
+        public function exec(string $command, bool $error = false): array
         {
             $this->log("exec: $command");
             exec($command, $output, $return);
