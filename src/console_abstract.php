@@ -1526,9 +1526,18 @@ if (! class_exists("Console_Abstract")) {
         }//end colorize()
 
         /**
-         * Output 3 Columns - for help for example
+         * Output up to 3 columns of text - ie. used by help output
+         *
+         * @param string $col1 Text to output in first column.
+         * @param string $col2 Text to output in second column.
+         * @param string $col3 Text to output in third column.
+         *
+         * @uses Console_Abstract::COL1_WIDTH
+         * @uses Console_Abstract::COL2_WIDTH
+         *
+         * @return void
          */
-        public function output3col($col1, $col2 = null, $col3 = null)
+        public function output3col(string $col1, string $col2 = null, string $col3 = null)
         {
             $full_width = $this->getTerminalWidth();
             $col1_width = floor(($full_width * static::COL1_WIDTH) / 100);
@@ -1545,18 +1554,24 @@ if (! class_exists("Console_Abstract")) {
             $this->output($string);
         }//end output3col()
 
-
         /**
-         * Output break
+         * Output a line break
+         *
+         *  - basically output an empty line, which will automatically include a newline/break
+         *
+         * @return void
          */
         public function br()
         {
             $this->output('');
         }//end br()
 
-
         /**
-         * br, but only if logging is on
+         * Log a line break
+         *
+         *  - Same as br() - but only output if $this->verbose is true
+         *
+         * @return void
          */
         public function brl()
         {
@@ -1568,18 +1583,30 @@ if (! class_exists("Console_Abstract")) {
         }//end brl()
 
         /**
-         * Output horizonal line - divider
+         * Output a horizonal rule / line - filling the width of the terminal
+         *
+         * @param string $c      The character to use to create the line.
+         * @param string $prefix A prefix string to output before the line.
+         *
+         * @return void
          */
-        public function hr($c = '=', $prefix = "")
+        public function hr(string $c = '=', string $prefix = "")
         {
             $string = str_pad($prefix, $this->getTerminalWidth(), $c);
             $this->output($string);
         }//end hr()
 
         /**
-         * hr, but only if logging is on
+         * Log a horizonal rule / line - filling the width of the terminal
+         *
+         *  - Same as hr() - but only output if $this->verbose is true
+         *
+         * @param string $c      The character to use to create the line.
+         * @param string $prefix A prefix string to output before the line.
+         *
+         * @return void
          */
-        public function hrl($c = '=', $prefix = "")
+        public function hrl(string $c = '=', string $prefix = "")
         {
             if (! $this->verbose) {
                 return;
@@ -1588,12 +1615,19 @@ if (! class_exists("Console_Abstract")) {
             $this->hr($c, $prefix);
         }//end hrl()
 
-
-
         /**
          * Pause during output for debugging/stepthrough
+         *
+         *  - Only pauses if $this->step is set to true
+         *  - Will pause and wait for user to hit enter
+         *  - If user enters 'finish' (case-insensitive) $this->step will be set to false
+         *    and the program will finish execution normally
+         *
+         * @param string $message Message to show before pausing.
+         *
+         * @return void
          */
-        public function pause($message = "[ ENTER TO STEP | 'FINISH' TO CONTINUE ]")
+        public function pause(string $message = "[ ENTER TO STEP | 'FINISH' TO CONTINUE ]")
         {
             if (! $this->step) {
                 return;
@@ -1610,14 +1644,15 @@ if (! class_exists("Console_Abstract")) {
             }
         }//end pause()
 
-
         /**
-         * Sleep for set time, with countdown
+         * Sleep for the set time, with countdown
          *
-         * @param $seconds - number of seconds to wait
-         * @param $message - formatted string
+         * @param integer $seconds Number of seconds to wait.
+         * @param string  $message Formatted string to show with %d for the number of seconds.
+         *
+         * @return void
          */
-        public function sleep($seconds = 3, $message = "Continuing in %s...")
+        public function sleep(int $seconds = 3, string $message = "Continuing in %d...")
         {
             $seconds = (int)$seconds;
             $max_pad = 0;
@@ -1639,15 +1674,14 @@ if (! class_exists("Console_Abstract")) {
             echo "\n";
         }//end sleep()
 
-
         /**
          * Get selection from list - from CLI
          *
-         * @param (array) $list        of items to pick from
-         * @param (any)   $message     (none) to show - prompt
-         * @param (int)   $default     (0) index if no input
-         * @param (bool)  $q_to_quit   (true) enter q to quit select
-         * @param (array) &$preselects ([]) selection entries - will be shifted off one at a time
+         * @param array $list        List of items to select from
+         * @param any   $message     (none) to show - prompt
+         * @param int   $default     (0) index if no input
+         * @param bool  $q_to_quit   (true) enter q to quit select
+         * @param array &$preselects ([]) selection entries - will be shifted off one at a time
          *  - passed by reference, so it can be used through a chain of selects
          */
         public function select($list, $message = false, $default = 0, $q_to_quit = true, &$preselects = [], $livefilter = true)
