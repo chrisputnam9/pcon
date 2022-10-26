@@ -1675,16 +1675,21 @@ if (! class_exists("Console_Abstract")) {
         }//end sleep()
 
         /**
-         * Get selection from list - from CLI
+         * Get selection from list via CLI input
          *
-         * @param array $list        List of items to select from
-         * @param any   $message     (none) to show - prompt
-         * @param int   $default     (0) index if no input
-         * @param bool  $q_to_quit   (true) enter q to quit select
-         * @param array &$preselects ([]) selection entries - will be shifted off one at a time
-         *  - passed by reference, so it can be used through a chain of selects
+         * @param array   $list       List of items to select from.
+         * @param mixed   $message    Message to show, prompting input - defaults to false, no message.
+         * @param integer $default    Default selection index if no input - defaults to 0 - first item.
+         * @param boolean $q_to_quit  Add a 'q' option to the list to quite - defaults to true.
+         * @param array   $preselects Pre-selected values - eg. could have been passed in as arguments to CLI.
+         *                            Passed by reference so they can be passed through a chain of selections and/or narrowed-down lists.
+         *                            Defaults to empty array - no preselections.
+         * @param boolean $livefilter Whether to filter the list while typing - NOT YET IMPLEMENTED.
+         *                            Defaults to true.
+         *
+         * @return string The value of the item in the list that was selected.
          */
-        public function select($list, $message = false, $default = 0, $q_to_quit = true, &$preselects = [], $livefilter = true)
+        public function select(array $list, mixed $message = false, int $default = 0, bool $q_to_quit = true, array &$preselects = [], bool $livefilter = true): string
         {
             /*
                 if ($livefilter)
@@ -1702,11 +1707,14 @@ if (! class_exists("Console_Abstract")) {
 
                 }
             */
+
+            // Display the list with indexes
             $list = array_values($list);
             foreach ($list as $i => $item) {
                 $this->output("$i. $item");
             }
 
+            // Maybe show q - Quit option
             if ($q_to_quit) {
                 $this->output("q. Quit and exit");
             }
@@ -1715,22 +1723,29 @@ if (! class_exists("Console_Abstract")) {
             $index = -1;
             $entry = false;
 
+            // Continually prompt for input until we get a valid entry
             while ($index < 0 or $index > $max) {
+                // Warn if input was not in list
                 if ($entry !== false) {
                     $this->warn("Invalid selection $entry");
                 }
+
                 if (empty($preselects)) {
+                    // Prompt for human input entry
                     $this->output("Enter number or part of selection");
                     $entry = $this->input($message, $default);
                 } else {
+                    // If some pre-selection was passed in, shift it off as the entry
                     $entry = array_shift($preselects);
                 }
 
+                // Maybe process q - Quit option
                 if ($q_to_quit and (strtolower(trim($entry)) == 'q')) {
                     $this->warn('Selection Canceled');
                     exit;
                 }
 
+                // For non-numeric entries, find matching item(s)
                 if (! is_numeric($entry)) {
                     $filtered_items = [];
 
