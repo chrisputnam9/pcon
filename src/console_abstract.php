@@ -1689,24 +1689,24 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return string The value of the item in the list that was selected.
          */
-        public function select(array $list, mixed $message = false, int $default = 0, bool $q_to_quit = true, array &$preselects = [], bool $livefilter = true): string
+        public function select(array $list, mixed $message = false, int $default = 0, bool $q_to_quit = true, array &$preselects = [], bool $livefilter = false): string
         {
-            /*
-                if ($livefilter)
-                {
+
+            // Not yet implemented - in progress
+            if ($livefilter) {
                 $this->clear();
 
-                // todo - figure out how to detect backspace & enter
+                // NEED to figure out how to detect backspace & enter
                 // - maybe focus on how to do it in bash
                 while (true) {
                     $char = $this->input("Enter char", null, false, 'single', 'single_hide');
-                    if ($char == 'q') die;
+                    if ($char == 'q') {
+                        die;
+                    }
                     var_dump($char);
                     echo "\n";
                 }
-
-                }
-            */
+            }
 
             // Display the list with indexes
             $list = array_values($list);
@@ -1749,6 +1749,7 @@ if (! class_exists("Console_Abstract")) {
                 if (! is_numeric($entry)) {
                     $filtered_items = [];
 
+                    // Look for list item containing the entry (case-insensitive)
                     foreach ($list as $item) {
                         if (stripos($item, $entry) !== false) {
                             $filtered_items[] = $item;
@@ -1756,8 +1757,10 @@ if (! class_exists("Console_Abstract")) {
                     }
 
                     if (count($filtered_items) == 1) {
+                        // Single match? Return it
                         return $filtered_items[0];
                     } elseif (! empty($filtered_items)) {
+                        // Multiple matches? New select to narrow down further
                         return $this->select($filtered_items, $message, 0, $q_to_quit, $preselects);
                     }
                 }
@@ -1765,8 +1768,8 @@ if (! class_exists("Console_Abstract")) {
                 // Make sure it's really a good entry
                 // Eg. avoid 1.2 => 1 or j => 0
                 // - which would result in unwanted behavior for bad entries
-                $index = (int)$entry;
-                if ((string)$entry !== (string)$index) {
+                $index = (int) $entry;
+                if ((string) $entry !== (string) $index) {
                     $index = -1;
                 }
             }//end while
@@ -1774,14 +1777,22 @@ if (! class_exists("Console_Abstract")) {
             return $list[$index];
         }//end select()
 
-
         /**
-         * Confirm yes/no
+         * Get a confirmation from the user (yes/no prompt)
          *
-         * @param  Same params as input - see descriptions there
-         * @return (bool) true/false
+         *  - Gets input from user and returns true if it's 'y' or 'Y' - otherwise, false
+         *
+         * @param mixed   $message     Message to show before prompting user for input.
+         * @param string  $default     Default value if nothing entered by user. Defaults to 'y'.
+         * @param boolean $required    Whether input is required before continuing. Defaults to false.
+         * @param boolean $single      Whether to prompt for a single character from the user - eg. they don't have to hit enter. Defaults to true.
+         * @param boolean $single_hide Whether to hide the user's input when prompting for a single character. Defaults to false.
+         *
+         * @uses Console_Abstract::input()
+         *
+         * @return boolean Whether yes was entered by the user.
          */
-        public function confirm($message, $default = 'y', $required = false, $single = true, $single_hide = false)
+        public function confirm(mixed $message, string $default = 'y', bool $required = false, bool $single = true, bool $single_hide = false): bool
         {
             $yn = $this->input($message, $default, $required, $single, $single_hide);
             $this->br();
@@ -1790,13 +1801,16 @@ if (! class_exists("Console_Abstract")) {
             return strtolower(substr($yn, 0, 1)) == 'y';
         }//end confirm()
 
-
         /**
          * Edit some text in external editor
          *
-         * @param $text to edit
+         * @param string  $text     The starting text to be edited. Defaults to "".
+         * @param string  $filename The name of the temporary file to save when editing.  If null, filename will be generated with timestamp.
+         * @param boolean $modify   Whether to use $this->editor_modify_exec vs. $this->editor_exec.  Defaults to false.
+         *
+         * @return string The edited contents of the file.
          */
-        public function edit($text = "", $filename = null, $modify = false)
+        public function edit(string $text = "", string $filename = null, bool $modify = false): string
         {
             if (is_null($filename)) {
                 $filename = "edit_" . date("YmdHis") . ".txt";
@@ -1809,18 +1823,18 @@ if (! class_exists("Console_Abstract")) {
             return $this->getTempContents($filename);
         }//end edit()
 
-
         /**
-         * Get input from CLI
+         * Get input from the user via CLI
          *
-         * @param  $message to show - prompt
-         * @param  $default if no input
-         * @param  $required - wether input is required
-         * @param  $single - prompt for single character (vs waiting for enter key)
-         * @param  $single_hide - hide input for single character (is this working?)
-         * @return input text or default
+         * @param mixed   $message     Message to show before prompting user for input.
+         * @param string  $default     Default value if nothing entered by user.
+         * @param boolean $required    Whether input is required before continuing. Defaults to false.
+         * @param boolean $single      Whether to prompt for a single character from the user - eg. they don't have to hit enter. Defaults to false.
+         * @param boolean $single_hide Whether to hide the user's input when prompting for a single character. Defaults to false.
+         *
+         * @return string The text input from the user.
          */
-        public function input($message = false, $default = null, $required = false, $single = false, $single_hide = false)
+        public function input(mixed $message = false, string $default = null, bool $required = false, bool $single = false, bool $single_hide = false): string
         {
             if ($message) {
                 if ($message === true) {
@@ -1871,15 +1885,15 @@ if (! class_exists("Console_Abstract")) {
             }//end while
         }//end input()
 
-
         /**
-         * Get timestamp
+         * Get a formatted timestamp - to use as logging prefix, for example.
+         *
+         * @return string Current timestamp
          */
         public function stamp()
         {
             return date('Y-m-d_H.i.s');
         }//end stamp()
-
 
         /**
          * Get Config Dir
