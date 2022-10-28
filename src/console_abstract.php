@@ -1877,7 +1877,7 @@ if (! class_exists("Console_Abstract")) {
 
                 // Input not required? Return default
                 if (! $required) {
-                    return $default;
+                    return is_null($default) ? "" : $default;
                 }
 
                 // otherwise, warn, loop and try again
@@ -1896,7 +1896,13 @@ if (! class_exists("Console_Abstract")) {
         }//end stamp()
 
         /**
-         * Get Config Dir
+         * Get the config directory
+         *
+         * - hidden folder (. prefix)
+         * - named based on tool shortname
+         * - in home folder
+         *
+         * @return string Full path to config directory.
          */
         public function getConfigDir()
         {
@@ -1907,9 +1913,15 @@ if (! class_exists("Console_Abstract")) {
             return $this->config_dir;
         }//end getConfigDir()
 
-
         /**
-         * Get Config File
+         * Get the main/default config file
+         *
+         *  - config.hjson (HJSON - https://hjson.github.io/)
+         *  - in config directory
+         *
+         * @uses Console_Abstract::getConfigDir()
+         *
+         * @return string Full path to config file.
          */
         public function getConfigFile()
         {
@@ -1921,9 +1933,13 @@ if (! class_exists("Console_Abstract")) {
             return $this->config_file;
         }//end getConfigFile()
 
-
         /**
-         * Get Home Directory
+         * Get the user's home directory
+         *
+         * - Attempts to handle situation where user is running via sudo
+         *   and still get the logged-in user's home directory instead of root
+         *
+         * @return string Full path to home directory.
          */
         public function getHomeDir()
         {
@@ -1939,7 +1955,7 @@ if (! class_exists("Console_Abstract")) {
                     }
                 }
 
-                // Not Sudo User?
+                // Not running as root via sudo
                 if (empty($sudo_user)) {
                     // Windows doesn't have 'HOME' set necessarily
                     if (empty($_SERVER['HOME'])) {
@@ -1949,7 +1965,8 @@ if (! class_exists("Console_Abstract")) {
                     } else {
                         $this->home_dir = $_SERVER['HOME'];
                     }
-                // Running via sudo - get home dir of sudo user (if not root)
+
+                // Running as root via sudo - get home dir of sudo user (if not root)
                 } else {
                     exec('echo ~' . $sudo_user, $output, $return_error);
 
@@ -1968,9 +1985,13 @@ if (! class_exists("Console_Abstract")) {
             return $this->home_dir;
         }//end getHomeDir()
 
-
         /**
-         * Init/Load Config File
+         * Initialize config file
+         *
+         *  - Load config if file already exists
+         *  - Create config file if it doesn't yet exist
+         *
+         * @return boolean Whether the config was successfully saved.
          */
         public function initConfig()
         {
@@ -2014,14 +2035,17 @@ if (! class_exists("Console_Abstract")) {
                 $this->saveConfig();
             } catch (Exception $e) {
                 // Notify user
-                $this->output('NOTICE: ' . $e->getMessage());
+                $this->warn('ISSUE WITH CONFIG INIT: ' . $e->getMessage(), true);
+                return false;
             }//end try
+
+            return true;
         }//end initConfig()
-
-
 
         /**
          * Save config values to file on demand
+         *
+         * @return boolean Whether the config was successfully saved.
          */
         public function saveConfig()
         {
@@ -2079,7 +2103,10 @@ if (! class_exists("Console_Abstract")) {
             } catch (Exception $e) {
                 // Notify user
                 $this->output('NOTICE: ' . $e->getMessage());
+                return false;
             }//end try
+
+            return true;
         }//end saveConfig()
 
 
