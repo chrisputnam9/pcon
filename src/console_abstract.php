@@ -1890,7 +1890,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return string Current timestamp
          */
-        public function stamp()
+        public function stamp(): string
         {
             return date('Y-m-d_H.i.s');
         }//end stamp()
@@ -1904,7 +1904,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return string Full path to config directory.
          */
-        public function getConfigDir()
+        public function getConfigDir(): string
         {
             if (is_null($this->config_dir)) {
                 $this->config_dir = $this->getHomeDir() . DS . '.' . static::SHORTNAME;
@@ -1923,7 +1923,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return string Full path to config file.
          */
-        public function getConfigFile()
+        public function getConfigFile(): string
         {
             if (is_null($this->config_file)) {
                 $config_dir        = $this->getConfigDir();
@@ -1941,7 +1941,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return string Full path to home directory.
          */
-        public function getHomeDir()
+        public function getHomeDir(): string
         {
             if (is_null($this->home_dir)) {
                 $return_error = false;
@@ -1991,9 +1991,11 @@ if (! class_exists("Console_Abstract")) {
          *  - Load config if file already exists
          *  - Create config file if it doesn't yet exist
          *
+         * @uses Console_Abstract::configure()
+         *
          * @return boolean Whether the config was successfully saved.
          */
-        public function initConfig()
+        public function initConfig(): boolean
         {
             $config_file = $this->getConfigFile();
 
@@ -2023,7 +2025,11 @@ if (! class_exists("Console_Abstract")) {
                     }
                 }
 
-                // Setting config to save, based on current values
+                /*
+                 * Setting config to save, based on current values
+                 * - This adds any new config with default values to the config file
+                 * - This also enables the initial config file creation with all default values
+                 */
                 $this->config_to_save = [];
                 foreach ($this->getPublicProperties() as $property) {
                     $this->config_to_save[$property] = $this->$property;
@@ -2047,7 +2053,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return boolean Whether the config was successfully saved.
          */
-        public function saveConfig()
+        public function saveConfig(): boolean
         {
             if (! $this->config_initialized) {
                 $this->warn('Config not initialized, refusing to save', true);
@@ -2109,19 +2115,24 @@ if (! class_exists("Console_Abstract")) {
             return true;
         }//end saveConfig()
 
-
         /**
-         * Prepare shell argument for use
+         * Takes an argument which may have come from the shell and prepares it for use
          *
-         * @param $value to prep
-         * @param default to return if                                   $value is empty
-         * @param $force_type - whether to force a type for return value:
-         *  'array': split and/or wrap to force it to be an array
-         *  'boolean': parse as boolean (1/true/yes).
-         * Note: defaults to 'array' if $default is an array
-         * @param $trim (true) - whether to trim whitespace from value(s)
+         *  - Trims strings
+         *  - Optionally parses into a specified type, ie. array or boolean
+         *
+         * @param mixed   $value      The value to prepare.
+         * @param mixed   $default    The default to return if $value is empty.
+         *                            If this is an array, then force_type is auto-set to 'array'.
+         * @param string  $force_type Optional type to parse from value.
+         *                             - 'array': split on commas and/or wrap to force value to be an array.
+         *                             - 'boolean': parse value as boolean (ie. 1/true/yes => true, otherwise false).
+         *                             - Note: defaults to 'array' if $default is an array.
+         * @param boolean $trim       Whether to trim whitespace from the value(s).  Defaults to true.
+         *
+         * @return mixed The prepared result.
          */
-        public function prepArg($value, $default, $force_type = null, $trim = true)
+        public function prepArg(mixed $value, mixed $default, string $force_type = null, bool $trim = true): mixed
         {
             $a = func_num_args();
             if ($a < 2) {
@@ -2171,21 +2182,37 @@ if (! class_exists("Console_Abstract")) {
             return $value;
         }//end prepArg()
 
-
         /**
-         * Open link in browser
+         * Open a URL in the browser
+         *
+         * @param string $url The URL to open.
+         *
+         * @uses Console_Abstract::browser_exec
+         * @uses Console_Abstract::exec()
+         *
+         * @return void
          */
-        public function openInBrowser($url)
+        public function openInBrowser(string $url)
         {
             $command = sprintf($this->browser_exec, $url);
             $this->exec($command, true);
         }//end openInBrowser()
 
-
         /**
-         * Configure property - if public
+         * Configure a property (if public and therefore configurable - otherwise gives a notice)
+         *
+         *  - First ensures the passed key is a public property
+         *  - If public, sets the property to the passed value
+         *    and adds the data to $this->config_to_save
+         *  - If not public, shows a notice
+         *
+         * @param string  $key        The property to set.  Can be passed in either snake_case or kebab-case.
+         * @param mixed   $value      The value to set the propery.
+         * @param boolean $save_value Whether to save the value - ie. add it to config_to_save.
+         *
+         * @return void
          */
-        public function configure($key, $value, $save_value = false)
+        public function configure(string $key, mixed $value, bool $save_value = false)
         {
             $key = str_replace('-', '_', $key);
 
@@ -2209,7 +2236,6 @@ if (! class_exists("Console_Abstract")) {
                 $this->output("NOTICE: invalid config key - $key");
             }
         }//end configure()
-
 
         // Get basic curl
         public function getCurl($url, $fresh_no_cache = false)
