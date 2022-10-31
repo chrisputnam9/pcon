@@ -1826,15 +1826,15 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Get input from the user via CLI
          *
-         * @param mixed   $message     Message to show before prompting user for input.
-         * @param string  $default     Default value if nothing entered by user.
-         * @param boolean $required    Whether input is required before continuing. Defaults to false.
-         * @param boolean $single      Whether to prompt for a single character from the user - eg. they don't have to hit enter. Defaults to false.
-         * @param boolean $single_hide Whether to hide the user's input when prompting for a single character. Defaults to false.
+         * @param mixed  $message     Message to show before prompting user for input.
+         * @param string $default     Default value if nothing entered by user.
+         * @param mixed  $required    Whether input is required before continuing. Defaults to false.
+         * @param mixed  $single      Whether to prompt for a single character from the user - eg. they don't have to hit enter. Defaults to false.
+         * @param mixed  $single_hide Whether to hide the user's input when prompting for a single character. Defaults to false.
          *
          * @return string The text input from the user.
          */
-        public function input(mixed $message = false, string $default = null, bool $required = false, bool $single = false, bool $single_hide = false): string
+        public function input(mixed $message = false, string $default = null, mixed $required = false, mixed $single = false, mixed $single_hide = false): string
         {
             if ($message) {
                 if ($message === true) {
@@ -2350,12 +2350,12 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Get the contents of a specified cache file, if it has not expired.
          *
-         * @param string  $subpath    The path to the cache file within the tool's cache folder.
+         * @param array   $subpath    The path to the cache file within the tool's cache folder.
          * @param integer $expiration The expiration lifetime of the cache file in seconds.
          *
          * @return mixed The contents of the cache file, or false if file expired or does not exist.
          */
-        public function getCacheContents(string $subpath, int $expiration = null): mixed
+        public function getCacheContents(array $subpath, int $expiration = null): mixed
         {
             $expiration = $expiration ?? $this->cache_lifetime;
 
@@ -2386,12 +2386,12 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Set the contents of a specified cache file.
          *
-         * @param string $subpath  The path to the cache file within the tool's cache folder.
+         * @param array  $subpath  The path to the cache file within the tool's cache folder.
          * @param string $contents The contents to write to the cache file.
          *
          * @return mixed The path to the new cache file, or false if failed to write.
          */
-        public function setCacheContents(string $subpath, string $contents): mixed
+        public function setCacheContents(array $subpath, string $contents): mixed
         {
             $config_dir = $this->getConfigDir();
             $cache_dir  = $config_dir . DS . 'cache';
