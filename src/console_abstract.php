@@ -1995,7 +1995,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return boolean Whether the config was successfully saved.
          */
-        public function initConfig(): boolean
+        public function initConfig(): bool
         {
             $config_file = $this->getConfigFile();
 
@@ -2053,7 +2053,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return boolean Whether the config was successfully saved.
          */
-        public function saveConfig(): boolean
+        public function saveConfig(): bool
         {
             if (! $this->config_initialized) {
                 $this->warn('Config not initialized, refusing to save', true);
@@ -2237,8 +2237,17 @@ if (! class_exists("Console_Abstract")) {
             }
         }//end configure()
 
-        // Get basic curl
-        public function getCurl($url, $fresh_no_cache = false)
+        /**
+         * Get an initialied curl handle for a given URL, with our preferred defaults.
+         *
+         * @param string  $url            The URL to hit.
+         * @param boolean $fresh_no_cache Whether to force this to be a fresh request / disable caching.
+         *
+         * @uses $this->ssl_check to determine if curl should verify peer/host SSLs. Warns if not verifying.
+         *
+         * @return CurlHandle The initialized curl handle.
+         */
+        public function getCurl(string $url, bool $fresh_no_cache = false): CurlHandle
         {
             if (! $this->ssl_check) {
                 $this->warn("Initializing unsafe connection to $url (no SSL check, as configured)", true);
@@ -2263,9 +2272,14 @@ if (! class_exists("Console_Abstract")) {
             return $curl;
         }//end getCurl()
 
-
-        // Exec curl and handle errors, return response if good
-        public function execCurl($curl)
+        /**
+         * Execute a curl request, do some basic error processing, and return the response.
+         *
+         * @param CurlHandle $curl The curl handle to execute.
+         *
+         * @return string The response from the curl request.
+         */
+        public function execCurl(CurlHandle $curl): string
         {
             $response = curl_exec($curl);
 
@@ -2288,12 +2302,19 @@ if (! class_exists("Console_Abstract")) {
             return $response;
         }//end execCurl()
 
-
-        // Update arguments for curl URL
-        public function updateCurlArgs($ch, $args, $overwrite = false)
+        /**
+         * Update query arguments on a curl handle - soft merge (default) or overwrite existing query arguments.
+         *
+         * @param CurlHandle $curl      The curl handle to be updated.
+         * @param array      $args      The new query arguments to set.
+         * @param boolean    $overwrite Whether to overwrite existing query args.  Defaults to false.
+         *
+         * @return CurlHandle The upated curl handle.
+         */
+        public function updateCurlArgs(CurlHandle $curl, array $args, bool $overwrite = false): CurlHandle
         {
             // Get info from previous curl
-            $curl_info = curl_getinfo($ch);
+            $curl_info = curl_getinfo($curl);
 
             // Parse out URL and query params
             $url = $curl_info['url'];
@@ -2321,14 +2342,20 @@ if (! class_exists("Console_Abstract")) {
                 "?" .
                 http_build_query($query);
             $this->log($new_url);
-            curl_setopt($ch, CURLOPT_URL, $new_url);
+            curl_setopt($curl, CURLOPT_URL, $new_url);
+
+            return $curl;
         }//end updateCurlArgs()
 
-
         /**
-         * Interact with cache files
+         * Get the contents of a specified cache file, if it has not expired.
+         *
+         * @param string  $subpath    The path to the cache file within the tool's cache folder.
+         * @param integer $expiration The expiration lifetime of the cache file in seconds.
+         *
+         * @return mixed The contents of the cache file, or false if file expired or does not exist.
          */
-        public function getCacheContents($subpath, $expiration = null)
+        public function getCacheContents(string $subpath, int $expiration = null): mixed
         {
             $expiration = $expiration ?? $this->cache_lifetime;
 
@@ -2356,7 +2383,15 @@ if (! class_exists("Console_Abstract")) {
             return $contents;
         }//end getCacheContents()
 
-        public function setCacheContents($subpath, $contents)
+        /**
+         * Set the contents of a specified cache file.
+         *
+         * @param string $subpath  The path to the cache file within the tool's cache folder.
+         * @param string $contents The contents to write to the cache file.
+         *
+         * @return mixed The path to the new cache file, or false if failed to write.
+         */
+        public function setCacheContents(string $subpath, string $contents): mixed
         {
             $config_dir = $this->getConfigDir();
             $cache_dir  = $config_dir . DS . 'cache';
@@ -2380,7 +2415,6 @@ if (! class_exists("Console_Abstract")) {
 
             return $cache_file;
         }//end setCacheContents()
-
 
         /**
          * Interact with temp files
