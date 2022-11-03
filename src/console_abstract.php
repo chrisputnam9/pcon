@@ -2350,12 +2350,12 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Get the contents of a specified cache file, if it has not expired.
          *
-         * @param array   $subpath    The path to the cache file within the tool's cache folder.
+         * @param mixed   $subpath    The path to the cache file within the tool's cache folder.
          * @param integer $expiration The expiration lifetime of the cache file in seconds.
          *
-         * @return mixed The contents of the cache file, or false if file expired or does not exist.
+         * @return mixed The contents of the cache file, or false if file expired, does not exist, or can't be read.
          */
-        public function getCacheContents(array $subpath, int $expiration = null): mixed
+        public function getCacheContents(mixed $subpath, int $expiration = null): mixed
         {
             $expiration = $expiration ?? $this->cache_lifetime;
 
@@ -2386,12 +2386,12 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Set the contents of a specified cache file.
          *
-         * @param array  $subpath  The path to the cache file within the tool's cache folder.
+         * @param mixed  $subpath  The path to the cache file within the tool's cache folder.
          * @param string $contents The contents to write to the cache file.
          *
          * @return mixed The path to the new cache file, or false if failed to write.
          */
-        public function setCacheContents(array $subpath, string $contents): mixed
+        public function setCacheContents(mixed $subpath, string $contents): mixed
         {
             $config_dir = $this->getConfigDir();
             $cache_dir  = $config_dir . DS . 'cache';
@@ -2417,9 +2417,13 @@ if (! class_exists("Console_Abstract")) {
         }//end setCacheContents()
 
         /**
-         * Interact with temp files
+         * Get the contents of a specified temp file
+         *
+         * @param mixed $subpath The path to the temp file within the tool's temp folder.
+         *
+         * @return mixed The contents of the temp file, or false if file does not exist or can't be read.
          */
-        public function getTempContents($subpath)
+        public function getTempContents(mixed $subpath)
         {
             $config_dir = $this->getConfigDir();
             $temp_dir   = $config_dir . DS . 'temp';
@@ -2439,7 +2443,15 @@ if (! class_exists("Console_Abstract")) {
             return $contents;
         }//end getTempContents()
 
-        public function setTempContents($subpath, $contents)
+        /**
+         * Set the contents of a specified temp file.
+         *
+         * @param mixed  $subpath  The path to the temp file within the tool's temp folder.
+         * @param string $contents The contents to write to the temp file.
+         *
+         * @return mixed The path to the new temp file, or false if failed to write.
+         */
+        public function setTempContents(mixed $subpath, string $contents)
         {
             $config_dir = $this->getConfigDir();
             $temp_dir   = $config_dir . DS . 'temp';
@@ -2461,16 +2473,30 @@ if (! class_exists("Console_Abstract")) {
             return $temp_file;
         }//end setTempContents()
 
-
         /**
          * Paginate some content for display on terminal
+         *
+         * @param mixed $content Content to be displayed - string or array of lines.
+         * @param array $options Options for pagination - array with kesy:
+         *                        - 'starting_line'     Starting line number for pagination / vertical scrolling.
+         *                        - 'starting_column'   Current starting column (for scrolling if wrap is off). NOT YET IMPLEMENTED.
+         *                        - 'wrap'              Whether to wrap lines that are too long for screen width.
+         *                        - 'line_buffer'       Number of lines to allow space for outside of output.
+         *                        - 'output'            Whether to output directly to screen.
+         *                        - 'include_page_info' Whether to include pagination info in output.
+         *                        - 'fill_height'       Whether to fill the entire screen height - buffer with empty lines.
+         *
+         * @return array Details for pagination - array with keys:
+         *                - 'output'        The output to display on the screen currently.
+         *                - 'starting_line' The number of the current starting line.
+         *                - 'page_length'   The length of the output being displayed.
+         *                - 'ending_line'   THe number of the last line being displayed.
          */
-        public function paginate($content, $options = [])
+        public function paginate(mixed $content, array $options = [])
         {
             $options = array_merge([
                 'starting_line' => 1,
                 'starting_column' => 1,
-// todo
                 'wrap' => false,
                 'line_buffer' => 1,
                 'output' => true,
@@ -2597,9 +2623,13 @@ if (! class_exists("Console_Abstract")) {
 
 
         /**
-         * Get parameters for a given method
+         * Get parameters for a given method - for help display
+         *
+         * @param string $method Method for which to get parameters.
+         *
+         * @return array The parameter names.
          */
-        protected function _getMethodParams($method)
+        protected function _getMethodParams(string $method)
         {
             $r      = new ReflectionObject($this);
             $rm     = $r->getMethod($method);
@@ -2610,9 +2640,18 @@ if (! class_exists("Console_Abstract")) {
             return $params;
         }//end _getMethodParams()
 
-
-        // Manage Properties
+        /**
+         * Cached public properties so method only need run once.
+         *
+         * @var array
+         */
         protected $_public_properties = null;
+        /**
+         * Get all public properties for the tool.  These are the properties that can
+         * be set via flags and configuration file.
+         *
+         * @return array List of all public property names.
+         */
         public function getPublicProperties()
         {
             if (is_null($this->_public_properties)) {
