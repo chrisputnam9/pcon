@@ -1159,8 +1159,8 @@ if (! class_exists("Console_Abstract")) {
                 if (($output and ! $auto) or $this->verbose) {
                     $this->output("Update is disabled - update_version_url is empty");
                 }
+                // update disabled
                 return false;
-// update disabled
             }
 
             if (is_null($this->update_exists)) {
@@ -1173,8 +1173,8 @@ if (! class_exists("Console_Abstract")) {
                     // If disabled, return false
                     if ($this->update_auto <= 0) {
                         $this->log("Auto-update is disabled - update_auto <= 0");
+                        // auto-update disabled
                         return false;
-// auto-update disabled
                     }
 
                     // If we haven't checked before, we'll check now
@@ -1191,8 +1191,8 @@ if (! class_exists("Console_Abstract")) {
                         $seconds_since_last_check = $now - $last_check;
                         if ($seconds_since_last_check < $this->update_auto) {
                             $this->log("Only $seconds_since_last_check seconds since last check.  Configured auto-update is " . $this->update_auto . " seconds");
+                            // not yet time to check
                             return false;
-// not yet time to check
                         }
                     }
                 }//end if
@@ -2423,7 +2423,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return mixed The contents of the temp file, or false if file does not exist or can't be read.
          */
-        public function getTempContents(mixed $subpath)
+        public function getTempContents(mixed $subpath): mixed
         {
             $config_dir = $this->getConfigDir();
             $temp_dir   = $config_dir . DS . 'temp';
@@ -2451,7 +2451,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return mixed The path to the new temp file, or false if failed to write.
          */
-        public function setTempContents(mixed $subpath, string $contents)
+        public function setTempContents(mixed $subpath, string $contents): mixed
         {
             $config_dir = $this->getConfigDir();
             $temp_dir   = $config_dir . DS . 'temp';
@@ -2492,7 +2492,7 @@ if (! class_exists("Console_Abstract")) {
          *                - 'page_length'   The length of the output being displayed.
          *                - 'ending_line'   THe number of the last line being displayed.
          */
-        public function paginate(mixed $content, array $options = [])
+        public function paginate(mixed $content, array $options = []): array
         {
             $options = array_merge([
                 'starting_line' => 1,
@@ -2513,11 +2513,11 @@ if (! class_exists("Console_Abstract")) {
 
             $max_height = $this->getTerminalHeight();
             $max_height = $max_height - $options['line_buffer'];
+            // for start/end line breaks
             $max_height = $max_height - 2;
-// for start/end line breaks
             if ($options['include_page_info']) {
+                // for page info and extra line break
                 $max_height = $max_height - 2;
-// for page info and extra line break
             }
 
             if (! is_array($content)) {
@@ -2629,7 +2629,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return array The parameter names.
          */
-        protected function _getMethodParams(string $method)
+        protected function _getMethodParams(string $method): array
         {
             $r      = new ReflectionObject($this);
             $rm     = $r->getMethod($method);
@@ -2641,7 +2641,7 @@ if (! class_exists("Console_Abstract")) {
         }//end _getMethodParams()
 
         /**
-         * Cached public properties so method only need run once.
+         * Cached value for getPublicProperties()
          *
          * @var array
          */
@@ -2652,7 +2652,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return array List of all public property names.
          */
-        public function getPublicProperties()
+        public function getPublicProperties(): array
         {
             if (is_null($this->_public_properties)) {
                 $this->_public_properties = [];
@@ -2666,9 +2666,18 @@ if (! class_exists("Console_Abstract")) {
             return $this->_public_properties;
         }//end getPublicProperties()
 
-
-        // Manage CLI Input Handle
+        /**
+         * Cached value for getCliInputHandle()
+         *
+         * @var resource
+         */
         protected $_cli_input_handle = null;
+
+        /**
+         * Get a CLI Input handle resource - to read input from user
+         *
+         * @return resource CLI Input handle
+         */
         protected function getCliInputHandle()
         {
             if (is_null($this->_cli_input_handle)) {
@@ -2678,16 +2687,35 @@ if (! class_exists("Console_Abstract")) {
             return $this->_cli_input_handle;
         }//end getCliInputHandle()
 
-        protected function close_cli_input_handle()
+        /**
+         * Close the CLI Input handle if it has been opened
+         *
+         * @used-by Console_Abstract::_shutdown()
+         *
+         * @return void
+         */
+        protected function closeCliInputHandle()
         {
             if (! is_null($this->_cli_input_handle)) {
                 fclose($this->_cli_input_handle);
             }
-        }//end close_cli_input_handle()
+        }//end closeCliInputHandle()
 
-
+        /**
+         * Cached value for getTerminalHeight()
+         *
+         * @var integer
+         */
         protected $_terminal_height = null;
-        public function getTerminalHeight($fresh = false)
+
+        /**
+         * Get the current height of the terminal screen for output
+         *
+         * @param mixed $fresh Whether to get height fresh (vs. reading cached value). Defaults to false.
+         *
+         * @return integer The height of the terminal output screen.
+         */
+        public function getTerminalHeight(mixed $fresh = false): int
         {
             if ($fresh or empty($this->_terminal_height)) {
                 exec("tput lines", $output, $return);
@@ -2707,9 +2735,21 @@ if (! class_exists("Console_Abstract")) {
             return $this->_terminal_height;
         }//end getTerminalHeight()
 
-
+        /**
+         * Cached value for getTerminalWidth()
+         *
+         * @var integer
+         */
         protected $_terminal_width = null;
-        public function getTerminalWidth($fresh = false)
+
+        /**
+         * Get the current width of the terminal screen for output
+         *
+         * @param mixed $fresh Whether to get width fresh (vs. reading cached value). Defaults to false.
+         *
+         * @return integer The width of the terminal output screen.
+         */
+        public function getTerminalWidth(mixed $fresh = false): int
         {
             if ($fresh or empty($this->_terminal_width)) {
                 exec("tput cols", $output, $return);
@@ -2729,23 +2769,32 @@ if (! class_exists("Console_Abstract")) {
             return $this->_terminal_width;
         }//end getTerminalWidth()
 
-
         /**
          * Parse HTML for output to terminal
-         * Supporting:
-         *  - Bold
-         *  - Italic (showing as dim)
-         *  - Links (Underlined with link in parentheses)
-         *  - Unordered Lists ( - )
-         *  - Ordered Lists ( 1. )
-         *  - Hierarchical lists (via indentation)
-         * Not Yet:
-         *  - Text colors
-         *  - Underline styles
-         *  - Indentation styles
-         *  - Less commonly supported terminal styles
+         *
+         *  Supports:
+         *   - Bold
+         *   - Italic (showing as dim)
+         *   - Links (Underlined with link in parentheses)
+         *   - Unordered Lists ( - )
+         *   - Ordered Lists ( 1. )
+         *   - Hierarchical lists (via indentation)
+         *
+         *  Not Yet Supported:
+         *   - Text colors
+         *   - Underline styles
+         *   - Indentation styles
+         *   - Less commonly supported terminal styles
+         *
+         *  Runs recursively to parse out all elements.
+         *
+         * @param mixed   $dom    HTML string or DOM object to be parsed.
+         * @param integer $depth  The current depth of parsing - for hierarchical elements - eg. lists.
+         * @param string  $prefix The current prefix to use - eg. for lists.
+         *
+         * @return string The processed output, ready for terminal.
          */
-        public function parseHtmlForTerminal($dom, $depth = 0, $prefix = "")
+        public function parseHtmlForTerminal(mixed $dom, int $depth = 0, string $prefix = ""): string
         {
             $output = "";
 
@@ -2770,12 +2819,12 @@ if (! class_exists("Console_Abstract")) {
 
             $li_index = 0;
             foreach ($dom->childNodes as $child_index => $node) {
+                // output for this child
                 $_output = "";
-// output for this child
+                // prefix for this child's children - start with current prefix, passed to function
                 $_prefix = $prefix;
-// prefix for this child's children - start with current prefix, passed to function
+                // suffix for end of this child
                 $_suffix = "";
-// suffix for end of this child
                 // Note coloring if needed
                 $color_foreground = null;
                 $color_background = null;
@@ -2853,14 +2902,18 @@ if (! class_exists("Console_Abstract")) {
             return htmlspecialchars_decode($output);
         }//end parseHtmlForTerminal()
 
-
         /**
          * Parse Markdown to HTML
+         *
          * - uses Parsedown
          * - uses some defaults based on common use
-         * - alternatively, can call Parsedown directly
+         * - alternatively, can call Parsedown directly - ie. if other options are needed
+         *
+         * @param string $text The markdown to be parsed.
+         *
+         * @return string The resulting HTML.
          */
-        public function parseMarkdownToHtml($text)
+        public function parseMarkdownToHtml(string $text): string
         {
             $html = Parsedown::instance()
                 ->setBreaksEnabled(true)
@@ -2869,7 +2922,6 @@ if (! class_exists("Console_Abstract")) {
                 ->text($text);
             return $html;
         }//end parseMarkdownToHtml()
-
 
         /**
          * JSON encode & decode, using HJSON
@@ -2963,7 +3015,7 @@ if (! class_exists("Console_Abstract")) {
         // Extendable method for shutdown logic
         protected function _shutdown($arglist)
         {
-            // Nothing to do by default
+            $this->closeCliInputHandle();
         }//end _shutdown()
     }//end class
 
