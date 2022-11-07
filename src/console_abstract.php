@@ -169,6 +169,7 @@ if (! class_exists("Console_Abstract")) {
          * Whether or not to allow running the tool as root without any warning
          *
          * @var boolean
+         * @api
          */
         public $allow_root = false;
 
@@ -188,6 +189,7 @@ if (! class_exists("Console_Abstract")) {
          * - Anything but a non-negative integer could cause errors or unexpected behavior
          *
          * @var string
+         * @api
          */
         public $backup_age_limit = '30';
 
@@ -206,6 +208,7 @@ if (! class_exists("Console_Abstract")) {
          * - If null, backups are disabled
          *
          * @var string
+         * @api
          */
         public $backup_dir = null;
 
@@ -242,6 +245,7 @@ if (! class_exists("Console_Abstract")) {
          *  - Defaults to 86400 (24 hours)
          *
          * @var integer
+         * @api
          */
         public $cache_lifetime      = 86400;
 
@@ -297,6 +301,7 @@ if (! class_exists("Console_Abstract")) {
          * Install path for packaged tool executables
          *
          * @var string
+         * @api
          */
         public $install_path      = DS . "usr" . DS . "local" . DS . "bin";
 
@@ -315,6 +320,7 @@ if (! class_exists("Console_Abstract")) {
          *  - Defaults to true
          *
          * @var boolean
+         * @api
          */
         public $ssl_check = true;
 
@@ -333,6 +339,7 @@ if (! class_exists("Console_Abstract")) {
          *  - Defaults to false
          *
          * @var boolean
+         * @api
          */
         public $stamp_lines = false;
 
@@ -351,6 +358,7 @@ if (! class_exists("Console_Abstract")) {
          *  - Defaults to false
          *
          * @var boolean
+         * @api
          */
         public $step = false;
 
@@ -369,6 +377,7 @@ if (! class_exists("Console_Abstract")) {
          *  - Defaults to "US/Eastern"
          *
          * @var string
+         * @api
          */
         public $timezone = "US/Eastern";
 
@@ -388,6 +397,7 @@ if (! class_exists("Console_Abstract")) {
          *  - Set to 0 to disable updates
          *
          * @var integer
+         * @api
          */
         public $update_auto = 86400;
 
@@ -408,6 +418,7 @@ if (! class_exists("Console_Abstract")) {
          *  - Defaults to "" - no update check completed yet
          *
          * @var string
+         * @api
          */
         public $update_last_check = "";
 
@@ -429,8 +440,8 @@ if (! class_exists("Console_Abstract")) {
          *  - Set in config to set up a custom update methodology or disable updates
          *
          * @var string
-         *
          * @see PCon::update_version_url
+         * @api
          */
         public $update_version_url = "";
 
@@ -449,6 +460,7 @@ if (! class_exists("Console_Abstract")) {
          *  - Defaults to true
          *
          * @var boolean
+         * @api
          */
         public $update_check_hash = true;
 
@@ -467,6 +479,7 @@ if (! class_exists("Console_Abstract")) {
          *  - Defaults to false
          *
          * @var boolean
+         * @api
          */
         public $verbose = false;
 
@@ -483,6 +496,7 @@ if (! class_exists("Console_Abstract")) {
          * HJSON Data for the config file
          *
          * @var array
+         * @api
          */
         public $__WSC__ = null;
 
@@ -846,7 +860,6 @@ if (! class_exists("Console_Abstract")) {
          * @param boolean $output Whether to output information while running.
          *
          * @return boolean Whether backup was successful.
-         *
          * @api
          */
         public function backup(array $files, bool $output = true): bool
@@ -914,7 +927,6 @@ if (! class_exists("Console_Abstract")) {
          * @param mixed  ...$evaluation_arguments Arguments to pass to the script file being run.
          *
          * @return void
-         *
          * @api
          */
         public function eval_file(string $file, mixed ...$evaluation_arguments)
@@ -949,7 +961,6 @@ if (! class_exists("Console_Abstract")) {
          * @param string $install_path Path to which to install the tool.  Defaults to configured install path.
          *
          * @return void
-         *
          * @api
          */
         public function install(string $install_path = null)
@@ -1022,6 +1033,7 @@ if (! class_exists("Console_Abstract")) {
          * Update the tool - check for an update and install if available
          *
          * @return void
+         * @api
          */
         public function update()
         {
@@ -1125,6 +1137,7 @@ if (! class_exists("Console_Abstract")) {
          * @param boolean $output Whether to output information while running.
          *
          * @return mixed The version string if output is false, otherwise false.
+         * @api
          */
         public function version(bool $output = true): mixed
         {
@@ -1284,6 +1297,7 @@ if (! class_exists("Console_Abstract")) {
          *  - Provides the functionality for Command::clear()
          *
          * @return void
+         * @api
          */
         public function clear()
         {
@@ -2924,9 +2938,14 @@ if (! class_exists("Console_Abstract")) {
         }//end parseMarkdownToHtml()
 
         /**
-         * JSON encode & decode, using HJSON
+         * Decode JSON - supports HJSON as well
+         *
+         * @param string $json    The raw JSON/HJSON string to be interpreted.
+         * @param mixed  $options Options to pass through to HJSON.  Also supports 'true' for associative array, to match json_decode builtin.
+         *
+         * @return mixed The decoded data - typically object or array.
          */
-        public function json_decode($json, $options = [])
+        public function json_decode(string $json, mixed $options = []): mixed
         {
             $this->log("Running json_decode on console_abstract");
 
@@ -2946,7 +2965,15 @@ if (! class_exists("Console_Abstract")) {
             return $data;
         }//end json_decode()
 
-        public function json_encode($data, $options = [])
+        /**
+         * Encode data as HJSON
+         *
+         * @param mixed $data    The data to be encoded.
+         * @param array $options Options to pass through to HJSON.
+         *
+         * @return string The encoded HJSON string.
+         */
+        public function json_encode(mixed $data, array $options = []): string
         {
             $this->log("Running json_encode on console_abstract");
 
@@ -2981,7 +3008,14 @@ if (! class_exists("Console_Abstract")) {
             return $json;
         }//end json_encode()
 
-        protected function _json_cleanup(&$data)
+        /**
+         * Clean up data after decoding from, or before encoding as HJSON
+         *
+         * @param mixed $data The data to clean up - passed by reference.
+         *
+         * @return void Updates $data directly by reference.
+         */
+        protected function _json_cleanup(mixed &$data)
         {
             if (is_iterable($data)) {
                 foreach ($data as $key => &$value) {
@@ -2997,23 +3031,43 @@ if (! class_exists("Console_Abstract")) {
             }
         }//end _json_cleanup()
 
-
-        // Prevent infinite loop of magic method handling
-        public function __call(string $method, array $arguments = []): mixed
+        /**
+         * Explicitly throws an error for methods called that don't exist.
+         *
+         * This is to prevent an infinite loop, since some classes have
+         * a magic __call method that tries methods on Console_Abstract
+         *
+         * @param string $method    The method that is being called.
+         * @param array  $arguments The arguments being passed to the method.
+         *
+         * @throws Exception Errors every time to prevent infinite loop.
+         * @return void
+         */
+        public function __call(string $method, array $arguments = [])
         {
             throw new Exception("Invalid method '$method'");
         }//end __call()
 
-
-        // Extendable method for startup logic
-        protected function _startup($arglist)
+        /**
+         * Startup logic - extend from child/tool if needed.
+         *
+         * @param array $arg_list The arguments passed to the tool.
+         *
+         * @return void
+         */
+        protected function _startup(array $arg_list)
         {
             // Nothing to do by default
         }//end _startup()
 
-
-        // Extendable method for shutdown logic
-        protected function _shutdown($arglist)
+        /**
+         * Shutdown logic - extend from child/tool if needed.
+         *
+         * @param array $arg_list The arguments passed to the tool.
+         *
+         * @return void
+         */
+        protected function _shutdown(array $arg_list)
         {
             $this->closeCliInputHandle();
         }//end _shutdown()

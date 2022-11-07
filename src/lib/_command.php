@@ -656,5 +656,5 @@ if (!class_exists("Command")) {
 
 }//end if
 
-// Note: leave this for packaging
+// Note: leave the end tag for packaging
 ?>
