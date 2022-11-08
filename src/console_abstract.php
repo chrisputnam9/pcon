@@ -440,7 +440,7 @@ if (! class_exists("Console_Abstract")) {
          *  - Set in config to set up a custom update methodology or disable updates
          *
          * @var string
-         * @see PCon::update_version_url
+         * @see PCon::update_version_url for an example setting
          * @api
          */
         public $update_version_url = "";
@@ -3041,11 +3041,13 @@ if (! class_exists("Console_Abstract")) {
          * @param array  $arguments The arguments being passed to the method.
          *
          * @throws Exception Errors every time to prevent infinite loop.
-         * @return void
+         * @return mixed Doesn't really return anything - always throws error.
          */
-        public function __call(string $method, array $arguments = [])
+        public function __call(string $method, array $arguments = []): mixed
         {
             throw new Exception("Invalid method '$method'");
+
+            return false;
         }//end __call()
 
         /**

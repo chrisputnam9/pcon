@@ -62,15 +62,44 @@ class PCon extends Console_Abstract
      */
     public $console_abstract_path = CONSOLE_ABSTRACT_PATH;
 
-    // Don't bother with hash, no download built in
+    /**
+     * Whether to check the hash when downloading updates
+     *
+     *  - Overriding to false for PCon - no downloading built in
+     *
+     * @var boolean
+     * @api
+     */
     public $update_check_hash = false;
 
-    // URL to check for updates
+    /**
+     * The URL to check for updates
+     *
+     *  - PCon will check the README file - typical setup
+     *
+     * @var string
+     * @see PCon::update_version_url
+     * @api
+     */
     public $update_version_url = "https://raw.githubusercontent.com/chrisputnam9/pcon/master/README.md";
 
-    // When update exists, show this message
+    /**
+     * Update behavior - either "DOWNLOAD" or custom text
+     *
+     *  - For PCon - standard updates don't make much sense, so instead we show a message
+     *    instructing the user to update the git repository if updates are available
+     *
+     * @var string
+     */
     protected $update_behavior = 'Pull git repository to update PHP Console tool (PCon) to latest version';
 
+    /**
+     * Help info for create method
+     *
+     * @var mixed
+     *
+     * @internal
+     */
     protected $___create = [
         "Create a new PHP console tool - interactive, or specify options",
         ["Name of tool", "string"],
@@ -78,7 +107,27 @@ class PCon extends Console_Abstract
         ["Path in which to create folder - defaults to parent of pcon folder", "string"],
         ["Whether to create parent path", "binary"],
     ];
-    public function create($tool_name = null, $tool_folder = null, $_parent_path = null, $create_parent = false)
+
+    /**
+     * Method to create a new tool.
+     *
+     *  - Arguments can be passed in - otherwise, will prompt interactively for values.
+     *
+     * @param string  $tool_name     Name of the tool to be created.
+     *                               Will prompt if not passed.
+     * @param string  $tool_folder   Folder name for the tool.
+     *                               Will prompt if not passed.
+     *                               Defaults to the slug version of $tool_name.
+     * @param string  $_parent_path  Path in which to set up the tool folder.
+     *                               Will prompt if not passed.
+     *                               Defaults to the parent folder of the PCon tool.
+     * @param boolean $create_parent Whether to create the parent path if it doesn't exist.
+     *                               Defaults to false.
+     *
+     * @return void
+     * @api
+     */
+    public function create(string $tool_name = null, string $tool_folder = null, string $_parent_path = null, bool $create_parent = false)
     {
         $this->output('Creating New PHP Console Tool');
 
@@ -97,7 +146,7 @@ class PCon extends Console_Abstract
         $tool_shortname = preg_replace('/[^0-9a-z]+/i', '-', $tool_shortname);
 
         if (is_null($tool_folder)) {
-            $tool_folder = $this->input("Enter name of folder for tool", $tool_name);
+            $tool_folder = $this->input("Enter name of folder for tool", $tool_shortname);
         }
 
         // Validate argument and/or get input
@@ -123,13 +172,13 @@ class PCon extends Console_Abstract
                     $success = mkdir($parent_path, 0755, true);
                     if (! $success) {
                         $this->warn("Unable to create folder ($parent_path) - please try again");
+                        // invalidate to loop
                         $parent_path = null;
-// invalidate to loop
                     }
                 } else {
                     $this->warn("This folder doesn't exist ($parent_path) - please specify an existing location");
+                    // invalidate to loop
                     $parent_path = null;
-// invalidate to loop
                 }
             }
         }//end while
@@ -202,10 +251,21 @@ class PCon extends Console_Abstract
     }//end create()
 
 
+    /**
+     * Help info for package method
+     *
+     * @var mixed
+     *
+     * @internal
+     */
     protected $___package = [
         "Package a PHP console tool - interactive, or specify options",
         ["Path to tool folder", "string"],
     ];
+
+    /**
+     * Method to package a tool for release.
+     */
     public function package($_tool_path = null)
     {
         $this->output('Packaging PHP Console Tool');
@@ -295,11 +355,19 @@ class PCon extends Console_Abstract
     }//end package()
 
 
+    /**
+     * Help info for test_colors method
+     *
+     * @var mixed
+     *
+     * @internal
+     */
     protected $___test_colors = [
         "Test available colors and text decoration - escape codes",
         ["Types to test - comma-separted - defaults to test all", "string"],
     ];
     /**
+     * Method to test console color / decoration output.
      *
      * @uses CONSOLE_COLORS - tests all colors / styles defined therein
      */
