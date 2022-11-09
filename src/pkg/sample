@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /**
- * Acts as the entry point; initializes the tool
+ * Acts as the entry point during development; initializes the tool
  *
  * - Sets a few constants and loads in primary logic files
  * - **NOTE:** actual file is "pcon" with no extension - name temporarily modified for linting & doc generation
@@ -10,39 +10,72 @@
  * @author  chrisputnam9
  */
 
-##################################################
-# Config
-##################################################
-
-if (!defined('ERRORS')) define('ERRORS', true);
-if (!defined('PACKAGED')) define('PACKAGED', false);
-
-# Path to pcon console_abstract.php
-if (!defined('CONSOLE_ABSTRACT_PATH')) define('CONSOLE_ABSTRACT_PATH',
-    __DIR__ . DIRECTORY_SEPARATOR .
-    'pcon' .DIRECTORY_SEPARATOR .
-    'src' .DIRECTORY_SEPARATOR .
-    'console_abstract.php'
-);
-
-if (!is_file(CONSOLE_ABSTRACT_PATH))
-{
-    echo "ERROR: Console Abstract not found - '" . CONSOLE_ABSTRACT_PATH . "'\n";
-    echo " - Symlink your pcon folder to '" . __DIR__ . DIRECTORY_SEPARATOR . "pcon' to resolve this issue\n";
-    echo "----------------------------------------\n";
-    throw new Exception("Missing console abstract");
+// Miscellaneous configuration
+if (! defined('ERRORS')) {
+    /*
+     * @var boolean Whether to show errors or not.
+     * @global
+     * @used-by Console_Abstract
+     */
+    define('ERRORS', true);
+}
+if (! defined('PACKAGED')) {
+    /*
+     * @var boolean Whether the tool is packaged (vs. unpackaged / development mode)
+     * @global
+     * @used-by Console_Abstract
+     */
+    define('PACKAGED', false);
 }
 
-# Paths to other includes
+// Path to pcon console_abstract.php
+if (! defined('CONSOLE_ABSTRACT_PATH')) {
+
+    // For PCon specifically, check src
+    $console_path =
+        __DIR__ . DIRECTORY_SEPARATOR .
+        'src' . DIRECTORY_SEPARATOR .
+        'console_abstract.php';
+
+    // For other tools, check pcon
+    if ( !is_file($console_path)) {
+        $console_path =
+            __DIR__ . DIRECTORY_SEPARATOR .
+            'pcon' .DIRECTORY_SEPARATOR .
+            'src' .DIRECTORY_SEPARATOR .
+            'console_abstract.php';
+    }
+
+    if (!is_file($console_path))
+    {
+        echo "ERROR: Console Abstract not found - '" . $console_path . "'\n";
+        echo " - Symlink your pcon folder to '" . __DIR__ . DIRECTORY_SEPARATOR . "pcon' to resolve this issue\n";
+        echo "----------------------------------------\n";
+        throw new Exception("Missing console abstract");
+    }
+
+    /*
+     * @var string The path the the Console_Abstract class file to be loaded below.
+     * @ignore
+     */
+    define('CONSOLE_ABSTRACT_PATH', $console_path);
+}
+
+/*
+ * @var array Source files to be loaded for this tool.
+ * @global
+ * @used-by Console_Abstract
+ */
 $src_includes = array(
-    __DIR__ . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . '{{tool_shortname}}.php',
+    __DIR__ . DIRECTORY_SEPARATOR .
+    'src' . DIRECTORY_SEPARATOR .
+    /*TOOLNAME{*/ 'pcon.php' /*}TOOLNAME*/,
 );
 
-##################################################
 
-if (empty($_PACKAGING)) // defined when loading file to do packaging
-{
-    require CONSOLE_ABSTRACT_PATH;
+if (empty($_PACKAGING)) {
+    // Defined when loading file to do packaging
+    require_once CONSOLE_ABSTRACT_PATH;
 }
 
-# vim: syntax=php
+// vim: syntax=php

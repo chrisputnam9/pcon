@@ -232,9 +232,9 @@ class PCon extends Console_Abstract
         $class_name = str_replace(' ', '_', $class_name);
 
         $template_vars = [
-            'class_name' => $class_name,
-            'tool_name' => $tool_name,
-            'tool_shortname' => $tool_shortname,
+            '___CLASS_NAME___' => $class_name,
+            '___TOOL_NAME___' => $tool_name,
+            '___TOOL_SHORTNAME___' => $tool_shortname,
         ];
 
         foreach ([$tool_exec_path, $tool_src_path] as $file) {
@@ -250,7 +250,6 @@ class PCon extends Console_Abstract
         $this->output($created);
     }//end create()
 
-
     /**
      * Help info for package method
      *
@@ -265,8 +264,13 @@ class PCon extends Console_Abstract
 
     /**
      * Method to package a tool for release.
+     *
+     * @param string $_tool_path Path to primary file of console tool to package.
+     *
+     * @return void
+     * @api
      */
-    public function package($_tool_path = null)
+    public function package(string $_tool_path = null)
     {
         $this->output('Packaging PHP Console Tool');
 
@@ -366,12 +370,19 @@ class PCon extends Console_Abstract
         "Test available colors and text decoration - escape codes",
         ["Types to test - comma-separted - defaults to test all", "string"],
     ];
+
     /**
      * Method to test console color / decoration output.
      *
+     * @param mixed $types Types of color/decoration to be tested.
+     *                     Defaults to all types - foreground, background, and other.
+     *
      * @uses CONSOLE_COLORS - tests all colors / styles defined therein
+     *
+     * @return void
+     * @api
      */
-    public function test_colors($types = null)
+    public function test_colors(mixed $types = null)
     {
         $types = $this->prepArg($types, ["foreground","background","other"]);
 
@@ -405,4 +416,5 @@ class PCon extends Console_Abstract
 // Kick it all off
 PCon::run($argv);
 
-// Note: leave this for packaging ?>
+// Note: leave the end tag for packaging
+?>

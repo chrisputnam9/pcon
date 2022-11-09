@@ -1,10 +1,9 @@
 <?php
 
 /**
- * {{tool_name}}
+ * __TOOL_NAME___
  */
-Class {{class_name}
-} extends Console_Abstract
+class ___CLASS_NAME___ extends Console_Abstract
 {
     const VERSION = "1.0.1";
 
@@ -47,7 +46,8 @@ protected static $METHODS = [
 
     if (empty($__no_direct_run__)) {
         // Kick it all off
-        {{class_name}}::run($argv);
+        ___CLASS_NAME___::run($argv);
     }
 
-// Note: leave this for packaging ?>
+// Note: leave the end tag for packaging
+?>

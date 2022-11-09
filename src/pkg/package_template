@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
 /**
+ * Template file to use for packaging.  This will be the start of the packaged tool file.
+ *
  * @internal
  */
 ##################################################
@@ -9,4 +11,5 @@
 if (!defined('ERRORS')) define('ERRORS', false);
 if (!defined('PACKAGED')) define('PACKAGED', true);
 
-// Note: leave this for packaging ?>
+// Note: leave the end tag for packaging
+?>

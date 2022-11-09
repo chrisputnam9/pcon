@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /**
- * Acts as the entry point; initializes the tool
+ * Acts as the entry pointkduring development; initializes the tool
  *
  * - Sets a few constants and loads in primary logic files
  * - **NOTE:** actual file is "pcon" with no extension - name temporarily modified for linting & doc generation
@@ -69,7 +69,7 @@ if (! defined('CONSOLE_ABSTRACT_PATH')) {
 $src_includes = array(
     __DIR__ . DIRECTORY_SEPARATOR .
     'src' . DIRECTORY_SEPARATOR .
-    /*TOOLNAME{*/ 'pcon.php' /*}TOOLNAME*/,
+    'pcon.php', // TODO REPLACE WITH PACKAGING
 );
 
 
