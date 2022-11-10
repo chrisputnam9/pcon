@@ -40,6 +40,7 @@ class PCon extends Console_Abstract
      */
     protected static $HIDDEN_CONFIG_OPTIONS = [
         'console_abstract_path',
+        'default_author',
     ];
 
     /*********************************
@@ -61,6 +62,22 @@ class PCon extends Console_Abstract
      * @var array
      */
     public $console_abstract_path = CONSOLE_ABSTRACT_PATH;
+
+    /**
+     * Help info for $default_author
+     *
+     * @var array
+     *
+     * @internal
+     */
+    protected $__default_author = ["Default author handle for new tools.", "string"];
+
+    /**
+     * Default author handle for new tools.
+     *
+     * @var string
+     */
+    public $default_author = "";
 
     /**
      * Whether to check the hash when downloading updates
@@ -96,7 +113,7 @@ class PCon extends Console_Abstract
     /**
      * Help info for create method
      *
-     * @var mixed
+     * @var array
      *
      * @internal
      */
@@ -115,6 +132,12 @@ class PCon extends Console_Abstract
      *
      * @param string  $tool_name     Name of the tool to be created.
      *                               Will prompt if not passed.
+     * @param string  $author_handle The author handle to use in Doc Block
+     *                               Will prompt if not passed.
+     *                               Defaults to configured $this->default_author.
+     * @param string  $update_url    The update URL for the tool.
+     *                               Will NOT promopt if not passed.
+     *                               Defaults to FILL_IN_LATER.
      * @param string  $tool_folder   Folder name for the tool.
      *                               Will prompt if not passed.
      *                               Defaults to the slug version of $tool_name.
@@ -127,10 +150,13 @@ class PCon extends Console_Abstract
      * @return void
      * @api
      */
-    public function create(string $tool_name = null, string $tool_folder = null, string $_parent_path = null, bool $create_parent = false)
+    public function create(string $tool_name = null, string $author_handle = null, string $update_url = null, string $tool_folder = null, string $_parent_path = null, bool $create_parent = false)
     {
         $this->output('Creating New PHP Console Tool');
 
+        $tool_name     = $this->prepArg($tool_name, null);
+        $author_handle = $this->prepArg($author_handle, null);
+        $update_url    = $this->prepArg($update_url, "FILL_IN_LATER");
         $tool_name     = $this->prepArg($tool_name, null);
         $tool_folder   = $this->prepArg($tool_folder, null);
         $_parent_path  = $this->prepArg($_parent_path, null);
@@ -144,6 +170,10 @@ class PCon extends Console_Abstract
 
         $tool_shortname = strtolower($tool_name);
         $tool_shortname = preg_replace('/[^0-9a-z]+/i', '-', $tool_shortname);
+
+        if (is_null($author_handle)) {
+            $author_handle = $this->input("Enter the tool's Author's handle (eg. Github username)", $this->default_author, true);
+        }
 
         if (is_null($tool_folder)) {
             $tool_folder = $this->input("Enter name of folder for tool", $tool_shortname);
@@ -190,8 +220,10 @@ class PCon extends Console_Abstract
         }
 
         $this->output('Details Summary:');
+        $this->output('Author: ' . $author_handle);
         $this->output('Name: ' . $tool_name);
         $this->output('Short Name: ' . $tool_shortname);
+        $this->output('Update URL: ' . $update_url);
         $this->output('Full Path: ' . $tool_path);
 
         $this->hrl();
@@ -232,15 +264,17 @@ class PCon extends Console_Abstract
         $class_name = str_replace(' ', '_', $class_name);
 
         $template_vars = [
-            '___CLASS_NAME___' => $class_name,
-            '___TOOL_NAME___' => $tool_name,
-            '___TOOL_SHORTNAME___' => $tool_shortname,
+            'AUTHOR_HANDLE' => $author_handle,
+            'CLASS_NAME' => $class_name,
+            'TOOL_NAME' => $tool_name,
+            'TOOL_SHORTNAME' => $tool_shortname,
+            'UPDATE_URL' => $update_url, // TODO https://raw.githubusercontent.com/chrisputnam9/pcon/master/tests/dist/test-readme.md
         ];
 
         foreach ([$tool_exec_path, $tool_src_path] as $file) {
             $contents = file_get_contents($file);
             foreach ($template_vars as $search => $replace) {
-                $contents = str_replace('{{' . $search . '}}', $replace, $contents);
+                $contents = str_replace('___' . $search . '___', $replace, $contents);
             }
             file_put_contents($file, $contents);
         }
@@ -253,7 +287,7 @@ class PCon extends Console_Abstract
     /**
      * Help info for package method
      *
-     * @var mixed
+     * @var array
      *
      * @internal
      */
@@ -362,7 +396,7 @@ class PCon extends Console_Abstract
     /**
      * Help info for test_colors method
      *
-     * @var mixed
+     * @var array
      *
      * @internal
      */
@@ -413,8 +447,10 @@ class PCon extends Console_Abstract
 }//end class
 
 
-// Kick it all off
-PCon::run($argv);
+if (empty($__no_direct_run__)) {
+    // Kick it all off
+    PCon::run($argv);
+}
 
 // Note: leave the end tag for packaging
 ?>
