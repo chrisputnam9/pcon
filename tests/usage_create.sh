@@ -19,7 +19,13 @@ if [ -d "$TEST_DIR" ]; then
 fi
 
 pced "Creating new tool"
-"$PCON" create "Test thing script" "_test" "$TMP_DIR" true
+"$PCON" create \
+    "Test thing script" \
+    "chrisputnam9" \
+    "https://raw.githubusercontent.com/chrisputnam9/pcon/master/tests/dist/test-readme.md" \
+    "_test" \
+    "$TMP_DIR" \
+    "true"
 
 if [ "$1" != "--no-use-test" ]; then
     pced "Testing version output:"

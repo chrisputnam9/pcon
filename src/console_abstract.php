@@ -856,13 +856,13 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Method to backup files used by the tool
          *
-         * @param array   $files  Files to back up.
+         * @param mixed   $files  File(s) to back up.
          * @param boolean $output Whether to output information while running.
          *
          * @return boolean Whether backup was successful.
          * @api
          */
-        public function backup(array $files, bool $output = true): bool
+        public function backup(mixed $files, bool $output = true): bool
         {
             $success = true;
 
@@ -1606,7 +1606,13 @@ if (! class_exists("Console_Abstract")) {
          */
         public function hr(string $c = '=', string $prefix = "")
         {
-            $string = str_pad($prefix, $this->getTerminalWidth(), $c);
+            // Maybe adjust width - if stamping lines
+            $adjust = 0;
+            if ($this->stamp_lines) {
+                $stamp = $this->stamp() . ' ... ';
+                $adjust = strlen($stamp);
+            }
+            $string = str_pad($prefix, $this->getTerminalWidth() - $adjust, $c);
             $this->output($string);
         }//end hr()
 

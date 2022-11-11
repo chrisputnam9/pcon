@@ -243,9 +243,9 @@ class PCon extends Console_Abstract
         $tool_gitignore = $tool_path . DS . '.gitignore';
         copy($package_dir . '.gitignore', $tool_gitignore);
 
-        // Copy primary executable sample
+        // Copy primary executable sample - pcon
         $tool_exec_path = $tool_path . DS . $tool_shortname;
-        copy($package_dir . 'sample', $tool_exec_path);
+        copy(__DIR__ . DS . '..' . DS . 'pcon', $tool_exec_path);
         chmod($tool_exec_path, 0755);
 
         // Create src directory
@@ -264,17 +264,18 @@ class PCon extends Console_Abstract
         $class_name = str_replace(' ', '_', $class_name);
 
         $template_vars = [
-            'AUTHOR_HANDLE' => $author_handle,
-            'CLASS_NAME' => $class_name,
-            'TOOL_NAME' => $tool_name,
-            'TOOL_SHORTNAME' => $tool_shortname,
-            'UPDATE_URL' => $update_url, // TODO https://raw.githubusercontent.com/chrisputnam9/pcon/master/tests/dist/test-readme.md
+            'pcon.php' => $tool_shortname . '.php',
+            '___AUTHOR_HANDLE___' => $author_handle,
+            '___CLASS_NAME___' => $class_name,
+            '___TOOL_NAME___' => $tool_name,
+            '___TOOL_SHORTNAME___' => $tool_shortname,
+            '___UPDATE_URL___' => $update_url,
         ];
 
         foreach ([$tool_exec_path, $tool_src_path] as $file) {
             $contents = file_get_contents($file);
             foreach ($template_vars as $search => $replace) {
-                $contents = str_replace('___' . $search . '___', $replace, $contents);
+                $contents = str_replace($search, $replace, $contents);
             }
             file_put_contents($file, $contents);
         }
