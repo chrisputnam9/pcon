@@ -30,7 +30,6 @@ if (! defined('PACKAGED')) {
 
 // Path to pcon console_abstract.php
 if (! defined('CONSOLE_ABSTRACT_PATH')) {
-
     // For PCon specifically, check src
     $console_path =
         __DIR__ . DIRECTORY_SEPARATOR .
@@ -38,16 +37,15 @@ if (! defined('CONSOLE_ABSTRACT_PATH')) {
         'console_abstract.php';
 
     // For other tools, check pcon
-    if ( !is_file($console_path)) {
+    if (!is_file($console_path)) {
         $console_path =
             __DIR__ . DIRECTORY_SEPARATOR .
-            'pcon' .DIRECTORY_SEPARATOR .
-            'src' .DIRECTORY_SEPARATOR .
+            'pcon' . DIRECTORY_SEPARATOR .
+            'src' . DIRECTORY_SEPARATOR .
             'console_abstract.php';
     }
 
-    if (!is_file($console_path))
-    {
+    if (!is_file($console_path)) {
         echo "ERROR: Console Abstract not found - '" . $console_path . "'\n";
         echo " - Symlink your pcon folder to '" . __DIR__ . DIRECTORY_SEPARATOR . "pcon' to resolve this issue\n";
         echo "----------------------------------------\n";
@@ -59,7 +57,7 @@ if (! defined('CONSOLE_ABSTRACT_PATH')) {
      * @ignore
      */
     define('CONSOLE_ABSTRACT_PATH', $console_path);
-}
+}//end if
 
 /*
  * @var array Source files to be loaded for this tool.
