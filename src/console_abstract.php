@@ -1340,12 +1340,12 @@ if (! class_exists("Console_Abstract")) {
          *  - 500 - misc. error
          *
          * @param mixed   $data               Error message/data to output.
-         * @param integer $code               Error code to exit with - false = no exit.
+         * @param mixed   $code               Error code to exit with - false = no exit.
          * @param boolean $prompt_to_continue Whether to prompt/ask user whether to continue.
          *
          * @return void
          */
-        public function error(mixed $data, int $code = 500, bool $prompt_to_continue = false)
+        public function error(mixed $data, mixed $code = 500, bool $prompt_to_continue = false)
         {
             $this->br();
             $this->hr('!');

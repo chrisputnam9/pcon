@@ -130,49 +130,66 @@ class PCon extends Console_Abstract
      *
      *  - Arguments can be passed in - otherwise, will prompt interactively for values.
      *
-     * @param string  $tool_name     Name of the tool to be created.
-     *                               Will prompt if not passed.
-     * @param string  $author_handle The author handle to use in Doc Block
-     *                               Will prompt if not passed.
-     *                               Defaults to configured $this->default_author.
-     * @param string  $update_url    The update URL for the tool.
-     *                               Will NOT promopt if not passed.
-     *                               Defaults to FILL_IN_LATER.
-     * @param string  $tool_folder   Folder name for the tool.
-     *                               Will prompt if not passed.
-     *                               Defaults to the slug version of $tool_name.
-     * @param string  $_parent_path  Path in which to set up the tool folder.
-     *                               Will prompt if not passed.
-     *                               Defaults to the parent folder of the PCon tool.
-     * @param boolean $create_parent Whether to create the parent path if it doesn't exist.
-     *                               Defaults to false.
+     * @param string  $tool_name        Name of the tool to be created.
+     *                                  Will prompt if not passed.
+     * @param string  $author_handle    The author handle to use in Doc Block
+     *                                  Will prompt if not passed.
+     *                                  Defaults to configured $this->default_author.
+     * @param string  $tool_description The description of the tool.
+     *                                  Will prompt if not passed.
+     *                                  Defaults to FILL_IN_LATER.
+     * @param string  $update_url       The update URL for the tool.
+     *                                  Will promopt if not passed.
+     *                                  Defaults to FILL_IN_LATER.
+     * @param string  $tool_folder      Folder name for the tool.
+     *                                  Will prompt if not passed.
+     *                                  Defaults to the slug version of $tool_name.
+     * @param string  $_parent_path     Path in which to set up the tool folder.
+     *                                  Will prompt if not passed.
+     *                                  Defaults to the parent folder of the PCon tool.
+     * @param boolean $create_parent    Whether to create the parent path if it doesn't exist.
+     *                                  Defaults to false.
      *
      * @return void
      * @api
      */
-    public function create(string $tool_name = null, string $author_handle = null, string $update_url = null, string $tool_folder = null, string $_parent_path = null, bool $create_parent = false)
-    {
+    public function create(
+        string $tool_name = null,
+        string $author_handle = null,
+        string $tool_description = null,
+        string $update_url = null,
+        string $tool_folder = null,
+        string $_parent_path = null,
+        bool $create_parent = false
+    ) {
         $this->output('Creating New PHP Console Tool');
 
-        $tool_name     = $this->prepArg($tool_name, null);
-        $author_handle = $this->prepArg($author_handle, null);
-        $update_url    = $this->prepArg($update_url, "FILL_IN_LATER");
-        $tool_name     = $this->prepArg($tool_name, null);
-        $tool_folder   = $this->prepArg($tool_folder, null);
-        $_parent_path  = $this->prepArg($_parent_path, null);
-        $create_parent = $this->prepArg($create_parent, false, 'boolean');
+        $tool_name        = $this->prepArg($tool_name, null);
+        $author_handle    = $this->prepArg($author_handle, null);
+        $tool_description = $this->prepArg($tool_description, null);
+        $update_url       = $this->prepArg($update_url, null);
+        $tool_folder      = $this->prepArg($tool_folder, null);
+        $_parent_path     = $this->prepArg($_parent_path, null);
+        $create_parent    = $this->prepArg($create_parent, false, 'boolean');
 
         if (is_null($tool_name)) {
             $tool_name = $this->input("Enter name of tool to create", null, true);
         }
-
         $tool_name = trim($tool_name);
 
         $tool_shortname = strtolower($tool_name);
         $tool_shortname = preg_replace('/[^0-9a-z]+/i', '-', $tool_shortname);
 
         if (is_null($author_handle)) {
-            $author_handle = $this->input("Enter the tool's Author's handle (eg. Github username)", $this->default_author, true);
+            $author_handle = $this->input("Enter the tool's Author's handle (eg. Github username)", $this->default_author);
+        }
+
+        if (is_null($update_url)) {
+            $update_url = $this->input("Enter the tool's update URL", "FILL_IN_LATER");
+        }
+
+        if (is_null($tool_description)) {
+            $tool_description = $this->input("Enter the tool description", "FILL_IN_LATER");
         }
 
         if (is_null($tool_folder)) {
@@ -268,6 +285,7 @@ class PCon extends Console_Abstract
             '___AUTHOR_HANDLE___' => $author_handle,
             '___CLASS_NAME___' => $class_name,
             '___TOOL_NAME___' => $tool_name,
+            '___TOOL_DESCRIPTION___' => $tool_description,
             '___TOOL_SHORTNAME___' => $tool_shortname,
             '___UPDATE_URL___' => $update_url,
         ];

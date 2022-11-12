@@ -5736,12 +5736,12 @@ if (! class_exists("Console_Abstract")) {
          *  - 500 - misc. error
          *
          * @param mixed   $data               Error message/data to output.
-         * @param integer $code               Error code to exit with - false = no exit.
+         * @param mixed   $code               Error code to exit with - false = no exit.
          * @param boolean $prompt_to_continue Whether to prompt/ask user whether to continue.
          *
          * @return void
          */
-        public function error(mixed $data, int $code = 500, bool $prompt_to_continue = false)
+        public function error(mixed $data, mixed $code = 500, bool $prompt_to_continue = false)
         {
             $this->br();
             $this->hr('!');
@@ -7490,23 +7490,23 @@ if (! empty($src_includes) and is_array($src_includes)) {
 ?>
 <?php
 /**
- * Test_Thing_Script Class File
+ * Example_Test_Tool Class File
  *
- * @package test-thing-script
+ * @package example-test-tool
  * @author  chrisputnam9
  */
 
 /**
- * Test thing script
+ * Example Test Tool
  *
- * ___TOOL_DESCRIPTION___
+ * A simple example tool, used to test PCon tooling.
  */
-class Test_Thing_Script extends Console_Abstract
+class Example_Test_Tool extends Console_Abstract
 {
     public const VERSION = "0.0.1";
 
     // Name of script and directory to store config
-    public const SHORTNAME = 'test-thing-script';
+    public const SHORTNAME = 'example-test-tool';
 
     /**
      * Callable Methods / Sub-commands
@@ -7584,7 +7584,7 @@ class Test_Thing_Script extends Console_Abstract
 
 if (empty($__no_direct_run__)) {
     // Kick it all off
-    Test_Thing_Script::run($argv);
+    Example_Test_Tool::run($argv);
 }
 
 // Note: leave the end tag for packaging

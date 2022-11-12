@@ -21,6 +21,8 @@ if (!class_exists("CONSOLE_COLORS")) {
          * Reference of foreground colors by name
          *
          * @var array
+         *
+         * @source
          */
         public static $foreground = [
             'black' => '0;30',
@@ -45,6 +47,8 @@ if (!class_exists("CONSOLE_COLORS")) {
          * Reference of background colors by name
          *
          * @var array
+         *
+         * @source
          */
         public static $background = [
             'black' => '40',
@@ -62,6 +66,8 @@ if (!class_exists("CONSOLE_COLORS")) {
          * Reference of other console formatting / decoration by name
          *
          * @var array
+         *
+         * @source
          */
         public static $other = [
             'bold' => '1',
