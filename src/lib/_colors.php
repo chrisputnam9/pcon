@@ -22,7 +22,7 @@ if (!class_exists("CONSOLE_COLORS")) {
          *
          * @var array
          *
-         * @source
+         * @source 2 16 Foreground color options
          */
         public static $foreground = [
             'black' => '0;30',
@@ -48,7 +48,7 @@ if (!class_exists("CONSOLE_COLORS")) {
          *
          * @var array
          *
-         * @source
+         * @source 2 8 Background color options
          */
         public static $background = [
             'black' => '40',
@@ -67,7 +67,7 @@ if (!class_exists("CONSOLE_COLORS")) {
          *
          * @var array
          *
-         * @source
+         * @source 2 5 Other decoration options
          */
         public static $other = [
             'bold' => '1',

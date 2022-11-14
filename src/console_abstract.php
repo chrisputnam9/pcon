@@ -2263,7 +2263,7 @@ if (! class_exists("Console_Abstract")) {
          * @param string  $url            The URL to hit.
          * @param boolean $fresh_no_cache Whether to force this to be a fresh request / disable caching.
          *
-         * @uses $this->ssl_check to determine if curl should verify peer/host SSLs. Warns if not verifying.
+         * @uses Console_Abstract::ssl_check to determine if curl should verify peer/host SSLs. Warns if not verifying.
          *
          * @return CurlHandle The initialized curl handle.
          */

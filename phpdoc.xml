@@ -20,6 +20,7 @@
                 <path>src/pkg/sample.php</path>
                 <path>tests</path>
             </ignore>
+            <include-source>true</include-source>
         </api>
     </version>
     <template name="clean" />
