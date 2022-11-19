@@ -15,8 +15,18 @@
  */
 class PCon extends Console_Abstract
 {
+    /**
+     * Current tool version
+     *
+     * @var string
+     */
     public const VERSION = "1.4.2";
-    // Name of script and directory to store config
+
+    /**
+     * Tool shortname - used as name of configurationd directory.
+     *
+     * @var string
+     */
     public const SHORTNAME = 'pcon';
 
     /**
