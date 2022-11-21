@@ -421,7 +421,6 @@ class PCon extends Console_Abstract
         $this->output('Package hash (' . $this->update_hash_algorithm . '): ' . $package_hash);
     }//end package()
 
-
     /**
      * Help info for test_colors method
      *
@@ -474,7 +473,6 @@ class PCon extends Console_Abstract
         $this->pause();
     }//end test_colors()
 }//end class
-
 
 if (empty($__no_direct_run__)) {
     // Kick it all off
