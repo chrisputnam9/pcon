@@ -233,13 +233,13 @@ if (!class_exists("Command")) {
          *  - Can be confusing during development - turn on verbose mode to throw the original
          *     Exception as well for easier debugging.
          *
-         * @param Exception $e      The exception object.
+         * @param mixed $e      The exception object.
          * @param string    $method The method being called.
          *
          * @return void
-         * @throws Exception Throws Exception $e that was passed if running in verbose mode.
+         * @throws mixed Throws $e that was passed if running in verbose mode.
          */
-        protected function _run_error(Exception $e, string $method)
+        protected function _run_error(mixed $e, string $method)
         {
             $class = get_class($e);
             $error = in_array($class, ['Exception', 'HJSONException'])

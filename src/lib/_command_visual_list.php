@@ -409,7 +409,7 @@ if (!class_exists("Command_Visual_List")) {
          *
          * @return The focused line's key.
          */
-        private function getFocusedKey()
+        public function getFocusedKey()
         {
             $list_keys = array_keys($this->list);
             return $list_keys[$this->focus];
@@ -420,7 +420,7 @@ if (!class_exists("Command_Visual_List")) {
          *
          * @return The focused line's value.
          */
-        private function getFocusedValue()
+        public function getFocusedValue()
         {
             $list_values = array_values($this->list);
             return $list_values[$this->focus];
