@@ -233,8 +233,8 @@ if (!class_exists("Command")) {
          *  - Can be confusing during development - turn on verbose mode to throw the original
          *     Exception as well for easier debugging.
          *
-         * @param mixed $e      The exception object.
-         * @param string    $method The method being called.
+         * @param mixed  $e      The exception object.
+         * @param string $method The method being called.
          *
          * @return void
          * @throws mixed Throws $e that was passed if running in verbose mode.

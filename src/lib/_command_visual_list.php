@@ -69,8 +69,6 @@ if (!class_exists("Command_Visual_List")) {
          *  - which should extend Console_Abstract.
          * @param array            $list      The list of data to be displayed.
          * @param array            $options   Array of options to initialize.
-         *
-         * @return void
          */
         public function __construct(Console_Abstract $main_tool, array $list, array $options = [])
         {

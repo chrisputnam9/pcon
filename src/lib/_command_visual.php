@@ -48,8 +48,6 @@ if (!class_exists("Command_Visual")) {
          * @param Console_Abstract $main_tool The instance of the main tool class
          *  - which should extend Console_Abstract.
          * @param array            $options   Array of options to initialize.
-         *
-         * @return void
          */
         public function __construct(Console_Abstract $main_tool, array $options = [])
         {
