@@ -4,7 +4,7 @@ clear
 
 cp -f pcon pcon-load.php
 
-rm -rf docs/* docs/.*
+rm -rf docs
 
 phpDocumentor -d . -t docs --setting=graphs.enabled=true
 

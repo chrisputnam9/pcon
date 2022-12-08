@@ -192,8 +192,8 @@ if (!class_exists("Command")) {
 
 
                     // Run an update check
+                    // auto:true, output:true
                     if ($this->updateCheck(true, true)) {
-// auto:true, output:true
                         if ($method != 'update') {
                             $this->sleep(3);
                         }

@@ -427,5 +427,5 @@ if (!class_exists("Command_Visual_List")) {
 
 }//end if
 
-// Note: leave this for packaging
+// Note: leave the end tag for packaging
 ?>

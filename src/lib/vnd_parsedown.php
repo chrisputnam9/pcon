@@ -12,5 +12,5 @@
  * @version   1.8.0-beta-7
  */
 
-// Note: leave this for packaging
+// Note: leave the end tag for packaging
 ?>

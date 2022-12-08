@@ -263,5 +263,5 @@ if (!class_exists("Command_Visual")) {
 
 }//end if
 
-// Note: leave this for packaging
+// Note: leave the end tag for packaging
 ?>

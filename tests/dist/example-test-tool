@@ -36,6 +36,8 @@ if (!class_exists("CONSOLE_COLORS")) {
          * Reference of foreground colors by name
          *
          * @var array
+         *
+         * @source 2 16 Foreground color options
          */
         public static $foreground = [
             'black' => '0;30',
@@ -60,6 +62,8 @@ if (!class_exists("CONSOLE_COLORS")) {
          * Reference of background colors by name
          *
          * @var array
+         *
+         * @source 2 8 Background color options
          */
         public static $background = [
             'black' => '40',
@@ -77,6 +81,8 @@ if (!class_exists("CONSOLE_COLORS")) {
          * Reference of other console formatting / decoration by name
          *
          * @var array
+         *
+         * @source 2 5 Other decoration options
          */
         public static $other = [
             'bold' => '1',
@@ -336,13 +342,13 @@ if (!class_exists("Command")) {
          *  - Can be confusing during development - turn on verbose mode to throw the original
          *     Exception as well for easier debugging.
          *
-         * @param Exception $e      The exception object.
-         * @param string    $method The method being called.
+         * @param mixed  $e      The exception object.
+         * @param string $method The method being called.
          *
          * @return void
-         * @throws Exception Throws Exception $e that was passed if running in verbose mode.
+         * @throws mixed Throws $e that was passed if running in verbose mode.
          */
-        protected function _run_error(Exception $e, string $method)
+        protected function _run_error(mixed $e, string $method)
         {
             $class = get_class($e);
             $error = in_array($class, ['Exception', 'HJSONException'])
@@ -811,8 +817,6 @@ if (!class_exists("Command_Visual")) {
          * @param Console_Abstract $main_tool The instance of the main tool class
          *  - which should extend Console_Abstract.
          * @param array            $options   Array of options to initialize.
-         *
-         * @return void
          */
         public function __construct(Console_Abstract $main_tool, array $options = [])
         {
@@ -943,7 +947,7 @@ if (!class_exists("Command_Visual")) {
                         return true;
                     }//end if
 
-                    $continue_loop = call_user_func($command_callable);
+                    $continue_loop = call_user_func($command_callable, $this);
 
                     // Reload if set
                     if (!empty($command_details['reload'])) {
@@ -1028,7 +1032,7 @@ if (!class_exists("Command_Visual")) {
 
 }//end if
 
-// Note: leave this for packaging
+// Note: leave the end tag for packaging
 ?>
 <?php
 /**
@@ -1101,8 +1105,6 @@ if (!class_exists("Command_Visual_List")) {
          *  - which should extend Console_Abstract.
          * @param array            $list      The list of data to be displayed.
          * @param array            $options   Array of options to initialize.
-         *
-         * @return void
          */
         public function __construct(Console_Abstract $main_tool, array $list, array $options = [])
         {
@@ -1441,7 +1443,7 @@ if (!class_exists("Command_Visual_List")) {
          *
          * @return The focused line's key.
          */
-        private function getFocusedKey()
+        public function getFocusedKey()
         {
             $list_keys = array_keys($this->list);
             return $list_keys[$this->focus];
@@ -1452,7 +1454,7 @@ if (!class_exists("Command_Visual_List")) {
          *
          * @return The focused line's value.
          */
-        private function getFocusedValue()
+        public function getFocusedValue()
         {
             $list_values = array_values($this->list);
             return $list_values[$this->focus];
@@ -1461,7 +1463,7 @@ if (!class_exists("Command_Visual_List")) {
 
 }//end if
 
-// Note: leave this for packaging
+// Note: leave the end tag for packaging
 ?>
 <?php
 /**
@@ -1477,7 +1479,7 @@ if (!class_exists("Command_Visual_List")) {
  * @version   2.1.0
  */
 
-// Note: leave this for packaging
+// Note: leave the end tag for packaging
 ?>
 <?php
 /**
@@ -2528,7 +2530,8 @@ if (!class_exists("HJSONUtils"))
     }
 }
 
-// Note: leave this for packaging ?>
+// Note: leave the end tag for packaging
+?>
 <?php
 /**
  * Parsedown Vendor Dependency
@@ -2543,7 +2546,7 @@ if (!class_exists("HJSONUtils"))
  * @version   1.8.0-beta-7
  */
 
-// Note: leave this for packaging
+// Note: leave the end tag for packaging
 ?>
 <?php
 /**
@@ -4393,7 +4396,8 @@ if (!class_exists("Parsedown")) {
     }
 }
 
-// Note: leave this for packaging ?>
+// Note: leave the end tag for packaging
+?>
 <?php
 /**
  * Primary logic entry point file
@@ -6659,7 +6663,7 @@ if (! class_exists("Console_Abstract")) {
          * @param string  $url            The URL to hit.
          * @param boolean $fresh_no_cache Whether to force this to be a fresh request / disable caching.
          *
-         * @uses $this->ssl_check to determine if curl should verify peer/host SSLs. Warns if not verifying.
+         * @uses Console_Abstract::ssl_check to determine if curl should verify peer/host SSLs. Warns if not verifying.
          *
          * @return CurlHandle The initialized curl handle.
          */
@@ -7503,9 +7507,18 @@ if (! empty($src_includes) and is_array($src_includes)) {
  */
 class Example_Test_Tool extends Console_Abstract
 {
+    /**
+     * Current tool version
+     *
+     * @var string
+     */
     public const VERSION = "0.0.1";
 
-    // Name of script and directory to store config
+    /**
+     * Tool shortname - used as name of configurationd directory.
+     *
+     * @var string
+     */
     public const SHORTNAME = 'example-test-tool';
 
     /**
