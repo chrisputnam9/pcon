@@ -647,6 +647,7 @@ if (!class_exists("Command")) {
         {
             $callable = [$this->main_tool, $method];
             if (is_callable($callable)) {
+                $this->main_tool->log("Attempting to call $method on Console_Abstract instance");
                 return call_user_func_array($callable, $arguments);
             }
 
