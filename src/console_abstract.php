@@ -1695,6 +1695,13 @@ if (! class_exists("Console_Abstract")) {
         }//end sleep()
 
         /**
+        * TODO - remove when finalized
+        *
+        * @var boolean
+        */
+        public $livefilter = false;
+
+        /**
          * Get selection from list via CLI input
          *
          * @param array   $list       List of items to select from.
@@ -1713,8 +1720,10 @@ if (! class_exists("Console_Abstract")) {
         {
 
             // Not yet implemented - in progress
-            if ($livefilter) {
+            if ($livefilter or $this->livefilter) {
                 $this->clear();
+
+                // TODO Try: https://stackoverflow.com/questions/554760/php-standard-input
 
                 // NEED to figure out how to detect backspace & enter
                 // - maybe focus on how to do it in bash
