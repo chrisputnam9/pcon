@@ -1723,17 +1723,33 @@ if (! class_exists("Console_Abstract")) {
             if ($livefilter or $this->livefilter) {
                 $this->clear();
 
-                // TODO Try: https://stackoverflow.com/questions/554760/php-standard-input
-
                 // NEED to figure out how to detect backspace & enter
                 // - maybe focus on how to do it in bash
+                $entered = "";
                 while (true) {
-                    $char = $this->input("Enter char", null, false, 'single', 'single_hide');
-                    if ($char == 'q') {
-                        die;
-                    }
-                    var_dump($char);
-                    echo "\n";
+
+                    // TODO strpad
+                    echo "Type (QQ to quit, XX to clear): $entered";
+
+                    /*
+                    $input = fopen('php://stdin', 'r');
+                    $char = fgetc($input);
+                    if ($char == 'q') die;
+                    echo "\n[$char]";
+                     */
+
+                    $char = $this->input(false, null, false, 'single', 'single_hide');
+
+                    $entered = "$entered$char";
+
+                    if (strpos($entered, 'QQ') !== false) die;
+
+                    if (strpos($entered, 'XX') !== false) $entered = "";
+
+                    // Set cursor to first column
+                    echo chr(27) . "[0G";
+                    // Set cursor up 2 lines
+                    echo chr(27) . "[2A";
                 }
             }
 
@@ -2106,16 +2122,15 @@ if (! class_exists("Console_Abstract")) {
                 $this->config_to_save['__WSC__']['c'][" "] = "\n    /**\n     * " . $this->version(false) . " configuration\n     */\n";
                 foreach ($this->config_to_save as $key => $value) {
                     if ($key != '__WSC__') {
+                        $value = '';
                         $help = $this->_help_var($key, 'option');
-                        if (empty($help)) {
-                            continue;
+                        if (!empty($help)) {
+                            $help = $this->_help_param($help);
+                            $type = $help[1];
+                            $info = $help[0];
+
+                            $value = " // ($type) $info";
                         }
-
-                        $help = $this->_help_param($help);
-                        $type = $help[1];
-                        $info = $help[0];
-
-                        $value = " // ($type) $info";
                     }
 
                     $this->config_to_save['__WSC__']['c'][$key] = $value;
