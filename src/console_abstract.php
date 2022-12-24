@@ -1721,35 +1721,52 @@ if (! class_exists("Console_Abstract")) {
 
             // Not yet implemented - in progress
             if ($livefilter or $this->livefilter) {
-                $this->clear();
+
+                echo "Testing Live filtering\n";
+                echo " - Here we go!\n";
 
                 // NEED to figure out how to detect backspace & enter
                 // - maybe focus on how to do it in bash
-                $entered = "";
+                $entry = "";
                 while (true) {
 
-                    // TODO strpad
-                    echo "Type (QQ to quit, XX to clear): $entered";
+                    $list = array_values($list);
+                    $filtered_items = [];
+                    foreach ($list as $i => $item) {
+                        if (empty($entry) || stripos($item, $entry) !== false) {
+                            $filtered_items[$i] = $item;
+                        }
+                    }
 
-                    /*
-                    $input = fopen('php://stdin', 'r');
-                    $char = fgetc($input);
-                    if ($char == 'q') die;
-                    echo "\n[$char]";
-                     */
+                    // Display the list with indexes
+                    foreach ($filtered_items as $i => $item) {
+                        $this->output("$i. $item");
+                    }
+                    $displayed_list_length = count($filtered_items);
+
+                    // TODO strpad
+                    echo " -------------------------------------------------------- \n";
+                    echo "| Q to quit, H to backspace, X to clear, G/E to Go/Enter |\n";
+                    echo " -------------------------------------------------------- \n";
+                    echo str_pad("> $entry", $this->getTerminalWidth());
 
                     $char = $this->input(false, null, false, 'single', 'single_hide');
 
-                    $entered = "$entered$char";
+                    // For some reason, space comes through as a new line
+                    if ($char === "\n") $char = " ";
 
-                    if (strpos($entered, 'QQ') !== false) die;
-
-                    if (strpos($entered, 'XX') !== false) $entered = "";
+                    if ($char === 'Q') die;
+                    elseif ($char === 'X') $entry = "";
+                    elseif ($char === 'H') $entry = substr($entry, 0, -1);
+                    elseif (preg_match('/[a-z0-9 _\-+=,.\\|\/?`~]/', $char)) {
+                        $entry = "$entry$char";
+                    }
 
                     // Set cursor to first column
                     echo chr(27) . "[0G";
-                    // Set cursor up 2 lines
-                    echo chr(27) . "[2A";
+                    // Set cursor up to starting line
+                    $up = $displayed_list_length + 4;
+                    echo chr(27) . "[${up}A";
                 }
             }
 
@@ -1913,7 +1930,11 @@ if (! class_exists("Console_Abstract")) {
                     $handle = $this->getCliInputHandle();
                     $line   = fgets($handle);
                 }
-                $line = trim($line);
+
+                // Trim long strings - not single chars
+                if (strlen($line) > 1) {
+                    $line = trim($line);
+                }
 
                 // Entered input - return
                 if ($line !== "") {
