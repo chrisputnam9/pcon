@@ -1721,7 +1721,6 @@ if (! class_exists("Console_Abstract")) {
 
             // Not yet implemented - in progress
             if ($livefilter or $this->livefilter) {
-
                 echo "Testing Live filtering\n";
                 echo " - Here we go!\n";
 
@@ -1729,11 +1728,20 @@ if (! class_exists("Console_Abstract")) {
                 // - maybe focus on how to do it in bash
                 $entry = "";
                 while (true) {
+                    $this->clear();
+                    $this->output("Type to filter options");
+                    $this->hr();
 
                     $list = array_values($list);
                     $filtered_items = [];
                     foreach ($list as $i => $item) {
-                        if (empty($entry) || stripos($item, $entry) !== false) {
+                        $item_simple = preg_replace('/[^a-z0-9]+/i', '', $item);
+                        if (
+                            $entry === ""
+                            || stripos($item, $entry) !== false
+                            || stripos($item_simple, $entry) !== false
+                            || is_numeric($entry) && stripos($i, $entry) !== false
+                        ) {
                             $filtered_items[$i] = $item;
                         }
                     }
@@ -1742,12 +1750,12 @@ if (! class_exists("Console_Abstract")) {
                     foreach ($filtered_items as $i => $item) {
                         $this->output("$i. $item");
                     }
-                    $displayed_list_length = count($filtered_items);
+                    // $displayed_list_length = count($filtered_items);
 
                     // TODO strpad
-                    echo " -------------------------------------------------------- \n";
-                    echo "| Q to quit, H to backspace, X to clear, G/E to Go/Enter |\n";
-                    echo " -------------------------------------------------------- \n";
+                    $this->hr();
+                    $this->output("Q to quit, H to backspace, X to clear, G/E/M to Go/Enter");
+                    $this->hr();
                     echo str_pad("> $entry", $this->getTerminalWidth());
 
                     $char = $this->input(false, null, false, 'single', 'single_hide');
@@ -1758,15 +1766,16 @@ if (! class_exists("Console_Abstract")) {
                     if ($char === 'Q') die;
                     elseif ($char === 'X') $entry = "";
                     elseif ($char === 'H') $entry = substr($entry, 0, -1);
-                    elseif (preg_match('/[a-z0-9 _\-+=,.\\|\/?`~]/', $char)) {
+                    elseif ($char === "") $entry = substr($entry, 0, -1);
+                    elseif (!preg_match('/[A-Z]/', $char)) {
                         $entry = "$entry$char";
                     }
 
                     // Set cursor to first column
-                    echo chr(27) . "[0G";
+                    // echo chr(27) . "[0G";
                     // Set cursor up to starting line
-                    $up = $displayed_list_length + 4;
-                    echo chr(27) . "[${up}A";
+                    // $up = $displayed_list_length + 4;
+                    // echo chr(27) . "[${up}A";
                 }
             }
 
