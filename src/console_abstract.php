@@ -148,6 +148,7 @@ if (! class_exists("Console_Abstract")) {
             'editor_exec',
             'editor_modify_exec',
             'install_path',
+            'livefilter',
             'step',
             'timezone',
             'update_auto',
@@ -228,7 +229,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @var string
          */
-        protected $browser_exec   = 'nohup google-chrome "%s" >/dev/null 2>&1 &';
+        protected $browser_exec = 'nohup google-chrome "%s" >/dev/null 2>&1 &';
 
         /**
          * Help info for $cache_lifetime
@@ -247,7 +248,7 @@ if (! class_exists("Console_Abstract")) {
          * @var integer
          * @api
          */
-        public $cache_lifetime      = 86400;
+        public $cache_lifetime = 86400;
 
         /**
          * Help info for $editor_exec
@@ -266,7 +267,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @var string
          */
-        protected $editor_exec   = '/usr/bin/vim -c "startinsert" "%s" > `tty`';
+        protected $editor_exec = '/usr/bin/vim -c "startinsert" "%s" > `tty`';
 
         /**
          * Help info for $editor_modify_exec
@@ -286,7 +287,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @var string
          */
-        protected $editor_modify_exec   = '/usr/bin/vim "%s" > `tty`';
+        protected $editor_modify_exec = '/usr/bin/vim "%s" > `tty`';
 
         /**
          * Help info for $install_path
@@ -303,7 +304,23 @@ if (! class_exists("Console_Abstract")) {
          * @var string
          * @api
          */
-        public $install_path      = DS . "usr" . DS . "local" . DS . "bin";
+        public $install_path = DS . "usr" . DS . "local" . DS . "bin";
+
+        /**
+         * Help info for $livefilter
+         *
+         * @var mixed
+         *
+         * @internal
+         */
+        protected $__livefilter = ["Status of livefilter for select interface - autoenter, enabled, or disabled", "string"];
+
+        /**
+         * Status of livefilter for select interface - autoenter, enabled, or disabled
+         *
+         * @var string
+         */
+        public $livefilter = 'disabled';
 
         /**
          * Help info for $ssl_check
@@ -1695,13 +1712,6 @@ if (! class_exists("Console_Abstract")) {
         }//end sleep()
 
         /**
-        * TODO - remove when finalized
-        *
-        * @var boolean
-        */
-        public $livefilter = false;
-
-        /**
          * Get selection from list via CLI input
          *
          * @param array   $list       List of items to select from.
@@ -1711,25 +1721,26 @@ if (! class_exists("Console_Abstract")) {
          * @param array   $preselects Pre-selected values - eg. could have been passed in as arguments to CLI.
          *                            Passed by reference so they can be passed through a chain of selections and/or narrowed-down lists.
          *                            Defaults to empty array - no preselections.
-         * @param boolean $livefilter Whether to filter the list while typing - NOT YET IMPLEMENTED.
-         *                            Defaults to true.
+         * @param string  $livefilter Whether to filter the list while typing - falls back to configuration if not set.
          *
          * @return string The value of the item in the list that was selected.
          */
-        public function select(array $list, mixed $message = false, int $default = 0, bool $q_to_quit = true, array &$preselects = [], bool $livefilter = false): string
+        public function select(array $list, mixed $message = false, int $default = 0, bool $q_to_quit = true, array &$preselects = [], string $livefilter = ""): string
         {
 
             // Not yet implemented - in progress
-            if ($livefilter or $this->livefilter) {
-                echo "Testing Live filtering\n";
-                echo " - Here we go!\n";
-
-                // NEED to figure out how to detect backspace & enter
-                // - maybe focus on how to do it in bash
+            $livefilter = $livefilter ? $livefilter : $this->livefilter;
+            if ($livefilter !== "disabled" && $livefilter !== false) {
                 $entry = "";
+                $error = "";
+
                 while (true) {
                     $this->clear();
                     $this->output("Type to filter options");
+                    $this->output(" - Q to quit");
+                    $this->output(" - H to backspace");
+                    $this->output(" - X to clear");
+                    $this->output(" - G/E/M to Go/Enter - selecting top/bolded option");
                     $this->hr();
 
                     $list = array_values($list);
@@ -1746,29 +1757,44 @@ if (! class_exists("Console_Abstract")) {
                         }
                     }
 
+                    if (empty($filtered_items)) {
+                        $error .= " [NO MATCHES]";
+                    }
+
+                    // Auto-enter once filtered down to one option
+                    if ($livefilter === 'autoenter' && count($filtered_items) === 1) {
+                        break;
+                    }
+
                     // Display the list with indexes
                     foreach ($filtered_items as $i => $item) {
                         $this->output("$i. $item");
                     }
                     // $displayed_list_length = count($filtered_items);
-
                     // TODO strpad
                     $this->hr();
-                    $this->output("Q to quit, H to backspace, X to clear, G/E/M to Go/Enter");
-                    $this->hr();
-                    echo str_pad("> $entry", $this->getTerminalWidth());
+                    echo str_pad("> $entry $error", $this->getTerminalWidth());
+                    $error = "";
 
                     $char = $this->input(false, null, false, 'single', 'single_hide');
 
                     // For some reason, space comes through as a new line
-                    if ($char === "\n") $char = " ";
+                    if ($char === "\n") {
+                        $char = " ";
+                    }
 
-                    if ($char === 'Q') die;
-                    elseif ($char === 'X') $entry = "";
-                    elseif ($char === 'H') $entry = substr($entry, 0, -1);
-                    elseif ($char === "") $entry = substr($entry, 0, -1);
-                    elseif (!preg_match('/[A-Z]/', $char)) {
+                    if ($char === 'Q') {
+                        die;
+                    } elseif ($char === 'X') {
+                        $entry = "";
+                    } elseif (in_array($char, ['H', ""])) {
+                        $entry = substr($entry, 0, -1);
+                    } elseif (in_array($char, ['G', "E", "M", ""])) {
+                        break;
+                    } elseif (!preg_match('/[A-Z]/', $char)) {
                         $entry = "$entry$char";
+                    } else {
+                        $error .= " [INVALID KEY]";
                     }
 
                     // Set cursor to first column
@@ -1776,8 +1802,15 @@ if (! class_exists("Console_Abstract")) {
                     // Set cursor up to starting line
                     // $up = $displayed_list_length + 4;
                     // echo chr(27) . "[${up}A";
+                }//end while
+
+                $this->clear();
+                foreach ($filtered_items as $s => $selected) {
+                    break;
                 }
-            }
+                echo "Selected: $s. $selected";
+                die;
+            }//end if
 
             // Display the list with indexes
             $list = array_values($list);
@@ -1940,10 +1973,8 @@ if (! class_exists("Console_Abstract")) {
                     $line   = fgets($handle);
                 }
 
-                // Trim long strings - not single chars
-                if (strlen($line) > 1) {
-                    $line = trim($line);
-                }
+                // TODO might need an arg for this...
+                $line = trim($line);
 
                 // Entered input - return
                 if ($line !== "") {
