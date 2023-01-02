@@ -1521,7 +1521,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return string The colorized / decorated string, ready for output to console.
          */
-        public function colorize(string $string, mixed $foreground = null, mixed $background = null, mixed $other = [])
+        public function colorize(string $string, mixed $foreground = null, mixed $background = null, mixed $other = []): string
         {
             if (empty($foreground) and empty($background) and empty($other)) {
                 return $string;
@@ -1734,6 +1734,13 @@ if (! class_exists("Console_Abstract")) {
                 $entry = "";
                 $error = "";
 
+                /*
+                $list = [];
+                for ($i = 0; $i < 100; $i++) {
+                    $list[] = "Item $i";
+                }
+                 */
+
                 while (true) {
                     $this->clear();
                     $this->output("Type to filter options");
@@ -1766,12 +1773,14 @@ if (! class_exists("Console_Abstract")) {
                         break;
                     }
 
-                    // Display the list with indexes
+                    // Display the list with indexes, with the top/default highlighted
+                    $color = 'green';
+                    $bold = 'bold';
                     foreach ($filtered_items as $i => $item) {
-                        $this->output("$i. $item");
+                        $this->output($this->colorize("$i. $item", $color, null, $bold));
+                        $color = null;
+                        $bold = null;
                     }
-                    // $displayed_list_length = count($filtered_items);
-                    // TODO strpad
                     $this->hr();
                     echo str_pad("> $entry $error", $this->getTerminalWidth());
                     $error = "";
@@ -1789,7 +1798,7 @@ if (! class_exists("Console_Abstract")) {
                         $entry = "";
                     } elseif (in_array($char, ['H', ""])) {
                         $entry = substr($entry, 0, -1);
-                    } elseif (in_array($char, ['G', "E", "M", ""])) {
+                    } elseif (in_array($char, ['G', "E", "M", "", "\n"])) {
                         break;
                     } elseif (!preg_match('/[A-Z]/', $char)) {
                         $entry = "$entry$char";
@@ -1935,10 +1944,11 @@ if (! class_exists("Console_Abstract")) {
          * @param mixed  $required    Whether input is required before continuing. Defaults to false.
          * @param mixed  $single      Whether to prompt for a single character from the user - eg. they don't have to hit enter. Defaults to false.
          * @param mixed  $single_hide Whether to hide the user's input when prompting for a single character. Defaults to false.
+         * @param mixed  $trim        Whether to trim the user's input before returning. Defaults to true.
          *
          * @return string The text input from the user.
          */
-        public function input(mixed $message = false, string $default = null, mixed $required = false, mixed $single = false, mixed $single_hide = false): string
+        public function input(mixed $message = false, string $default = null, mixed $required = false, mixed $single = false, mixed $single_hide = false, mixed $trim = true): string
         {
             if ($message) {
                 if ($message === true) {
@@ -1973,8 +1983,9 @@ if (! class_exists("Console_Abstract")) {
                     $line   = fgets($handle);
                 }
 
-                // TODO might need an arg for this...
-                $line = trim($line);
+                if ($trim) {
+                    $line = trim($line);
+                }
 
                 // Entered input - return
                 if ($line !== "") {
