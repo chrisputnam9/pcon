@@ -1734,12 +1734,16 @@ if (! class_exists("Console_Abstract")) {
                 $entry = "";
                 $error = "";
 
-                /*
                 $list = [];
-                for ($i = 0; $i < 100; $i++) {
+                for ($i = 0; $i < 22; $i++) {
                     $list[] = "Item $i";
                 }
-                 */
+
+                $list_height = ($this->getTerminalHeight() / 2) - 8;
+                $list_count = count($list);
+                if ($list_count < $list_height) {
+                    $list_height = $list_count;
+                }
 
                 while (true) {
                     $this->clear();
@@ -1751,6 +1755,7 @@ if (! class_exists("Console_Abstract")) {
                     $this->hr();
 
                     $list = array_values($list);
+
                     $filtered_items = [];
                     foreach ($list as $i => $item) {
                         $item_simple = preg_replace('/[^a-z0-9]+/i', '', $item);
@@ -1776,10 +1781,25 @@ if (! class_exists("Console_Abstract")) {
                     // Display the list with indexes, with the top/default highlighted
                     $color = 'green';
                     $bold = 'bold';
+                    $output_lines = 0;
                     foreach ($filtered_items as $i => $item) {
+                        // If there are too many items and we are at height limit, cut off
+                        if (
+                            $output_lines >= ($list_height - 1)
+                            && count($filtered_items) > $list_height
+                        ) {
+                            $output_lines++;
+                            $this->output('... [MORE BELOW IN LIST - TYPE TO FILTER] ...');
+                            break;
+                        }
+
                         $this->output($this->colorize("$i. $item", $color, null, $bold));
+                        $output_lines++;
                         $color = null;
                         $bold = null;
+                    }
+                    for (; $output_lines < $list_height; $output_lines++) {
+                        $this->br();
                     }
                     $this->hr();
                     echo str_pad("> $entry $error", $this->getTerminalWidth());
@@ -1805,12 +1825,6 @@ if (! class_exists("Console_Abstract")) {
                     } else {
                         $error .= " [INVALID KEY]";
                     }
-
-                    // Set cursor to first column
-                    // echo chr(27) . "[0G";
-                    // Set cursor up to starting line
-                    // $up = $displayed_list_length + 4;
-                    // echo chr(27) . "[${up}A";
                 }//end while
 
                 $this->clear();
