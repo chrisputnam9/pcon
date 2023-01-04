@@ -320,7 +320,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @var string
          */
-        public $livefilter = 'disabled';
+        public $livefilter = 'autoenter';
 
         /**
          * Help info for $ssl_check
@@ -1734,11 +1734,6 @@ if (! class_exists("Console_Abstract")) {
                 $entry = "";
                 $error = "";
 
-                $list = [];
-                for ($i = 0; $i < 22; $i++) {
-                    $list[] = "Item $i";
-                }
-
                 $list_height = ($this->getTerminalHeight() / 2) - 8;
                 $list_count = count($list);
                 if ($list_count < $list_height) {
@@ -1776,6 +1771,18 @@ if (! class_exists("Console_Abstract")) {
                     // Auto-enter once filtered down to one option
                     if ($livefilter === 'autoenter' && count($filtered_items) === 1) {
                         break;
+                        /*
+                        $this->clear();
+                        foreach ($filtered_items as $s => $selected) {
+                            $selected_display = $this->colorize($selected, 'green', null, 'bold');
+                            if ($this->confirm("Confirm selection: $selected_display", 'y', false, 'single', 'single_hide')) {
+                                return $selected;
+                            } else {
+                                $entry = "";
+                                continue(2);
+                            }
+                        }
+                         */
                     }
 
                     // Display the list with indexes, with the top/default highlighted
@@ -1813,7 +1820,8 @@ if (! class_exists("Console_Abstract")) {
                     }
 
                     if ($char === 'Q') {
-                        die;
+                        $this->warn('Selection Canceled');
+                        exit;
                     } elseif ($char === 'X') {
                         $entry = "";
                     } elseif (in_array($char, ['H', ""])) {
@@ -1829,10 +1837,9 @@ if (! class_exists("Console_Abstract")) {
 
                 $this->clear();
                 foreach ($filtered_items as $s => $selected) {
-                    break;
+                    // Return the top item in the filtered list
+                    return $selected;
                 }
-                echo "Selected: $s. $selected";
-                die;
             }//end if
 
             // Display the list with indexes
