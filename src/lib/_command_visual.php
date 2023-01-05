@@ -178,7 +178,7 @@ if (!class_exists("Command_Visual")) {
                         return true;
                     }//end if
 
-                    $continue_loop = call_user_func($command_callable, $this);
+                    $continue_loop = call_user_func($command_callable);
 
                     // Reload if set
                     if (!empty($command_details['reload'])) {

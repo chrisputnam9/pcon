@@ -318,9 +318,9 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Status of livefilter for select interface - autoenter, enabled, or disabled
          *
-         * @var string
+         * @var mixed
          */
-        public $livefilter = 'autoenter';
+        public $livefilter = 'disabled';
 
         /**
          * Help info for $ssl_check
@@ -1721,15 +1721,16 @@ if (! class_exists("Console_Abstract")) {
          * @param array   $preselects Pre-selected values - eg. could have been passed in as arguments to CLI.
          *                            Passed by reference so they can be passed through a chain of selections and/or narrowed-down lists.
          *                            Defaults to empty array - no preselections.
-         * @param string  $livefilter Whether to filter the list while typing - falls back to configuration if not set.
+         * @param mixed   $livefilter Whether to filter the list while typing - falls back to configuration if not set.
          *
          * @return string The value of the item in the list that was selected.
          */
-        public function select(array $list, mixed $message = false, int $default = 0, bool $q_to_quit = true, array &$preselects = [], string $livefilter = ""): string
+        public function select(array $list, mixed $message = false, int $default = 0, bool $q_to_quit = true, array &$preselects = [], mixed $livefilter = null): string
         {
-
-            // Not yet implemented - in progress
-            $livefilter = $livefilter ? $livefilter : $this->livefilter;
+            // Fall back to configuration if not specified
+            if (is_null($livefilter)) {
+                $livefilter = $this->livefilter;
+            }
             if ($livefilter !== "disabled" && $livefilter !== false) {
                 $entry = "";
                 $error = "";
@@ -1743,7 +1744,9 @@ if (! class_exists("Console_Abstract")) {
                 while (true) {
                     $this->clear();
                     $this->output("Type to filter options");
-                    $this->output(" - Q to quit");
+                    if ($q_to_quit) {
+                        $this->output(" - Q to quit");
+                    }
                     $this->output(" - H to backspace");
                     $this->output(" - X to clear");
                     $this->output(" - G/E/M to Go/Enter - selecting top/bolded option");
@@ -1771,18 +1774,6 @@ if (! class_exists("Console_Abstract")) {
                     // Auto-enter once filtered down to one option
                     if ($livefilter === 'autoenter' && count($filtered_items) === 1) {
                         break;
-                        /*
-                        $this->clear();
-                        foreach ($filtered_items as $s => $selected) {
-                            $selected_display = $this->colorize($selected, 'green', null, 'bold');
-                            if ($this->confirm("Confirm selection: $selected_display", 'y', false, 'single', 'single_hide')) {
-                                return $selected;
-                            } else {
-                                $entry = "";
-                                continue(2);
-                            }
-                        }
-                         */
                     }
 
                     // Display the list with indexes, with the top/default highlighted
@@ -1819,8 +1810,8 @@ if (! class_exists("Console_Abstract")) {
                         $char = " ";
                     }
 
-                    if ($char === 'Q') {
-                        $this->warn('Selection Canceled');
+                    if ($char === 'Q' && $q_to_quit) {
+                        $this->warn('Selection Exited');
                         exit;
                     } elseif ($char === 'X') {
                         $entry = "";
@@ -1875,7 +1866,7 @@ if (! class_exists("Console_Abstract")) {
 
                 // Maybe process q - Quit option
                 if ($q_to_quit and (strtolower(trim($entry)) == 'q')) {
-                    $this->warn('Selection Canceled');
+                    $this->warn('Selection Exited');
                     exit;
                 }
 
