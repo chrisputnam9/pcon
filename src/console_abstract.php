@@ -1735,6 +1735,18 @@ if (! class_exists("Console_Abstract")) {
                 $entry = "";
                 $error = "";
 
+                if ($message) {
+                    if ($message === true) {
+                        $message = "";
+                    }
+
+                    if (! is_null($default)) {
+                        $message .= " ($default)";
+                    }
+                    $message .= ": ";
+                    $message = $this->colorize($message, null, null, 'bold');
+                }
+
                 $list_height = ($this->getTerminalHeight() / 2) - 8;
                 $list_count = count($list);
                 if ($list_count < $list_height) {
@@ -1742,6 +1754,32 @@ if (! class_exists("Console_Abstract")) {
                 }
 
                 while (true) {
+                    $list = array_values($list);
+
+                    $filtered_items = [];
+                    foreach ($list as $i => $item) {
+                        $item_simple = preg_replace('/[^a-z0-9]+/i', '', $item);
+                        $entry_simple = preg_replace('/[^a-z0-9]+/i', '', $entry);
+                        if (
+                            $entry === ""
+                            || stripos($item, $entry) !== false
+                            || stripos($item_simple, $entry_simple) !== false
+                            || is_numeric($entry) && stripos($i, $entry) !== false
+                        ) {
+                            $filtered_items[$i] = $item;
+                        }
+                    }
+
+                    if (empty($filtered_items)) {
+                        $error .= " [NO MATCHES - press X to clear/reset]";
+                    }
+
+                    // Auto-enter once filtered down to one option
+                    if ($livefilter === 'autoenter' && count($filtered_items) === 1) {
+                        break;
+                    }
+
+                    // Display help info & prompt
                     $this->clear();
                     $this->output("Type to filter options");
                     if ($q_to_quit) {
@@ -1751,29 +1789,8 @@ if (! class_exists("Console_Abstract")) {
                     $this->output(" - X to clear");
                     $this->output(" - G/E/M to Go/Enter - selecting top/bolded option");
                     $this->hr();
-
-                    $list = array_values($list);
-
-                    $filtered_items = [];
-                    foreach ($list as $i => $item) {
-                        $item_simple = preg_replace('/[^a-z0-9]+/i', '', $item);
-                        if (
-                            $entry === ""
-                            || stripos($item, $entry) !== false
-                            || stripos($item_simple, $entry) !== false
-                            || is_numeric($entry) && stripos($i, $entry) !== false
-                        ) {
-                            $filtered_items[$i] = $item;
-                        }
-                    }
-
-                    if (empty($filtered_items)) {
-                        $error .= " [NO MATCHES]";
-                    }
-
-                    // Auto-enter once filtered down to one option
-                    if ($livefilter === 'autoenter' && count($filtered_items) === 1) {
-                        break;
+                    if ($message) {
+                        $this->output($message);
                     }
 
                     // Display the list with indexes, with the top/default highlighted
@@ -1822,7 +1839,7 @@ if (! class_exists("Console_Abstract")) {
                     } elseif (!preg_match('/[A-Z]/', $char)) {
                         $entry = "$entry$char";
                     } else {
-                        $error .= " [INVALID KEY]";
+                        $error .= " [INVALID KEY - lowercase only]";
                     }
                 }//end while
 
@@ -1832,6 +1849,10 @@ if (! class_exists("Console_Abstract")) {
                     return $selected;
                 }
             }//end if
+
+            /*
+             * Otherwise, fall back to normal select, ie. not livefilter
+             */
 
             // Display the list with indexes
             $list = array_values($list);
