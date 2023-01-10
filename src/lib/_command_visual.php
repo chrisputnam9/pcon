@@ -66,7 +66,7 @@ if (!class_exists("Command_Visual")) {
                 'help' => [
                     'description' => 'Help - list available commands',
                     'keys' => '?',
-                    'callback' => [$this, 'help'],
+                    'callback' => [$this, 'visual_help'],
                 ],
                 'reload' => [
                     'description' => 'Reload - refresh this view',
@@ -178,7 +178,7 @@ if (!class_exists("Command_Visual")) {
                         return true;
                     }//end if
 
-                    $continue_loop = call_user_func($command_callable);
+                    $continue_loop = call_user_func($command_callable, $this);
 
                     // Reload if set
                     if (!empty($command_details['reload'])) {
@@ -213,12 +213,12 @@ if (!class_exists("Command_Visual")) {
          *
          *  - Lists all available commands to run in this area
          *
-         * @param string $specific A specific method or option to show detailed help for. NOT YET IMPLEMENTED - specified mainly to line up with parent method.
+         * @param Command $instance Instance of command class passed for reference.
          *
          * @api
          * @return void
          */
-        public function help(string $specific = "")
+        public function visual_help(Command $instance)
         {
             $this->clear();
             $this->hr();
@@ -231,7 +231,7 @@ if (!class_exists("Command_Visual")) {
             }
             $this->hr();
             $this->input("Hit any key to exit help", null, false, true);
-        }//end help()
+        }//end visual_help()
 
         /**
          * Exit the visual interface
@@ -239,10 +239,12 @@ if (!class_exists("Command_Visual")) {
          *  - Will return to previous area (eg. main prompt or exit tool perhaps)
          *  - Returns false statically to let the prompt loop know not to continue
          *
+         * @param Command $instance Instance of command class passed for reference.
+         *
          * @api
          * @return false
          */
-        public function quit()
+        public function quit(Command $instance)
         {
             return false;
         }//end quit()
@@ -252,10 +254,12 @@ if (!class_exists("Command_Visual")) {
          *
          *  - Calls the configured reload_function with optional reload_data if any
          *
+         * @param Command $instance Instance of command class passed for reference.
+         *
          * @api
          * @return mixed Result of reload function call - can vary based on context.
          */
-        public function reload()
+        public function reload(Command $instance)
         {
             return call_user_func($this->reload_function, $this->reload_data, $this);
         }//end reload()

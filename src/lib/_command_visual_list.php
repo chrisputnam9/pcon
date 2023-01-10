@@ -242,12 +242,14 @@ if (!class_exists("Command_Visual_List")) {
          *  - Calls parent reload method (see Command_Visual).
          *  - Resets the list to value returned by reeload method.
          *
+         * @param Command $instance Instance of command class passed for reference.
+         *
          * @api
          * @return void
          */
-        public function reload()
+        public function reload(Command $instance)
         {
-            $list = parent::reload();
+            $list = parent::reload($instance);
             $this->list_original = $list;
             $this->list = $list;
         }//end reload()
