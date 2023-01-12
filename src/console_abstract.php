@@ -313,10 +313,10 @@ if (! class_exists("Console_Abstract")) {
          *
          * @internal
          */
-        protected $__livefilter = ["Status of livefilter for select interface - autoenter, enabled, or disabled", "string"];
+        protected $__livefilter = ["Status of livefilter for select interface - false/disabled, true/enabled, or autoenter", "string"];
 
         /**
-         * Status of livefilter for select interface - autoenter, enabled, or disabled
+         * Status of livefilter for select interface - false/disabled, true/enabled, or autoenter
          *
          * @var mixed
          */
@@ -1820,11 +1820,18 @@ if (! class_exists("Console_Abstract")) {
                     echo str_pad("> $entry $error", $this->getTerminalWidth());
                     $error = "";
 
-                    $char = $this->input(false, null, false, 'single', 'single_hide');
+                    $char = $this->input(false, null, false, 'single', 'single_hide', false);
 
-                    // For some reason, space comes through as a new line
+                    // For some reason, both space & enter come through as a new line
                     if ($char === "\n") {
+                        // If there's only one item, treat this as Enter
+                        if (count($filtered_items) === 1) {
+                            break;
+                        }
+                        // Otherwise treat it as space
                         $char = " ";
+                    } else {
+                        $char = trim($char);
                     }
 
                     if ($char === 'Q' && $q_to_quit) {
@@ -1836,10 +1843,10 @@ if (! class_exists("Console_Abstract")) {
                         $entry = substr($entry, 0, -1);
                     } elseif (in_array($char, ['G', "E", "M", "", "\n"])) {
                         break;
-                    } elseif (!preg_match('/[A-Z]/', $char)) {
-                        $entry = "$entry$char";
-                    } else {
+                    } elseif (preg_match('/[A-Z]/', $char)) {
                         $error .= " [INVALID KEY - lowercase only]";
+                    } else {
+                        $entry = "$entry$char";
                     }
                 }//end while
 
