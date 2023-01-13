@@ -1747,7 +1747,7 @@ if (! class_exists("Console_Abstract")) {
                     $message = $this->colorize($message, null, null, 'bold');
                 }
 
-                $list_height = ($this->getTerminalHeight() / 2) - 8;
+                $list_height = ($this->getTerminalHeight() / 2) - 10;
                 $list_count = count($list);
                 if ($list_count < $list_height) {
                     $list_height = $list_count;
@@ -1756,6 +1756,7 @@ if (! class_exists("Console_Abstract")) {
                 while (true) {
                     $list = array_values($list);
 
+                    $single_filtered_item = false;
                     $filtered_items = [];
                     foreach ($list as $i => $item) {
                         $item_simple = preg_replace('/[^a-z0-9]+/i', '', $item);
@@ -1771,11 +1772,13 @@ if (! class_exists("Console_Abstract")) {
                     }
 
                     if (empty($filtered_items)) {
-                        $error .= " [NO MATCHES - press X to clear/reset]";
+                        $error .= "[NO MATCHES - press X to clear/reset]";
+                    } else if (count($filtered_items) === 1) {
+                        $single_filtered_item = true;
                     }
 
                     // Auto-enter once filtered down to one option
-                    if ($livefilter === 'autoenter' && count($filtered_items) === 1) {
+                    if ($livefilter === 'autoenter' && $single_filtered_item) {
                         break;
                     }
 
@@ -1794,7 +1797,7 @@ if (! class_exists("Console_Abstract")) {
                     }
 
                     // Display the list with indexes, with the top/default highlighted
-                    $color = 'green';
+                    $color = $single_filtered_item ? 'green' : null;
                     $bold = 'bold';
                     $output_lines = 0;
                     foreach ($filtered_items as $i => $item) {
@@ -1817,7 +1820,19 @@ if (! class_exists("Console_Abstract")) {
                         $this->br();
                     }
                     $this->hr();
-                    echo str_pad("> $entry $error", $this->getTerminalWidth());
+
+                    // Clear the line for the prompt
+                    echo str_pad(" ", $this->getTerminalWidth());
+                    // Set cursor to first column
+                    echo chr(27) . "[0G";
+                    // Output the prompt & entry so far
+                    $error = $this->colorize($error, 'red');
+                    $ready_for_enter = "";
+                    if ($single_filtered_item) {
+                        $ready_for_enter = $this->colorize("Press [Enter] or [Space] to procced with highlighted item", "blue");
+                    }
+                    echo "$error $ready_for_enter\n";
+                    echo "> $entry";
                     $error = "";
 
                     $char = $this->input(false, null, false, 'single', 'single_hide', false);
@@ -1825,7 +1840,7 @@ if (! class_exists("Console_Abstract")) {
                     // For some reason, both space & enter come through as a new line
                     if ($char === "\n") {
                         // If there's only one item, treat this as Enter
-                        if (count($filtered_items) === 1) {
+                        if ($single_filtered_item) {
                             break;
                         }
                         // Otherwise treat it as space
@@ -1844,7 +1859,7 @@ if (! class_exists("Console_Abstract")) {
                     } elseif (in_array($char, ['G', "E", "M", "", "\n"])) {
                         break;
                     } elseif (preg_match('/[A-Z]/', $char)) {
-                        $error .= " [INVALID KEY - lowercase only]";
+                        $error .= "[INVALID KEY - lowercase only]";
                     } else {
                         $entry = "$entry$char";
                     }
