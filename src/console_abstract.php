@@ -1773,7 +1773,7 @@ if (! class_exists("Console_Abstract")) {
 
                     if (empty($filtered_items)) {
                         $error .= "[NO MATCHES - press X to clear/reset]";
-                    } else if (count($filtered_items) === 1) {
+                    } elseif (count($filtered_items) === 1) {
                         $single_filtered_item = true;
                     }
 
@@ -1784,13 +1784,7 @@ if (! class_exists("Console_Abstract")) {
 
                     // Display help info & prompt
                     $this->clear();
-                    $this->output("Type to filter options");
-                    if ($q_to_quit) {
-                        $this->output(" - Q to quit");
-                    }
-                    $this->output(" - H to backspace");
-                    $this->output(" - X to clear");
-                    $this->output(" - G/E/M to Go/Enter - selecting top/bolded option");
+                    $this->output("Type [lowercase only] to filter options. Press ? for help.");
                     $this->hr();
                     if ($message) {
                         $this->output($message);
@@ -1839,8 +1833,8 @@ if (! class_exists("Console_Abstract")) {
 
                     // For some reason, both space & enter come through as a new line
                     if ($char === "\n") {
-                        // If there's only one item, treat this as Enter
-                        if ($single_filtered_item) {
+                        // If there's only one item, OR they hit it twice, treat this as Enter
+                        if ($single_filtered_item || $entry === " ") {
                             break;
                         }
                         // Otherwise treat it as space
@@ -1856,13 +1850,26 @@ if (! class_exists("Console_Abstract")) {
                         $entry = "";
                     } elseif (in_array($char, ['H', ""])) {
                         $entry = substr($entry, 0, -1);
-                    } elseif (in_array($char, ['G', "E", "M", "", "\n"])) {
+                    } elseif (in_array($char, ['G', "E", "M", ""])) {
                         break;
+                    } elseif (in_array($char, ["?"])) {
+                        $this->hr();
+                        $this->output("HELP:");
+                        if ($q_to_quit) {
+                            $this->output(" - Q ........................ Quit");
+                        }
+                        $this->output(" - H or [Backspace] ......... Backspace");
+                        $this->output(" - X ........................ Clear input");
+                        $this->output(" - G/E/M or [Enter] twice ... Select top/bolded option");
+                        $this->output(" - [Enter] once ............. Continue/select single remaining input");
+                        $this->output(" - ? ........................ Help");
+                        $this->hr();
+                        $this->input('[Press any key to continue]', null, false, 'single', 'single_hide');
                     } elseif (preg_match('/[A-Z]/', $char)) {
                         $error .= "[INVALID KEY - lowercase only]";
                     } else {
                         $entry = "$entry$char";
-                    }
+                    }//end if
                 }//end while
 
                 $this->clear();
