@@ -1805,11 +1805,16 @@ if (! class_exists("Console_Abstract")) {
                             break;
                         }
 
-                        $this->output($this->colorize("$i. $item", $color, null, $bold));
+                        $hint = "";
+                        if ($i === 0 && $entry === " ") {
+                            $hint = $this->colorize(" [Hit Enter Again to Select]", 'blue');
+                        }
+
+                        $this->output($this->colorize("$i. $item", $color, null, $bold) . $hint);
                         $output_lines++;
                         $color = null;
                         $bold = null;
-                    }
+                    }//end foreach
                     for (; $output_lines < $list_height; $output_lines++) {
                         $this->br();
                     }
