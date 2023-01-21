@@ -1753,6 +1753,7 @@ if (! class_exists("Console_Abstract")) {
                     $list_height = $list_count;
                 }
 
+                $show_help = false;
                 while (true) {
                     $list = array_values($list);
 
@@ -1784,7 +1785,17 @@ if (! class_exists("Console_Abstract")) {
 
                     // Display help info & prompt
                     $this->clear();
-                    $this->output("Type [lowercase only] to filter options. Press ? for help.");
+                    $this->output("Type [lowercase only] to filter options. Press ? to toggle help.");
+                    if ($show_help) {
+                        if ($q_to_quit) {
+                            $this->output(" - Q ........................ Quit");
+                        }
+                        $this->output(" - H or [Backspace] ......... Backspace");
+                        $this->output(" - X ........................ Clear input");
+                        $this->output(" - G/E/M or [Enter] twice ... Select top/bolded option");
+                        $this->output(" - [Enter] once ............. Continue/select single remaining input");
+                        $this->output(" - ? ........................ Toggle help");
+                    }
                     $this->hr();
                     if ($message) {
                         $this->output($message);
@@ -1858,18 +1869,7 @@ if (! class_exists("Console_Abstract")) {
                     } elseif (in_array($char, ['G', "E", "M", ""])) {
                         break;
                     } elseif (in_array($char, ["?"])) {
-                        $this->hr();
-                        $this->output("HELP:");
-                        if ($q_to_quit) {
-                            $this->output(" - Q ........................ Quit");
-                        }
-                        $this->output(" - H or [Backspace] ......... Backspace");
-                        $this->output(" - X ........................ Clear input");
-                        $this->output(" - G/E/M or [Enter] twice ... Select top/bolded option");
-                        $this->output(" - [Enter] once ............. Continue/select single remaining input");
-                        $this->output(" - ? ........................ Help");
-                        $this->hr();
-                        $this->input('[Press any key to continue]', null, false, 'single', 'single_hide');
+                        $show_help = ! $show_help;
                     } elseif (preg_match('/[A-Z]/', $char)) {
                         $error .= "[INVALID KEY - lowercase only]";
                     } else {
