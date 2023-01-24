@@ -1732,156 +1732,7 @@ if (! class_exists("Console_Abstract")) {
                 $livefilter = $this->livefilter;
             }
             if ($livefilter !== "disabled" && $livefilter !== false) {
-                $entry = "";
-                $error = "";
-
-                if ($message) {
-                    if ($message === true) {
-                        $message = "";
-                    }
-
-                    if (! is_null($default)) {
-                        $message .= " ($default)";
-                    }
-                    $message .= ": ";
-                    $message = $this->colorize($message, null, null, 'bold');
-                }
-
-                $list_height = ($this->getTerminalHeight() / 2) - 10;
-                $list_count = count($list);
-                if ($list_count < $list_height) {
-                    $list_height = $list_count;
-                }
-
-                $show_help = false;
-                while (true) {
-                    $list = array_values($list);
-
-                    $single_filtered_item = false;
-                    $filtered_items = [];
-                    foreach ($list as $i => $item) {
-                        $item_simple = preg_replace('/[^a-z0-9]+/i', '', $item);
-                        $entry_simple = preg_replace('/[^a-z0-9]+/i', '', $entry);
-                        if (
-                            $entry === ""
-                            || stripos($item, $entry) !== false
-                            || stripos($item_simple, $entry_simple) !== false
-                            || is_numeric($entry) && stripos($i, $entry) !== false
-                        ) {
-                            $filtered_items[$i] = $item;
-                        }
-                    }
-
-                    if (empty($filtered_items)) {
-                        $error .= "[NO MATCHES - press X to clear/reset]";
-                    } elseif (count($filtered_items) === 1) {
-                        $single_filtered_item = true;
-                    }
-
-                    // Auto-enter once filtered down to one option
-                    if ($livefilter === 'autoenter' && $single_filtered_item) {
-                        break;
-                    }
-
-                    // Display help info & prompt
-                    $this->clear();
-                    $this->output("Type [lowercase only] to filter options. Press ? to toggle help.");
-                    if ($show_help) {
-                        if ($q_to_quit) {
-                            $this->output(" - Q ........................ Quit");
-                        }
-                        $this->output(" - H or [Backspace] ......... Backspace");
-                        $this->output(" - X ........................ Clear input");
-                        $this->output(" - G/E/M or [Enter] twice ... Select top/bolded option");
-                        $this->output(" - [Enter] once ............. Continue/select single remaining input");
-                        $this->output(" - ? ........................ Toggle help");
-                    }
-                    $this->hr();
-                    if ($message) {
-                        $this->output($message);
-                    }
-
-                    // Display the list with indexes, with the top/default highlighted
-                    $color = $single_filtered_item ? 'green' : null;
-                    $bold = 'bold';
-                    $output_lines = 0;
-                    foreach ($filtered_items as $i => $item) {
-                        // If there are too many items and we are at height limit, cut off
-                        if (
-                            $output_lines >= ($list_height - 1)
-                            && count($filtered_items) > $list_height
-                        ) {
-                            $output_lines++;
-                            $this->output('... [MORE BELOW IN LIST - TYPE TO FILTER] ...');
-                            break;
-                        }
-
-                        $hint = "";
-                        if ($i === 0 && $entry === " ") {
-                            $hint = $this->colorize(" [Hit Enter Again to Select]", 'blue');
-                        }
-
-                        $this->output($this->colorize("$i. $item", $color, null, $bold) . $hint);
-                        $output_lines++;
-                        $color = null;
-                        $bold = null;
-                    }//end foreach
-                    for (; $output_lines < $list_height; $output_lines++) {
-                        $this->br();
-                    }
-                    $this->hr();
-
-                    // Clear the line for the prompt
-                    echo str_pad(" ", $this->getTerminalWidth());
-                    // Set cursor to first column
-                    echo chr(27) . "[0G";
-                    // Output the prompt & entry so far
-                    $error = $this->colorize($error, 'red');
-                    $ready_for_enter = "";
-                    if ($single_filtered_item) {
-                        $ready_for_enter = $this->colorize("Press [Enter] or [Space] to procced with highlighted item", "blue");
-                    }
-                    echo "$error $ready_for_enter\n";
-                    echo "> $entry";
-                    $error = "";
-
-                    $char = $this->input(false, null, false, 'single', 'single_hide', false);
-
-                    // For some reason, both space & enter come through as a new line
-                    if ($char === "\n") {
-                        // If there's only one item, OR they hit it twice, treat this as Enter
-                        if ($single_filtered_item || $entry === " ") {
-                            break;
-                        }
-                        // Otherwise treat it as space
-                        $char = " ";
-                    } else {
-                        $char = trim($char);
-                    }
-
-                    if ($char === 'Q' && $q_to_quit) {
-                        $this->warn('Selection Exited');
-                        exit;
-                    } elseif ($char === 'X') {
-                        $entry = "";
-                    } elseif (in_array($char, ['H', ""])) {
-                        $entry = substr($entry, 0, -1);
-                    } elseif (in_array($char, ['G', "E", "M", ""])) {
-                        break;
-                    } elseif (in_array($char, ["?"])) {
-                        $show_help = ! $show_help;
-                    } elseif (preg_match('/[A-Z]/', $char)) {
-                        $error .= "[INVALID KEY - lowercase only]";
-                    } else {
-                        $entry = "$entry$char";
-                    }//end if
-                }//end while
-
-                $this->clear();
-                foreach ($filtered_items as $s => $selected) {
-                    // Return the top item in the filtered list
-                    return $selected;
-                }
+                return $this->liveSelect($list, $message, $default, $q_to_quit, $preselects);
             }//end if
 
             /*
@@ -1956,6 +1807,203 @@ if (! class_exists("Console_Abstract")) {
 
             return $list[$index];
         }//end select()
+
+        /**
+         * Get selection from list via CLI input - using live filtering UX
+         *
+         * @param array   $list       List of items to select from.
+         * @param mixed   $message    Message to show, prompting input - defaults to false, no message.
+         * @param integer $default    Default selection index - defaults to 0 - first item.
+         * @param boolean $q_to_quit  Add a 'q' option to the list to quite - defaults to true.
+         * @param array   $preselects Pre-selected values - eg. could have been passed in as arguments to CLI.
+         *                            Passed by reference so they can be passed through a chain of selections and/or narrowed-down lists.
+         *                            Defaults to empty array - no preselections.
+         *
+         * @return string The value of the item in the list that was selected.
+         */
+        public function liveSelect(array $list, mixed $message = false, int $default = 0, bool $q_to_quit = true, array &$preselects = []): string
+        {
+            $preselected = false;
+            $entry = "";
+            $error = "";
+
+            // Get preselected entry if passed
+            if (!empty($preselects)) {
+                $preselected = true;
+                $entry = array_shift($preselects);
+            }
+
+            if ($message) {
+                if ($message === true) {
+                    $message = "";
+                }
+
+                if (! is_null($default)) {
+                    $message .= " ($default)";
+                }
+                $message .= ": ";
+                $message = $this->colorize($message, null, null, 'bold');
+            }
+
+            $list_height = ($this->getTerminalHeight() / 2) - 10;
+            $list_count = count($list);
+            if ($list_count < $list_height) {
+                $list_height = $list_count;
+            }
+
+            $show_help = false;
+            while (true) {
+                $list = array_values($list);
+
+                $single_filtered_item = false;
+                $filtered_items = [];
+                foreach ($list as $i => $item) {
+                    $item_simple = preg_replace('/[^a-z0-9]+/i', '', $item);
+                    $entry_simple = preg_replace('/[^a-z0-9]+/i', '', $entry);
+                    if (
+                        $entry === ""
+                        || stripos($item, $entry) !== false
+                        || stripos($item_simple, $entry_simple) !== false
+                        || is_numeric($entry) && stripos($i, $entry) !== false
+                    ) {
+                        $filtered_items[$i] = $item;
+                    }
+                }
+
+                if (empty($filtered_items)) {
+                    $error .= "[NO MATCHES - press X to clear/reset]";
+                } elseif (count($filtered_items) === 1) {
+                    $single_filtered_item = true;
+                }
+
+                // Auto-enter once filtered down to one option
+                // - if 'autoenter' configured
+                // - or, if this was a preselected entry
+                if (
+                    $single_filtered_item
+                    && (
+                        $livefilter === 'autoenter'
+                        || $preselected
+                    )
+                ) {
+                    break;
+                }
+
+                // If not a perfect match, no longer consider it preselected
+                // (so after typing more no autoenter unless configured)
+                $preselected = false;
+
+                // Display help info & prompt
+                $this->clear();
+                $this->output("Type [lowercase only] to filter options. Press ? to toggle help.");
+                if ($show_help) {
+                    if ($q_to_quit) {
+                        $this->output(" - Q ........................ Quit");
+                    }
+                    $this->output(" - H or [Backspace] ......... Backspace");
+                    $this->output(" - X ........................ Clear input");
+                    $this->output(" - G/E/M or [Enter] twice ... Select top/bolded option");
+                    $this->output(" - [Enter] once ............. Continue/select single remaining input");
+                    $this->output(" - ? ........................ Toggle help");
+                }
+                $this->hr();
+                if ($message) {
+                    $this->output($message);
+                }
+
+                // Display the list with indexes, with the top/default highlighted
+                $output_lines = 0;
+                foreach ($filtered_items as $i => $item) {
+                    // If there are too many items and we are at height limit, cut off
+                    if (
+                        $output_lines >= ($list_height - 1)
+                        && count($filtered_items) > $list_height
+                    ) {
+                        $output_lines++;
+                        $this->output('... [MORE BELOW IN LIST - TYPE TO FILTER] ...');
+                        break;
+                    }
+
+                    $bold = null;
+                    $color = $single_filtered_item ? 'green' : null;
+                    $hint = "";
+                    if ($i === $default) {
+                        $bold = 'bold';
+                        if ($entry === " ") {
+                            $color = 'green';
+                            $hint = $this->colorize(" [Hit Enter Again to Select]", 'blue');
+                        }
+                    }
+
+                    $this->output($this->colorize("$i. $item", $color, null, $bold) . $hint);
+                    $output_lines++;
+                    $color = null;
+                }//end foreach
+                for (; $output_lines < $list_height; $output_lines++) {
+                    $this->br();
+                }
+                $this->hr();
+
+                // Clear the line for the prompt
+                echo str_pad(" ", $this->getTerminalWidth());
+                // Set cursor to first column
+                echo chr(27) . "[0G";
+                // Output the prompt & entry so far
+                $error = $this->colorize($error, 'red');
+                $ready_for_enter = "";
+                if ($single_filtered_item) {
+                    $ready_for_enter = $this->colorize("Press [Enter] or [Space] to proceed with highlighted item", "blue");
+                }
+                echo "$error $ready_for_enter\n";
+                echo "> $entry";
+                $error = "";
+
+                $char = $this->input(false, null, false, 'single', 'single_hide', false);
+
+                // For some reason, both space & enter come through as a new line
+                if ($char === "\n") {
+                    // If there's only one item, OR they hit it twice, treat this as Enter
+                    if ($single_filtered_item) {
+                        // to return first filtered item
+                        break;
+                    }
+                    if ($single_filtered_item || $entry === " ") {
+                        return $list[$default];
+                    }
+                    // Otherwise treat it as space
+                    $char = " ";
+                } else {
+                    $char = trim($char);
+                }
+
+                if ($char === 'Q' && $q_to_quit) {
+                    $this->warn('Selection Exited');
+                    exit;
+                } elseif ($char === 'X') {
+                    $entry = "";
+                } elseif (in_array($char, ['H', ""])) {
+                    $entry = substr($entry, 0, -1);
+                } elseif (in_array($char, ['G', "E", "M", ""])) {
+                    // To return first filtered item
+                    break;
+                } elseif (in_array($char, ["?"])) {
+                    $show_help = ! $show_help;
+                } elseif (preg_match('/[A-Z]/', $char)) {
+                    $error .= "[INVALID KEY - lowercase only]";
+                } else {
+                    $entry = "$entry$char";
+                }//end if
+            }//end while
+
+            $this->clear();
+
+            // Return first filtered item
+            foreach ($filtered_items as $s => $selected) {
+                // Return the top item in the filtered list
+                return $selected;
+            }
+        }//end liveSelect()
+
 
         /**
          * Get a confirmation from the user (yes/no prompt)
