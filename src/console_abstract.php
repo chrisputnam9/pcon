@@ -1845,7 +1845,12 @@ if (! class_exists("Console_Abstract")) {
                 $message = $this->colorize($message, null, null, 'bold');
             }
 
-            $list_height = ($this->getTerminalHeight() / 2) - 10;
+            // Maximum display height - leave a bit of breathing room at the bottom
+            // 1 space for hr
+            // 1 space for error message
+            // 1 space for prompt itself
+            // 1 space after prompt
+            $list_height = $this->getTerminalHeight() - 4;
             $list_count = count($list);
             if ($list_count < $list_height) {
                 $list_height = $list_count;
@@ -1853,6 +1858,7 @@ if (! class_exists("Console_Abstract")) {
 
             $show_help = false;
             while (true) {
+                $output = [];
                 $list = array_values($list);
 
                 $single_filtered_item = false;
@@ -1895,26 +1901,34 @@ if (! class_exists("Console_Abstract")) {
 
                 // Display help info & prompt
                 $this->clear();
-                $this->output("Type [lowercase only] to filter options. Press ? to toggle help.");
+                $output[] = "Type [lowercase only] to filter options. Press ? to toggle help.";
                 if ($show_help) {
                     if ($q_to_quit) {
-                        $this->output(" - Q ........................ Quit");
+                        $output[] = " - Q ........................ Quit";
                     }
-                    $this->output(" - H or [Backspace] ......... Backspace");
-                    $this->output(" - X ........................ Clear input");
-                    $this->output(" - G/E/M or [Enter] twice ... Select top/bolded option");
-                    $this->output(" - [Enter] once ............. Continue/select single remaining input");
-                    $this->output(" - ? ........................ Toggle help");
+                    $output[] = " - H or [Backspace] ......... Backspace";
+                    $output[] = " - X ........................ Clear input";
+                    $output[] = " - G/E/M or [Enter] twice ... Select top/bolded option";
+                    $output[] = " - [Enter] once ............. Continue/select single remaining input";
+                    $output[] = " - ? ........................ Toggle help";
                 }
+                foreach ($output as $line) {
+                    $this->output($line);
+                }
+                $output_lines = count($output);
+
                 $this->hr();
+                $output_lines++;
+
                 if ($message) {
                     $this->output($message);
+                    $output_lines++;
                 }
 
                 // Display the list with indexes, with the top/default highlighted
-                $output_lines = 0;
                 foreach ($filtered_items as $i => $item) {
-                    // If there are too many items and we are at height limit, cut off
+                    // If there are too many items and we are at height limit
+                    // - cut off with room for [more] note
                     if (
                         $output_lines >= ($list_height - 1)
                         && count($filtered_items) > $list_height
@@ -1939,9 +1953,7 @@ if (! class_exists("Console_Abstract")) {
                     $output_lines++;
                     $color = null;
                 }//end foreach
-                for (; $output_lines < $list_height; $output_lines++) {
-                    $this->br();
-                }
+
                 $this->hr();
 
                 // Clear the line for the prompt
@@ -1983,7 +1995,7 @@ if (! class_exists("Console_Abstract")) {
                     $entry = "";
                 } elseif (in_array($char, ['H', ""])) {
                     $entry = substr($entry, 0, -1);
-                } elseif (in_array($char, ['G', "E", "M", ""])) {
+                } elseif (in_array($char, ['G', "E", "M"])) {
                     // To return first filtered item
                     break;
                 } elseif (in_array($char, ["?"])) {
