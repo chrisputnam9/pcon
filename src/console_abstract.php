@@ -101,6 +101,13 @@ if (! class_exists("Console_Abstract")) {
          */
         protected const EDIT_LINE_BREAK = "--------------------------------------------------";
 
+		/**
+		 * Value to show user as an option to go to prior selection / area
+		 *
+		 * @var string
+		 */
+		protected const BACK_OPTION = '<-- Go Back [B]';
+
         /**
          * Callable Methods
          *
@@ -1857,9 +1864,11 @@ if (! class_exists("Console_Abstract")) {
             }
 
             $show_help = false;
+			$list = array_values($list);
+			$back_is_option = in_array(static::BACK_OPTION, $list, true);
+
             while (true) {
                 $output = [];
-                $list = array_values($list);
 
                 $single_filtered_item = false;
                 $filtered_items = [];
@@ -1877,7 +1886,7 @@ if (! class_exists("Console_Abstract")) {
                 }
 
                 if (empty($filtered_items)) {
-                    $error .= "[NO MATCHES - press X to clear/reset]";
+                    $error .= "[NO MATCHES - press D to delete all input or X to backspace]";
                 } elseif (count($filtered_items) === 1) {
                     $single_filtered_item = true;
                 }
@@ -1906,8 +1915,8 @@ if (! class_exists("Console_Abstract")) {
                     if ($q_to_quit) {
                         $output[] = " - Q ........................ Quit";
                     }
-                    $output[] = " - H or [Backspace] ......... Backspace";
-                    $output[] = " - X ........................ Clear input";
+                    $output[] = " - X or [Backspace] ......... Backspace";
+                    $output[] = " - D ........................ Delete/clear all input";
                     $output[] = " - G/E/M or [Enter] twice ... Select top/bolded option";
                     $output[] = " - [Enter] once ............. Continue/select single remaining input";
                     $output[] = " - ? ........................ Toggle help";
@@ -1988,18 +1997,27 @@ if (! class_exists("Console_Abstract")) {
                     $char = trim($char);
                 }
 
+				// Quit - if it's an option
                 if ($char === 'Q' && $q_to_quit) {
                     $this->warn('Selection Exited');
                     exit;
-                } elseif ($char === 'X') {
+				// Back - if it's an option
+                } elseif ($char === 'B' && $back_is_option) {
+					return static::BACK_OPTION;
+				// Clear all input
+                } elseif ($char === 'D') {
                     $entry = "";
-                } elseif (in_array($char, ['H', ""])) {
+				// Backspace one character
+                } elseif (in_array($char, ['X', ""])) {
                     $entry = substr($entry, 0, -1);
+				// Enter/Continue - return current top item
                 } elseif (in_array($char, ['G', "E", "M"])) {
                     // To return first filtered item
                     break;
+				// Toggle help
                 } elseif (in_array($char, ["?"])) {
                     $show_help = ! $show_help;
+				// Invalid keys (any other uppercase letter)
                 } elseif (preg_match('/[A-Z]/', $char)) {
                     $error .= "[INVALID KEY - lowercase only]";
                 } else {
