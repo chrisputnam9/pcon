@@ -1885,6 +1885,8 @@ if (! class_exists("Console_Abstract")) {
                     }
                 }
 
+				$filtered_default = ! isset($filtered_items[$default]);
+
                 if (empty($filtered_items)) {
                     $error .= "[NO MATCHES - press D to delete all input or X to backspace]";
                 } elseif (count($filtered_items) === 1) {
@@ -1935,6 +1937,7 @@ if (! class_exists("Console_Abstract")) {
                 }
 
                 // Display the list with indexes, with the top/default highlighted
+				$f=0;
                 foreach ($filtered_items as $i => $item) {
                     // If there are too many items and we are at height limit
                     // - cut off with room for [more] note
@@ -1950,17 +1953,19 @@ if (! class_exists("Console_Abstract")) {
                     $bold = null;
                     $color = $single_filtered_item ? 'green' : null;
                     $hint = "";
-                    if ($i === $default) {
+					$_item_is_default = $filtered_default ? $f === 0 : $i === $default;
+					if ( $_item_is_default ) {
                         $bold = 'bold';
-                        if ($entry === " ") {
+                        if (substr($entry, -1) === " ") {
                             $color = 'green';
                             $hint = $this->colorize(" [Hit Enter Again to Select]", 'blue');
-                        }
+						}
                     }
 
                     $this->output($this->colorize("$i. $item", $color, null, $bold) . $hint);
                     $output_lines++;
                     $color = null;
+					$f++;
                 }//end foreach
 
                 $this->hr();
@@ -1988,8 +1993,8 @@ if (! class_exists("Console_Abstract")) {
                         // to return first filtered item
                         break;
                     }
-                    if ($single_filtered_item || $entry === " ") {
-                        return $list[$default];
+                    if ($single_filtered_item || substr($entry, -1) === " ") {
+                        return $filtered_default ? array_shift($filtered_items) : $list[$default];
                     }
                     // Otherwise treat it as space
                     $char = " ";
