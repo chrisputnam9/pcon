@@ -244,7 +244,7 @@ if (!class_exists("Command")) {
             $class = get_class($e);
             $error = in_array($class, ['Exception', 'HJSONException'])
                 ? $e->getMessage()
-                : "Incorrect usage - see method help below:";
+                : "Incorrect usage - see method help below. Run with --verbose to see full error message.";
             $this->error($error, false);
             $this->help($method);
             if ($this->verbose) {

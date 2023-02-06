@@ -182,7 +182,7 @@ if (!class_exists("Command_Visual")) {
 
                     // Reload if set
                     if (!empty($command_details['reload'])) {
-                        $this->reload();
+                        $this->reload($this);
                     }
 
                     if (
