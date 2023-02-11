@@ -198,6 +198,9 @@ if (!class_exists("Command_Visual_List")) {
                     if (is_string($target)) {
                         $value = $target;
                     }
+                    if (is_array($target)) {
+                        $value = implode(", ", $target);
+                    }
 
                     // var_dump($value);
                     if (!empty($format) and !empty($value)) {
