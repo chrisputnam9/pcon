@@ -1464,7 +1464,7 @@ if (! class_exists("Console_Abstract")) {
          */
         public function outputProgress(int $count, int $total, string $description = "remaining")
         {
-            if (! $this->verbose) {
+            if (! $this->verbose && $total > 0) {
                 if ($count > 0) {
                     // Set cursor to first column
                     echo chr(27) . "[0G";
