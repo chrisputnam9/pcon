@@ -34,6 +34,12 @@ the same.  Here are some of the reasons I do reach for PHP:
 
 # Troubleshooting & Common Issues
 
+## Windows - SSL Errors
+Try downloading the latest CA bundle and pointing your PHP.ini to that (https://curl.haxx.se/docs/caextract.html)
+
+Read more here: https://www.php.net/manual/en/curl.configuration.php
+
+## WSL - Logname: No Login Name
 In WSL, you may be warned:
 
     logname: no login name
