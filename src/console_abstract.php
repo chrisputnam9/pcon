@@ -101,12 +101,12 @@ if (! class_exists("Console_Abstract")) {
          */
         protected const EDIT_LINE_BREAK = "--------------------------------------------------";
 
-		/**
-		 * Value to show user as an option to go to prior selection / area
-		 *
-		 * @var string
-		 */
-		protected const BACK_OPTION = '<-- Go Back [B]';
+        /**
+         * Value to show user as an option to go to prior selection / area
+         *
+         * @var string
+         */
+        protected const BACK_OPTION = '<-- Go Back [B]';
 
         /**
          * Callable Methods
@@ -558,6 +558,13 @@ if (! class_exists("Console_Abstract")) {
          * @var array
          */
         protected $config_to_save = null;
+
+        /**
+         * Config is OK to create
+         *
+         * @var boolean
+         */
+        protected $config_ok_to_create = true;
 
         /**
          * Timestamp when the tool was initilized - eg. when constructor ran
@@ -1864,8 +1871,8 @@ if (! class_exists("Console_Abstract")) {
             }
 
             $show_help = false;
-			$list = array_values($list);
-			$back_is_option = in_array(static::BACK_OPTION, $list, true);
+            $list = array_values($list);
+            $back_is_option = in_array(static::BACK_OPTION, $list, true);
 
             while (true) {
                 $output = [];
@@ -1885,7 +1892,7 @@ if (! class_exists("Console_Abstract")) {
                     }
                 }
 
-				$filtered_default = ! isset($filtered_items[$default]);
+                $filtered_default = ! isset($filtered_items[$default]);
 
                 if (empty($filtered_items)) {
                     $error .= "[NO MATCHES - press D to delete all input or X to backspace]";
@@ -1937,7 +1944,7 @@ if (! class_exists("Console_Abstract")) {
                 }
 
                 // Display the list with indexes, with the top/default highlighted
-				$f=0;
+                $f = 0;
                 foreach ($filtered_items as $i => $item) {
                     // If there are too many items and we are at height limit
                     // - cut off with room for [more] note
@@ -1953,19 +1960,19 @@ if (! class_exists("Console_Abstract")) {
                     $bold = null;
                     $color = $single_filtered_item ? 'green' : null;
                     $hint = "";
-					$_item_is_default = $filtered_default ? $f === 0 : $i === $default;
-					if ( $_item_is_default ) {
+                    $_item_is_default = $filtered_default ? $f === 0 : $i === $default;
+                    if ($_item_is_default) {
                         $bold = 'bold';
                         if (substr($entry, -1) === " ") {
                             $color = 'green';
                             $hint = $this->colorize(" [Hit Enter Again to Select]", 'blue');
-						}
+                        }
                     }
 
                     $this->output($this->colorize("$i. $item", $color, null, $bold) . $hint);
                     $output_lines++;
                     $color = null;
-					$f++;
+                    $f++;
                 }//end foreach
 
                 $this->hr();
@@ -2002,27 +2009,27 @@ if (! class_exists("Console_Abstract")) {
                     $char = trim($char);
                 }
 
-				// Quit - if it's an option
+                // Quit - if it's an option
                 if ($char === 'Q' && $q_to_quit) {
                     $this->warn('Selection Exited');
                     exit;
-				// Back - if it's an option
+                // Back - if it's an option
                 } elseif ($char === 'B' && $back_is_option) {
-					return static::BACK_OPTION;
-				// Clear all input
+                    return static::BACK_OPTION;
+                // Clear all input
                 } elseif ($char === 'D') {
                     $entry = "";
-				// Backspace one character
+                // Backspace one character
                 } elseif (in_array($char, ['X', ""])) {
                     $entry = substr($entry, 0, -1);
-				// Enter/Continue - return current top item
+                // Enter/Continue - return current top item
                 } elseif (in_array($char, ['G', "E", "M"])) {
                     // To return first filtered item
                     break;
-				// Toggle help
+                // Toggle help
                 } elseif (in_array($char, ["?"])) {
                     $show_help = ! $show_help;
-				// Invalid keys (any other uppercase letter)
+                // Invalid keys (any other uppercase letter)
                 } elseif (preg_match('/[A-Z]/', $char)) {
                     $error .= "[INVALID KEY - lowercase only]";
                 } else {
@@ -2359,10 +2366,14 @@ if (! class_exists("Console_Abstract")) {
                 }
 
                 // Rewrite config file
-                $json = $this->json_encode($this->config_to_save);
-                $success = file_put_contents($config_file, $json);
-                if (! $success) {
-                    $this->error("Failed to write to config file ($config_file) - check permissions");
+                if (is_file($config_file) || $this->config_ok_to_create) {
+                    $json = $this->json_encode($this->config_to_save);
+                    $success = file_put_contents($config_file, $json);
+                    if (! $success) {
+                        $this->error("Failed to write to config file ($config_file) - check permissions");
+                    }
+                } else {
+                    $this->log("Config file ($config_file) does not exist and is not being created due to run state", true);
                 }
 
                 // Fix permissions if needed

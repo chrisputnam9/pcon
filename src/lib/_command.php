@@ -181,6 +181,13 @@ if (!class_exists("Command")) {
                     if (!in_array($method, $root_methods)) {
                         $this->error("Cowardly refusing to run as root. Use --allow-root to bypass this error.", 200);
                     }
+                    // We're running as root
+                    // - Without explicitly allowing
+                    // - In a method that's OK to run as root
+                    // - This indicates a temporary escalation - eg. for install, update, etc.
+                    // - So, we should *not* create the config file in this scenario
+                    // - Or it will have the wrong permissions
+                    $this->config_ok_to_create = false;
                 }
 
                 if ($initial) {
