@@ -34,6 +34,18 @@ the same.  Here are some of the reasons I do reach for PHP:
 
 # Troubleshooting & Common Issues
 
+## Permission Error - Failed to write to config file
+Review the permissions on the config file (path should be included in error message)
+
+In certain cases, the config file is created and owned by the root user during installation.
+
+The file must be owned, readable and writable by your user.
+
+Example, in Unix-type environment:
+
+    sudo chown myuser:myuser ~/.config_folder/config.hjson
+    sudo chmod 644 ~/.config_folder/config.hjson
+
 ## Windows - SSL Errors
 Try downloading the latest CA bundle and pointing your PHP.ini to that (https://curl.haxx.se/docs/caextract.html)
 

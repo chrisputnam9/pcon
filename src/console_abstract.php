@@ -2360,7 +2360,10 @@ if (! class_exists("Console_Abstract")) {
 
                 // Rewrite config file
                 $json = $this->json_encode($this->config_to_save);
-                file_put_contents($config_file, $json);
+                $success = file_put_contents($config_file, $json);
+                if (! $success) {
+                    $this->error("Failed to write to config file ($config_file) - check permissions");
+                }
 
                 // Fix permissions if needed
                 if ($this->running_as_root and ! $this->logged_in_as_root) {
