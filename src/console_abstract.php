@@ -18,19 +18,15 @@ if (! defined('DS')) {
     define('DS', DIRECTORY_SEPARATOR);
 }
 
-// Either log or display all errors
-error_reporting(E_ALL);
-
 if (defined('ERRORS') and ERRORS) {
     // Enable and show errors
     echo "\n\n************************************\n";
     echo "* Displaying all errors & warnings *\n";
     echo "************************************\n\n";
+    error_reporting(E_ALL);
     ini_set('display_errors', 1);
-    ini_set('html_errors', 0);
 } else {
-    // Disable PHP Error display
-    ini_set('display_errors', 0);
+    // Otherwise, we'll follow the system settings
 }
 
 if (! defined('PACKAGED') or ! PACKAGED and is_dir(__DIR__ . DS . "lib")) {
@@ -824,6 +820,8 @@ if (! class_exists("Console_Abstract")) {
             $this->log("OS: " . PHP_OS);
             $this->log("Windows: " . ($this->is_windows ? "Yes" : "No"));
 
+            $major_problem = false;
+
             $php_version = explode('.', PHP_VERSION);
             $major       = (int) $php_version[0];
             if ($major < $this->minimum_php_major_version) {
@@ -832,11 +830,17 @@ if (! class_exists("Console_Abstract")) {
             }
 
             if (! function_exists('curl_version')) {
-                $problems[] = "This tool requires curl for many features such as update checks and installs - please install php-curl";
+                $problems[] = "This tool requires curl - please install https://www.php.net/manual/en/book.curl.php - specific install steps vary by OS";
+                $major_problem = true;
+            }
+
+            if (! function_exists('mb_strlen')) {
+                $problems[] = "This tool requires mbstring - please install https://www.php.net/manual/en/book.mbstring.php - specific install steps vary by OS";
+                $major_problem = true;
             }
 
             if (! empty($problems)) {
-                $this->error("There are some problems with requirements: \n - " . implode("\n - ", $problems), false, true);
+                $this->error("There are some problems with requirements: \n - " . implode("\n - ", $problems), $major_problem, true);
             }
         }//end checkRequirements()
 
@@ -1384,7 +1388,7 @@ if (! class_exists("Console_Abstract")) {
             $this->output($data);
             $this->hr('!');
             if ($code) {
-                exit($code);
+                exit($code === true ? 500 : $code);
             }
 
             if ($prompt_to_continue) {
