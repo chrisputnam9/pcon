@@ -323,7 +323,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @var mixed
          */
-        public $livefilter = 'disabled';
+        public $livefilter = 'enabled';
 
         /**
          * Help info for $ssl_check
