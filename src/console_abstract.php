@@ -3213,6 +3213,8 @@ if (! class_exists("Console_Abstract")) {
          * @param string $json    The raw JSON/HJSON string to be interpreted.
          * @param mixed  $options Options to pass through to HJSON.  Also supports 'true' for associative array, to match json_decode builtin.
          *
+         * @throws Exception If there is an error parsing the JSON.
+         *
          * @return mixed The decoded data - typically object or array.
          */
         public function json_decode(string $json, mixed $options = []): mixed
@@ -3230,7 +3232,11 @@ if (! class_exists("Console_Abstract")) {
             }
 
             $parser = new HJSONParser();
-            $data   = $parser->parse($json, $options);
+            try {
+                $data   = $parser->parse($json, $options);
+            } catch (Exception $e) {
+                throw new Exception("While parsing JSON:\n" . $e->getMessage());
+            }
             $this->_json_cleanup($data);
             return $data;
         }//end json_decode()
@@ -3311,6 +3317,7 @@ if (! class_exists("Console_Abstract")) {
          * @param array  $arguments The arguments being passed to the method.
          *
          * @throws Exception Errors every time to prevent infinite loop.
+         *
          * @return mixed Doesn't really return anything - always throws error.
          */
         public function __call(string $method, array $arguments = []): mixed
