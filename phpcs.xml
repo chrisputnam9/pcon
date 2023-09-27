@@ -42,6 +42,10 @@
         <exclude name="Squiz.Commenting.InlineComment.NotCapital"/>
         <exclude name="Squiz.Commenting.BlockComment.NoEmptyLineAfter"/>
         <exclude name="Squiz.Commenting.VariableComment.TagNotAllowed"/>
+
+        <!-- For compatibility with PHP 7.4 we have to leave off some type hints (eg. mixed) -->
+        <exclude name="Squiz.Commenting.FunctionComment.TypeHintMissing"/>
+        <exclude name="Squiz.Commenting.FunctionComment.WrongParamType"/>
 	</rule>
 
     <rule ref="Generic.Commenting"/>

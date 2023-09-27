@@ -128,7 +128,7 @@ if (!class_exists("Command_Visual")) {
          *
          * @return boolean Whether or not to continue the command prompt loop
          */
-        protected function promptAndRunCommand(array $commands, mixed $show_commands = false): bool
+        protected function promptAndRunCommand(array $commands, $show_commands = false): bool
         {
             if (!is_array($commands) or empty($commands)) {
                 $this->error("Invalid commands passed - expecting array of command definitions");

@@ -14,6 +14,15 @@ function echodiv {
     echo "########################################################################################################################"
 }
 
+function echopackagenote {
+    echo
+    echodiv
+    echo "ATTENTION: at this point, you should update tests/dist/test-readme.md with the hash output above"
+    echodiv
+    echo "Press any key to continue"
+    read -r
+}
+
 function pced {
     echo
     echodiv

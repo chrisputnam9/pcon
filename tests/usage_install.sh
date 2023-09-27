@@ -24,26 +24,26 @@ if [ ! -f "$TEST_SCRIPT_PACKAGED" ]; then
 fi
 
 echo "Installing test tool"
-sudo "$TEST_SCRIPT_PACKAGED" install --verbose
+sudo "$TEST_SCRIPT_PACKAGED" install --verbose --no-update-version-url
 
 if [ "$1" != "--no-use-test" ]; then
     pced "Testing version output:"
-    "$TEST_SCRIPT_INSTALLED" version
+    "$TEST_SCRIPT_INSTALLED" version --no-update-version-url
 
     pced "Testing help output:"
-    "$TEST_SCRIPT_INSTALLED" help
+    "$TEST_SCRIPT_INSTALLED" help --no-update-version-url
 
     pced "Testing help output for 'test' method:"
-    "$TEST_SCRIPT_INSTALLED" help test
+    "$TEST_SCRIPT_INSTALLED" help test --no-update-version-url
 
     pced "Testing 'test' method:"
-    "$TEST_SCRIPT_INSTALLED" test
+    "$TEST_SCRIPT_INSTALLED" test --no-update-version-url
 
     pced "Testing 'test' method with custom message and verbose stamped output:"
-    "$TEST_SCRIPT_INSTALLED" test "Custom Message" --verbose --stamp-lines
+    "$TEST_SCRIPT_INSTALLED" test "Custom Message" --verbose --stamp-lines --no-update-version-url
 
     pced "Testing 'backup' method by backing up config:"
-    "$TEST_SCRIPT_INSTALLED" backup "$TEST_SCRIPT_CONFIG_DIR/config.hjson"
+    "$TEST_SCRIPT_INSTALLED" backup "$TEST_SCRIPT_CONFIG_DIR/config.hjson" --no-update-version-url
 
     pced "Usage - Install - Tests Complete"
 fi

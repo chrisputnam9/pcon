@@ -12,3 +12,5 @@ clear
 clear
 "$PCON" package "$TEST_SCRIPT"
 cp "$TEST_SCRIPT_PACKAGED" "$TEST_SCRIPT_DIST"
+
+echopackagenote

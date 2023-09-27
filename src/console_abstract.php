@@ -784,6 +784,8 @@ if (! class_exists("Console_Abstract")) {
          */
         public function __construct()
         {
+            $this->checkRequirements();
+
             date_default_timezone_set($this->timezone);
             $this->run_stamp = $this->stamp();
 
@@ -897,7 +899,7 @@ if (! class_exists("Console_Abstract")) {
          * @return boolean Whether backup was successful.
          * @api
          */
-        public function backup(mixed $files, bool $output = true): bool
+        public function backup($files, bool $output = true): bool
         {
             $success = true;
 
@@ -964,7 +966,7 @@ if (! class_exists("Console_Abstract")) {
          * @return void
          * @api
          */
-        public function eval_file(string $file, mixed ...$evaluation_arguments)
+        public function eval_file(string $file, ...$evaluation_arguments)
         {
             if (! is_file($file)) {
                 $this->error("File does not exist, check the path: $file");
@@ -1380,7 +1382,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return void
          */
-        public function error(mixed $data, mixed $code = 500, bool $prompt_to_continue = false)
+        public function error($data, $code = 500, bool $prompt_to_continue = false)
         {
             $this->br();
             $this->hr('!');
@@ -1407,7 +1409,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return void
          */
-        public function warn(mixed $data, bool $prompt_to_continue = false)
+        public function warn($data, bool $prompt_to_continue = false)
         {
             $this->br();
             $this->hr('*');
@@ -1431,7 +1433,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return void
          */
-        public function log(mixed $data)
+        public function log($data)
         {
             if (! $this->verbose) {
                 return;
@@ -1449,7 +1451,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return void
          */
-        public function output(mixed $data, bool $line_ending = true, bool $stamp_lines = null)
+        public function output($data, bool $line_ending = true, bool $stamp_lines = null)
         {
             $data = $this->stringify($data);
 
@@ -1504,7 +1506,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return string The stringified data - ready for output.
          */
-        public function stringify(mixed $data): string
+        public function stringify($data): string
         {
             if (is_object($data) or is_array($data)) {
                 $data = print_r($data, true);
@@ -1539,7 +1541,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return string The colorized / decorated string, ready for output to console.
          */
-        public function colorize(string $string, mixed $foreground = null, mixed $background = null, mixed $other = []): string
+        public function colorize(string $string, $foreground = null, $background = null, $other = []): string
         {
             if (empty($foreground) and empty($background) and empty($other)) {
                 return $string;
@@ -1743,7 +1745,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return string The value of the item in the list that was selected.
          */
-        public function select(array $list, mixed $message = false, int $default = 0, bool $q_to_quit = true, array &$preselects = [], mixed $livefilter = null): string
+        public function select(array $list, $message = false, int $default = 0, bool $q_to_quit = true, array &$preselects = [], $livefilter = null): string
         {
             // Fall back to configuration if not specified
             if (is_null($livefilter)) {
@@ -1839,7 +1841,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return string The value of the item in the list that was selected.
          */
-        public function liveSelect(array $list, mixed $message = false, int $default = 0, bool $q_to_quit = true, array &$preselects = []): string
+        public function liveSelect(array $list, $message = false, int $default = 0, bool $q_to_quit = true, array &$preselects = []): string
         {
             $preselected = false;
             $entry = "";
@@ -2066,7 +2068,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return boolean Whether yes was entered by the user.
          */
-        public function confirm(mixed $message, string $default = 'y', bool $required = false, bool $single = true, bool $single_hide = false): bool
+        public function confirm($message, string $default = 'y', bool $required = false, bool $single = true, bool $single_hide = false): bool
         {
             $yn = $this->input($message, $default, $required, $single, $single_hide);
             $this->br();
@@ -2109,7 +2111,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return string The text input from the user.
          */
-        public function input(mixed $message = false, string $default = null, mixed $required = false, mixed $single = false, mixed $single_hide = false, mixed $trim = true): string
+        public function input($message = false, string $default = null, $required = false, $single = false, $single_hide = false, $trim = true): string
         {
             if ($message) {
                 if ($message === true) {
@@ -2416,7 +2418,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return mixed The prepared result.
          */
-        public function prepArg(mixed $value, mixed $default, string $force_type = null, bool $trim = true): mixed
+        public function prepArg($value, $default, string $force_type = null, bool $trim = true): mixed
         {
             $a = func_num_args();
             if ($a < 2) {
@@ -2496,7 +2498,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return void
          */
-        public function configure(string $key, mixed $value, bool $save_value = false)
+        public function configure(string $key, $value, bool $save_value = false)
         {
             $key = str_replace('-', '_', $key);
 
@@ -2639,7 +2641,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return mixed The contents of the cache file, or false if file expired, does not exist, or can't be read.
          */
-        public function getCacheContents(mixed $subpath, int $expiration = null): mixed
+        public function getCacheContents($subpath, int $expiration = null): mixed
         {
             $expiration = $expiration ?? $this->cache_lifetime;
 
@@ -2675,7 +2677,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return mixed The path to the new cache file, or false if failed to write.
          */
-        public function setCacheContents(mixed $subpath, string $contents): mixed
+        public function setCacheContents($subpath, string $contents): mixed
         {
             $config_dir = $this->getConfigDir();
             $cache_dir  = $config_dir . DS . 'cache';
@@ -2707,7 +2709,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return mixed The contents of the temp file, or false if file does not exist or can't be read.
          */
-        public function getTempContents(mixed $subpath): mixed
+        public function getTempContents($subpath): mixed
         {
             $config_dir = $this->getConfigDir();
             $temp_dir   = $config_dir . DS . 'temp';
@@ -2735,7 +2737,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return mixed The path to the new temp file, or false if failed to write.
          */
-        public function setTempContents(mixed $subpath, string $contents): mixed
+        public function setTempContents($subpath, string $contents): mixed
         {
             $config_dir = $this->getConfigDir();
             $temp_dir   = $config_dir . DS . 'temp';
@@ -2776,7 +2778,7 @@ if (! class_exists("Console_Abstract")) {
          *                - 'page_length'   The length of the output being displayed.
          *                - 'ending_line'   THe number of the last line being displayed.
          */
-        public function paginate(mixed $content, array $options = []): array
+        public function paginate($content, array $options = []): array
         {
             $options = array_merge([
                 'starting_line' => 1,
@@ -2999,7 +3001,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return integer The height of the terminal output screen.
          */
-        public function getTerminalHeight(mixed $fresh = false): int
+        public function getTerminalHeight($fresh = false): int
         {
             if ($fresh or empty($this->_terminal_height)) {
                 exec("tput lines", $output, $return);
@@ -3033,7 +3035,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return integer The width of the terminal output screen.
          */
-        public function getTerminalWidth(mixed $fresh = false): int
+        public function getTerminalWidth($fresh = false): int
         {
             if ($fresh or empty($this->_terminal_width)) {
                 exec("tput cols", $output, $return);
@@ -3078,7 +3080,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return string The processed output, ready for terminal.
          */
-        public function parseHtmlForTerminal(mixed $dom, int $depth = 0, string $prefix = ""): string
+        public function parseHtmlForTerminal($dom, int $depth = 0, string $prefix = ""): string
         {
             $output = "";
 
@@ -3217,7 +3219,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return mixed The decoded data - typically object or array.
          */
-        public function json_decode(string $json, mixed $options = []): mixed
+        public function json_decode(string $json, $options = []): mixed
         {
             $this->log("Running json_decode on console_abstract");
 
@@ -3249,7 +3251,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return string The encoded HJSON string.
          */
-        public function json_encode(mixed $data, array $options = []): string
+        public function json_encode($data, array $options = []): string
         {
             $this->log("Running json_encode on console_abstract");
 
@@ -3291,7 +3293,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return void Updates $data directly by reference.
          */
-        protected function _json_cleanup(mixed &$data)
+        protected function _json_cleanup(&$data)
         {
             if (is_iterable($data)) {
                 foreach ($data as $key => &$value) {

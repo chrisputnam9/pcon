@@ -31,26 +31,28 @@ fi
 echo "Packaging test tool"
 "$PCON" package "$TEST_SCRIPT" --verbose
 
+echopackagenote
+
 cp "$TEST_SCRIPT_PACKAGED" "$TEST_SCRIPT_DIST"
 
 if [ "$1" != "--no-use-test" ]; then
     pced "Testing version output:"
-    "$TEST_SCRIPT_PACKAGED" version
+    "$TEST_SCRIPT_PACKAGED" version --no-update-version-url
 
     pced "Testing help output:"
-    "$TEST_SCRIPT_PACKAGED" help
+    "$TEST_SCRIPT_PACKAGED" help --no-update-version-url
 
     pced "Testing help output for 'test' method:"
-    "$TEST_SCRIPT_PACKAGED" help test
+    "$TEST_SCRIPT_PACKAGED" help test --no-update-version-url
 
     pced "Testing 'test' method:"
-    "$TEST_SCRIPT_PACKAGED" test
+    "$TEST_SCRIPT_PACKAGED" test --no-update-version-url
 
     pced "Testing 'test' method with custom message and verbose stamped output:"
-    "$TEST_SCRIPT_PACKAGED" test "Custom Message" --verbose --stamp-lines
+    "$TEST_SCRIPT_PACKAGED" test "Custom Message" --verbose --stamp-lines --no-update-version-url
 
     pced "Testing 'backup' method by backing up config:"
-    "$TEST_SCRIPT_PACKAGED" backup "$TEST_SCRIPT_CONFIG_DIR/config.hjson"
+    "$TEST_SCRIPT_PACKAGED" backup "$TEST_SCRIPT_CONFIG_DIR/config.hjson" --no-update-version-url
 
     pced "Usage - Package - Tests Complete"
 fi

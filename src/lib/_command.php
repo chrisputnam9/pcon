@@ -125,7 +125,7 @@ if (!class_exists("Command")) {
          *
          * @return void
          */
-        public function try_calling(array $arg_list, mixed $initial = false, mixed $prompt_when_done = false)
+        public function try_calling(array $arg_list, $initial = false, $prompt_when_done = false)
         {
             $this->log($arg_list);
 
@@ -193,10 +193,7 @@ if (!class_exists("Command")) {
                 if ($initial) {
                     date_default_timezone_set($this->main_tool->timezone);
 
-                    $this->checkRequirements();
-
                     $this->log('Determined home directory to be ' . $this->main_tool->home_dir);
-
 
                     // Run an update check
                     // auto:true, output:true
@@ -246,7 +243,7 @@ if (!class_exists("Command")) {
          * @return void
          * @throws mixed Throws $e that was passed if running in verbose mode.
          */
-        protected function _run_error(mixed $e, string $method)
+        protected function _run_error($e, string $method)
         {
             $class = get_class($e);
             $error = in_array($class, ['Exception', 'HJSONException'])
@@ -419,7 +416,7 @@ if (!class_exists("Command")) {
          *
          * @return void
          */
-        public function prompt(mixed $clear = false, mixed $help = true)
+        public function prompt($clear = false, $help = true)
         {
             if ($clear) {
                 $this->clear();
@@ -550,7 +547,7 @@ if (!class_exists("Command")) {
          *
          * @return array The cleaned and standardized paramater information array.
          */
-        protected function _help_param(mixed $param): array
+        protected function _help_param($param): array
         {
             if (!is_array($param)) {
                 $param = [$param];

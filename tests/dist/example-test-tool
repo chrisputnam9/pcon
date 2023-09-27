@@ -234,7 +234,7 @@ if (!class_exists("Command")) {
          *
          * @return void
          */
-        public function try_calling(array $arg_list, mixed $initial = false, mixed $prompt_when_done = false)
+        public function try_calling(array $arg_list, $initial = false, $prompt_when_done = false)
         {
             $this->log($arg_list);
 
@@ -290,19 +290,23 @@ if (!class_exists("Command")) {
                     if (!in_array($method, $root_methods)) {
                         $this->error("Cowardly refusing to run as root. Use --allow-root to bypass this error.", 200);
                     }
+                    // We're running as root
+                    // - Without explicitly allowing
+                    // - In a method that's OK to run as root
+                    // - This indicates a temporary escalation - eg. for install, update, etc.
+                    // - So, we should *not* create the config file in this scenario
+                    // - Or it will have the wrong permissions
+                    $this->config_ok_to_create = false;
                 }
 
                 if ($initial) {
                     date_default_timezone_set($this->main_tool->timezone);
 
-                    $this->checkRequirements();
-
                     $this->log('Determined home directory to be ' . $this->main_tool->home_dir);
 
-
                     // Run an update check
+                    // auto:true, output:true
                     if ($this->updateCheck(true, true)) {
-// auto:true, output:true
                         if ($method != 'update') {
                             $this->sleep(3);
                         }
@@ -348,12 +352,12 @@ if (!class_exists("Command")) {
          * @return void
          * @throws mixed Throws $e that was passed if running in verbose mode.
          */
-        protected function _run_error(mixed $e, string $method)
+        protected function _run_error($e, string $method)
         {
             $class = get_class($e);
             $error = in_array($class, ['Exception', 'HJSONException'])
                 ? $e->getMessage()
-                : "Incorrect usage - see method help below:";
+                : "Incorrect usage - see method help below. Run with --verbose to see full error message.";
             $this->error($error, false);
             $this->help($method);
             if ($this->verbose) {
@@ -521,7 +525,7 @@ if (!class_exists("Command")) {
          *
          * @return void
          */
-        public function prompt(mixed $clear = false, mixed $help = true)
+        public function prompt($clear = false, $help = true)
         {
             if ($clear) {
                 $this->clear();
@@ -652,7 +656,7 @@ if (!class_exists("Command")) {
          *
          * @return array The cleaned and standardized paramater information array.
          */
-        protected function _help_param(mixed $param): array
+        protected function _help_param($param): array
         {
             if (!is_array($param)) {
                 $param = [$param];
@@ -756,6 +760,7 @@ if (!class_exists("Command")) {
         {
             $callable = [$this->main_tool, $method];
             if (is_callable($callable)) {
+                $this->main_tool->log("Attempting to call $method on Console_Abstract instance");
                 return call_user_func_array($callable, $arguments);
             }
 
@@ -835,7 +840,7 @@ if (!class_exists("Command_Visual")) {
                 'help' => [
                     'description' => 'Help - list available commands',
                     'keys' => '?',
-                    'callback' => [$this, 'help'],
+                    'callback' => [$this, 'visual_help'],
                 ],
                 'reload' => [
                     'description' => 'Reload - refresh this view',
@@ -897,7 +902,7 @@ if (!class_exists("Command_Visual")) {
          *
          * @return boolean Whether or not to continue the command prompt loop
          */
-        protected function promptAndRunCommand(array $commands, mixed $show_commands = false): bool
+        protected function promptAndRunCommand(array $commands, $show_commands = false): bool
         {
             if (!is_array($commands) or empty($commands)) {
                 $this->error("Invalid commands passed - expecting array of command definitions");
@@ -951,7 +956,7 @@ if (!class_exists("Command_Visual")) {
 
                     // Reload if set
                     if (!empty($command_details['reload'])) {
-                        $this->reload();
+                        $this->reload($this);
                     }
 
                     if (
@@ -982,12 +987,12 @@ if (!class_exists("Command_Visual")) {
          *
          *  - Lists all available commands to run in this area
          *
-         * @param string $specific A specific method or option to show detailed help for. NOT YET IMPLEMENTED - specified mainly to line up with parent method.
+         * @param Command $instance Instance of command class passed for reference.
          *
          * @api
          * @return void
          */
-        public function help(string $specific = "")
+        public function visual_help(Command $instance)
         {
             $this->clear();
             $this->hr();
@@ -1000,7 +1005,7 @@ if (!class_exists("Command_Visual")) {
             }
             $this->hr();
             $this->input("Hit any key to exit help", null, false, true);
-        }//end help()
+        }//end visual_help()
 
         /**
          * Exit the visual interface
@@ -1008,10 +1013,12 @@ if (!class_exists("Command_Visual")) {
          *  - Will return to previous area (eg. main prompt or exit tool perhaps)
          *  - Returns false statically to let the prompt loop know not to continue
          *
+         * @param Command $instance Instance of command class passed for reference.
+         *
          * @api
          * @return false
          */
-        public function quit()
+        public function quit(Command $instance)
         {
             return false;
         }//end quit()
@@ -1021,10 +1028,12 @@ if (!class_exists("Command_Visual")) {
          *
          *  - Calls the configured reload_function with optional reload_data if any
          *
+         * @param Command $instance Instance of command class passed for reference.
+         *
          * @api
          * @return mixed Result of reload function call - can vary based on context.
          */
-        public function reload()
+        public function reload(Command $instance)
         {
             return call_user_func($this->reload_function, $this->reload_data, $this);
         }//end reload()
@@ -1234,6 +1243,9 @@ if (!class_exists("Command_Visual_List")) {
                     if (is_string($target)) {
                         $value = $target;
                     }
+                    if (is_array($target)) {
+                        $value = implode(", ", $target);
+                    }
 
                     // var_dump($value);
                     if (!empty($format) and !empty($value)) {
@@ -1278,12 +1290,14 @@ if (!class_exists("Command_Visual_List")) {
          *  - Calls parent reload method (see Command_Visual).
          *  - Resets the list to value returned by reeload method.
          *
+         * @param Command $instance Instance of command class passed for reference.
+         *
          * @api
          * @return void
          */
-        public function reload()
+        public function reload(Command $instance)
         {
-            $list = parent::reload();
+            $list = parent::reload($instance);
             $this->list_original = $list;
             $this->list = $list;
         }//end reload()
@@ -2102,6 +2116,8 @@ if (!class_exists("HJSONStringifier"))
         private $needsEscapeName = '/[,\{\[\}\]\s:#"\']|\/\/|\/\*|\'\'\'/';
         private $gap = '';
         private $indent = '  ';
+		private $meta = null;
+
 
         // options
         private $eol;
@@ -4418,19 +4434,15 @@ if (! defined('DS')) {
     define('DS', DIRECTORY_SEPARATOR);
 }
 
-// Either log or display all errors
-error_reporting(E_ALL);
-
 if (defined('ERRORS') and ERRORS) {
     // Enable and show errors
     echo "\n\n************************************\n";
     echo "* Displaying all errors & warnings *\n";
     echo "************************************\n\n";
+    error_reporting(E_ALL);
     ini_set('display_errors', 1);
-    ini_set('html_errors', 0);
 } else {
-    // Disable PHP Error display
-    ini_set('display_errors', 0);
+    // Otherwise, we'll follow the system settings
 }
 
 if (! defined('PACKAGED') or ! PACKAGED and is_dir(__DIR__ . DS . "lib")) {
@@ -4502,6 +4514,13 @@ if (! class_exists("Console_Abstract")) {
         protected const EDIT_LINE_BREAK = "--------------------------------------------------";
 
         /**
+         * Value to show user as an option to go to prior selection / area
+         *
+         * @var string
+         */
+        protected const BACK_OPTION = '<-- Go Back [B]';
+
+        /**
          * Callable Methods
          *
          *  - Must be public methods defined on the class
@@ -4548,6 +4567,7 @@ if (! class_exists("Console_Abstract")) {
             'editor_exec',
             'editor_modify_exec',
             'install_path',
+            'livefilter',
             'step',
             'timezone',
             'update_auto',
@@ -4628,7 +4648,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @var string
          */
-        protected $browser_exec   = 'nohup google-chrome "%s" >/dev/null 2>&1 &';
+        protected $browser_exec = 'nohup google-chrome "%s" >/dev/null 2>&1 &';
 
         /**
          * Help info for $cache_lifetime
@@ -4647,7 +4667,7 @@ if (! class_exists("Console_Abstract")) {
          * @var integer
          * @api
          */
-        public $cache_lifetime      = 86400;
+        public $cache_lifetime = 86400;
 
         /**
          * Help info for $editor_exec
@@ -4666,7 +4686,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @var string
          */
-        protected $editor_exec   = '/usr/bin/vim -c "startinsert" "%s" > `tty`';
+        protected $editor_exec = '/usr/bin/vim -c "startinsert" "%s" > `tty`';
 
         /**
          * Help info for $editor_modify_exec
@@ -4686,7 +4706,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @var string
          */
-        protected $editor_modify_exec   = '/usr/bin/vim "%s" > `tty`';
+        protected $editor_modify_exec = '/usr/bin/vim "%s" > `tty`';
 
         /**
          * Help info for $install_path
@@ -4703,7 +4723,23 @@ if (! class_exists("Console_Abstract")) {
          * @var string
          * @api
          */
-        public $install_path      = DS . "usr" . DS . "local" . DS . "bin";
+        public $install_path = DS . "usr" . DS . "local" . DS . "bin";
+
+        /**
+         * Help info for $livefilter
+         *
+         * @var mixed
+         *
+         * @internal
+         */
+        protected $__livefilter = ["Status of livefilter for select interface - false/disabled, true/enabled, or autoenter", "string"];
+
+        /**
+         * Status of livefilter for select interface - false/disabled, true/enabled, or autoenter
+         *
+         * @var mixed
+         */
+        public $livefilter = 'enabled';
 
         /**
          * Help info for $ssl_check
@@ -4936,6 +4972,13 @@ if (! class_exists("Console_Abstract")) {
         protected $config_to_save = null;
 
         /**
+         * Config is OK to create
+         *
+         * @var boolean
+         */
+        protected $config_ok_to_create = true;
+
+        /**
          * Timestamp when the tool was initilized - eg. when constructor ran
          *
          * @var string
@@ -5157,6 +5200,8 @@ if (! class_exists("Console_Abstract")) {
          */
         public function __construct()
         {
+            $this->checkRequirements();
+
             date_default_timezone_set($this->timezone);
             $this->run_stamp = $this->stamp();
 
@@ -5193,6 +5238,8 @@ if (! class_exists("Console_Abstract")) {
             $this->log("OS: " . PHP_OS);
             $this->log("Windows: " . ($this->is_windows ? "Yes" : "No"));
 
+            $major_problem = false;
+
             $php_version = explode('.', PHP_VERSION);
             $major       = (int) $php_version[0];
             if ($major < $this->minimum_php_major_version) {
@@ -5201,11 +5248,17 @@ if (! class_exists("Console_Abstract")) {
             }
 
             if (! function_exists('curl_version')) {
-                $problems[] = "This tool requires curl for many features such as update checks and installs - please install php-curl";
+                $problems[] = "This tool requires curl - please install https://www.php.net/manual/en/book.curl.php - specific install steps vary by OS";
+                $major_problem = true;
+            }
+
+            if (! function_exists('mb_strlen')) {
+                $problems[] = "This tool requires mbstring - please install https://www.php.net/manual/en/book.mbstring.php - specific install steps vary by OS";
+                $major_problem = true;
             }
 
             if (! empty($problems)) {
-                $this->error("There are some problems with requirements: \n - " . implode("\n - ", $problems), false, true);
+                $this->error("There are some problems with requirements: \n - " . implode("\n - ", $problems), $major_problem, true);
             }
         }//end checkRequirements()
 
@@ -5262,7 +5315,7 @@ if (! class_exists("Console_Abstract")) {
          * @return boolean Whether backup was successful.
          * @api
          */
-        public function backup(mixed $files, bool $output = true): bool
+        public function backup($files, bool $output = true): bool
         {
             $success = true;
 
@@ -5329,7 +5382,7 @@ if (! class_exists("Console_Abstract")) {
          * @return void
          * @api
          */
-        public function eval_file(string $file, mixed ...$evaluation_arguments)
+        public function eval_file(string $file, ...$evaluation_arguments)
         {
             if (! is_file($file)) {
                 $this->error("File does not exist, check the path: $file");
@@ -5745,7 +5798,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return void
          */
-        public function error(mixed $data, mixed $code = 500, bool $prompt_to_continue = false)
+        public function error($data, $code = 500, bool $prompt_to_continue = false)
         {
             $this->br();
             $this->hr('!');
@@ -5753,7 +5806,7 @@ if (! class_exists("Console_Abstract")) {
             $this->output($data);
             $this->hr('!');
             if ($code) {
-                exit($code);
+                exit($code === true ? 500 : $code);
             }
 
             if ($prompt_to_continue) {
@@ -5772,7 +5825,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return void
          */
-        public function warn(mixed $data, bool $prompt_to_continue = false)
+        public function warn($data, bool $prompt_to_continue = false)
         {
             $this->br();
             $this->hr('*');
@@ -5796,7 +5849,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return void
          */
-        public function log(mixed $data)
+        public function log($data)
         {
             if (! $this->verbose) {
                 return;
@@ -5814,7 +5867,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return void
          */
-        public function output(mixed $data, bool $line_ending = true, bool $stamp_lines = null)
+        public function output($data, bool $line_ending = true, bool $stamp_lines = null)
         {
             $data = $this->stringify($data);
 
@@ -5840,7 +5893,7 @@ if (! class_exists("Console_Abstract")) {
          */
         public function outputProgress(int $count, int $total, string $description = "remaining")
         {
-            if (! $this->verbose) {
+            if (! $this->verbose && $total > 0) {
                 if ($count > 0) {
                     // Set cursor to first column
                     echo chr(27) . "[0G";
@@ -5869,7 +5922,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return string The stringified data - ready for output.
          */
-        public function stringify(mixed $data): string
+        public function stringify($data): string
         {
             if (is_object($data) or is_array($data)) {
                 $data = print_r($data, true);
@@ -5904,7 +5957,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return string The colorized / decorated string, ready for output to console.
          */
-        public function colorize(string $string, mixed $foreground = null, mixed $background = null, mixed $other = [])
+        public function colorize(string $string, $foreground = null, $background = null, $other = []): string
         {
             if (empty($foreground) and empty($background) and empty($other)) {
                 return $string;
@@ -6104,29 +6157,23 @@ if (! class_exists("Console_Abstract")) {
          * @param array   $preselects Pre-selected values - eg. could have been passed in as arguments to CLI.
          *                            Passed by reference so they can be passed through a chain of selections and/or narrowed-down lists.
          *                            Defaults to empty array - no preselections.
-         * @param boolean $livefilter Whether to filter the list while typing - NOT YET IMPLEMENTED.
-         *                            Defaults to true.
+         * @param mixed   $livefilter Whether to filter the list while typing - falls back to configuration if not set.
          *
          * @return string The value of the item in the list that was selected.
          */
-        public function select(array $list, mixed $message = false, int $default = 0, bool $q_to_quit = true, array &$preselects = [], bool $livefilter = false): string
+        public function select(array $list, $message = false, int $default = 0, bool $q_to_quit = true, array &$preselects = [], $livefilter = null): string
         {
-
-            // Not yet implemented - in progress
-            if ($livefilter) {
-                $this->clear();
-
-                // NEED to figure out how to detect backspace & enter
-                // - maybe focus on how to do it in bash
-                while (true) {
-                    $char = $this->input("Enter char", null, false, 'single', 'single_hide');
-                    if ($char == 'q') {
-                        die;
-                    }
-                    var_dump($char);
-                    echo "\n";
-                }
+            // Fall back to configuration if not specified
+            if (is_null($livefilter)) {
+                $livefilter = $this->livefilter;
             }
+            if ($livefilter !== "disabled" && $livefilter !== false) {
+                return $this->liveSelect($list, $message, $default, $q_to_quit, $preselects);
+            }//end if
+
+            /*
+             * Otherwise, fall back to normal select, ie. not livefilter
+             */
 
             // Display the list with indexes
             $list = array_values($list);
@@ -6161,7 +6208,7 @@ if (! class_exists("Console_Abstract")) {
 
                 // Maybe process q - Quit option
                 if ($q_to_quit and (strtolower(trim($entry)) == 'q')) {
-                    $this->warn('Selection Canceled');
+                    $this->warn('Selection Exited');
                     exit;
                 }
 
@@ -6198,6 +6245,231 @@ if (! class_exists("Console_Abstract")) {
         }//end select()
 
         /**
+         * Get selection from list via CLI input - using live filtering UX
+         *
+         * @param array   $list       List of items to select from.
+         * @param mixed   $message    Message to show, prompting input - defaults to false, no message.
+         * @param integer $default    Default selection index - defaults to 0 - first item.
+         * @param boolean $q_to_quit  Add a 'q' option to the list to quite - defaults to true.
+         * @param array   $preselects Pre-selected values - eg. could have been passed in as arguments to CLI.
+         *                            Passed by reference so they can be passed through a chain of selections and/or narrowed-down lists.
+         *                            Defaults to empty array - no preselections.
+         *
+         * @return string The value of the item in the list that was selected.
+         */
+        public function liveSelect(array $list, $message = false, int $default = 0, bool $q_to_quit = true, array &$preselects = []): string
+        {
+            $preselected = false;
+            $entry = "";
+            $error = "";
+
+            // Get preselected entry if passed
+            if (!empty($preselects)) {
+                $preselected = true;
+                $entry = array_shift($preselects);
+            }
+
+            if ($message) {
+                if ($message === true) {
+                    $message = "";
+                }
+
+                if (! is_null($default)) {
+                    $message .= " ($default)";
+                }
+                $message .= ": ";
+                $message = $this->colorize($message, null, null, 'bold');
+            }
+
+            // Maximum display height - leave a bit of breathing room at the bottom
+            // 1 space for hr
+            // 1 space for error message
+            // 1 space for prompt itself
+            // 1 space after prompt
+            $list_height = $this->getTerminalHeight() - 4;
+            $list_count = count($list);
+            if ($list_count < $list_height) {
+                $list_height = $list_count;
+            }
+
+            $show_help = false;
+            $list = array_values($list);
+            $back_is_option = in_array(static::BACK_OPTION, $list, true);
+
+            while (true) {
+                $output = [];
+
+                $single_filtered_item = false;
+                $filtered_items = [];
+                foreach ($list as $i => $item) {
+                    $item_simple = preg_replace('/[^a-z0-9]+/i', '', $item);
+                    $entry_simple = preg_replace('/[^a-z0-9]+/i', '', $entry);
+                    if (
+                        $entry === ""
+                        || stripos($item, $entry) !== false
+                        || stripos($item_simple, $entry_simple) !== false
+                        || is_numeric($entry) && stripos($i, $entry) !== false
+                    ) {
+                        $filtered_items[$i] = $item;
+                    }
+                }
+
+                $filtered_default = ! isset($filtered_items[$default]);
+
+                if (empty($filtered_items)) {
+                    $error .= "[NO MATCHES - press D to delete all input or X to backspace]";
+                } elseif (count($filtered_items) === 1) {
+                    $single_filtered_item = true;
+                }
+
+                // Auto-enter once filtered down to one option
+                // - if 'autoenter' configured
+                // - or, if this was a preselected entry
+                if (
+                    $single_filtered_item
+                    && (
+                        $livefilter === 'autoenter'
+                        || $preselected
+                    )
+                ) {
+                    break;
+                }
+
+                // If not a perfect match, no longer consider it preselected
+                // (so after typing more no autoenter unless configured)
+                $preselected = false;
+
+                // Display help info & prompt
+                $this->clear();
+                $output[] = "Type [lowercase only] to filter options. Press ? to toggle help.";
+                if ($show_help) {
+                    if ($q_to_quit) {
+                        $output[] = " - Q ........................ Quit";
+                    }
+                    $output[] = " - X or [Backspace] ......... Backspace";
+                    $output[] = " - D ........................ Delete/clear all input";
+                    $output[] = " - G/E/M or [Enter] twice ... Select top/bolded option";
+                    $output[] = " - [Enter] once ............. Continue/select single remaining input";
+                    $output[] = " - ? ........................ Toggle help";
+                }
+                foreach ($output as $line) {
+                    $this->output($line);
+                }
+                $output_lines = count($output);
+
+                $this->hr();
+                $output_lines++;
+
+                if ($message) {
+                    $this->output($message);
+                    $output_lines++;
+                }
+
+                // Display the list with indexes, with the top/default highlighted
+                $f = 0;
+                foreach ($filtered_items as $i => $item) {
+                    // If there are too many items and we are at height limit
+                    // - cut off with room for [more] note
+                    if (
+                        $output_lines >= ($list_height - 1)
+                        && count($filtered_items) > $list_height
+                    ) {
+                        $output_lines++;
+                        $this->output('... [MORE BELOW IN LIST - TYPE TO FILTER] ...');
+                        break;
+                    }
+
+                    $bold = null;
+                    $color = $single_filtered_item ? 'green' : null;
+                    $hint = "";
+                    $_item_is_default = $filtered_default ? $f === 0 : $i === $default;
+                    if ($_item_is_default) {
+                        $bold = 'bold';
+                        if (substr($entry, -1) === " ") {
+                            $color = 'green';
+                            $hint = $this->colorize(" [Hit Enter Again to Select]", 'blue');
+                        }
+                    }
+
+                    $this->output($this->colorize("$i. $item", $color, null, $bold) . $hint);
+                    $output_lines++;
+                    $color = null;
+                    $f++;
+                }//end foreach
+
+                $this->hr();
+
+                // Clear the line for the prompt
+                echo str_pad(" ", $this->getTerminalWidth());
+                // Set cursor to first column
+                echo chr(27) . "[0G";
+                // Output the prompt & entry so far
+                $error = $this->colorize($error, 'red');
+                $ready_for_enter = "";
+                if ($single_filtered_item) {
+                    $ready_for_enter = $this->colorize("Press [Enter] or [Space] to proceed with highlighted item", "blue");
+                }
+                echo "$error $ready_for_enter\n";
+                echo "> $entry";
+                $error = "";
+
+                $char = $this->input(false, null, false, 'single', 'single_hide', false);
+
+                // For some reason, both space & enter come through as a new line
+                if ($char === "\n") {
+                    // If there's only one item, OR they hit it twice, treat this as Enter
+                    if ($single_filtered_item) {
+                        // to return first filtered item
+                        break;
+                    }
+                    if ($single_filtered_item || substr($entry, -1) === " ") {
+                        return $filtered_default ? array_shift($filtered_items) : $list[$default];
+                    }
+                    // Otherwise treat it as space
+                    $char = " ";
+                } else {
+                    $char = trim($char);
+                }
+
+                // Quit - if it's an option
+                if ($char === 'Q' && $q_to_quit) {
+                    $this->warn('Selection Exited');
+                    exit;
+                // Back - if it's an option
+                } elseif ($char === 'B' && $back_is_option) {
+                    return static::BACK_OPTION;
+                // Clear all input
+                } elseif ($char === 'D') {
+                    $entry = "";
+                // Backspace one character
+                } elseif (in_array($char, ['X', ""])) {
+                    $entry = substr($entry, 0, -1);
+                // Enter/Continue - return current top item
+                } elseif (in_array($char, ['G', "E", "M"])) {
+                    // To return first filtered item
+                    break;
+                // Toggle help
+                } elseif (in_array($char, ["?"])) {
+                    $show_help = ! $show_help;
+                // Invalid keys (any other uppercase letter)
+                } elseif (preg_match('/[A-Z]/', $char)) {
+                    $error .= "[INVALID KEY - lowercase only]";
+                } else {
+                    $entry = "$entry$char";
+                }//end if
+            }//end while
+
+            $this->clear();
+
+            // Return first filtered item
+            foreach ($filtered_items as $s => $selected) {
+                // Return the top item in the filtered list
+                return $selected;
+            }
+        }//end liveSelect()
+
+
+        /**
          * Get a confirmation from the user (yes/no prompt)
          *
          *  - Gets input from user and returns true if it's 'y' or 'Y' - otherwise, false
@@ -6212,7 +6484,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return boolean Whether yes was entered by the user.
          */
-        public function confirm(mixed $message, string $default = 'y', bool $required = false, bool $single = true, bool $single_hide = false): bool
+        public function confirm($message, string $default = 'y', bool $required = false, bool $single = true, bool $single_hide = false): bool
         {
             $yn = $this->input($message, $default, $required, $single, $single_hide);
             $this->br();
@@ -6251,10 +6523,11 @@ if (! class_exists("Console_Abstract")) {
          * @param mixed  $required    Whether input is required before continuing. Defaults to false.
          * @param mixed  $single      Whether to prompt for a single character from the user - eg. they don't have to hit enter. Defaults to false.
          * @param mixed  $single_hide Whether to hide the user's input when prompting for a single character. Defaults to false.
+         * @param mixed  $trim        Whether to trim the user's input before returning. Defaults to true.
          *
          * @return string The text input from the user.
          */
-        public function input(mixed $message = false, string $default = null, mixed $required = false, mixed $single = false, mixed $single_hide = false): string
+        public function input($message = false, string $default = null, $required = false, $single = false, $single_hide = false, $trim = true): string
         {
             if ($message) {
                 if ($message === true) {
@@ -6288,7 +6561,10 @@ if (! class_exists("Console_Abstract")) {
                     $handle = $this->getCliInputHandle();
                     $line   = fgets($handle);
                 }
-                $line = trim($line);
+
+                if ($trim) {
+                    $line = trim($line);
+                }
 
                 // Entered input - return
                 if ($line !== "") {
@@ -6497,24 +6773,30 @@ if (! class_exists("Console_Abstract")) {
                 $this->config_to_save['__WSC__']['c'][" "] = "\n    /**\n     * " . $this->version(false) . " configuration\n     */\n";
                 foreach ($this->config_to_save as $key => $value) {
                     if ($key != '__WSC__') {
+                        $value = '';
                         $help = $this->_help_var($key, 'option');
-                        if (empty($help)) {
-                            continue;
+                        if (!empty($help)) {
+                            $help = $this->_help_param($help);
+                            $type = $help[1];
+                            $info = $help[0];
+
+                            $value = " // ($type) $info";
                         }
-
-                        $help = $this->_help_param($help);
-                        $type = $help[1];
-                        $info = $help[0];
-
-                        $value = " // ($type) $info";
                     }
 
                     $this->config_to_save['__WSC__']['c'][$key] = $value;
                 }
 
                 // Rewrite config file
-                $json = $this->json_encode($this->config_to_save);
-                file_put_contents($config_file, $json);
+                if (is_file($config_file) || $this->config_ok_to_create) {
+                    $json = $this->json_encode($this->config_to_save);
+                    $success = file_put_contents($config_file, $json);
+                    if (! $success) {
+                        $this->error("Failed to write to config file ($config_file) - check permissions");
+                    }
+                } else {
+                    $this->log("Config file ($config_file) does not exist and is not being created due to run state", true);
+                }
 
                 // Fix permissions if needed
                 if ($this->running_as_root and ! $this->logged_in_as_root) {
@@ -6552,7 +6834,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return mixed The prepared result.
          */
-        public function prepArg(mixed $value, mixed $default, string $force_type = null, bool $trim = true): mixed
+        public function prepArg($value, $default, string $force_type = null, bool $trim = true): mixed
         {
             $a = func_num_args();
             if ($a < 2) {
@@ -6632,7 +6914,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return void
          */
-        public function configure(string $key, mixed $value, bool $save_value = false)
+        public function configure(string $key, $value, bool $save_value = false)
         {
             $key = str_replace('-', '_', $key);
 
@@ -6775,7 +7057,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return mixed The contents of the cache file, or false if file expired, does not exist, or can't be read.
          */
-        public function getCacheContents(mixed $subpath, int $expiration = null): mixed
+        public function getCacheContents($subpath, int $expiration = null): mixed
         {
             $expiration = $expiration ?? $this->cache_lifetime;
 
@@ -6811,7 +7093,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return mixed The path to the new cache file, or false if failed to write.
          */
-        public function setCacheContents(mixed $subpath, string $contents): mixed
+        public function setCacheContents($subpath, string $contents): mixed
         {
             $config_dir = $this->getConfigDir();
             $cache_dir  = $config_dir . DS . 'cache';
@@ -6843,7 +7125,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return mixed The contents of the temp file, or false if file does not exist or can't be read.
          */
-        public function getTempContents(mixed $subpath): mixed
+        public function getTempContents($subpath): mixed
         {
             $config_dir = $this->getConfigDir();
             $temp_dir   = $config_dir . DS . 'temp';
@@ -6871,7 +7153,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return mixed The path to the new temp file, or false if failed to write.
          */
-        public function setTempContents(mixed $subpath, string $contents): mixed
+        public function setTempContents($subpath, string $contents): mixed
         {
             $config_dir = $this->getConfigDir();
             $temp_dir   = $config_dir . DS . 'temp';
@@ -6912,7 +7194,7 @@ if (! class_exists("Console_Abstract")) {
          *                - 'page_length'   The length of the output being displayed.
          *                - 'ending_line'   THe number of the last line being displayed.
          */
-        public function paginate(mixed $content, array $options = []): array
+        public function paginate($content, array $options = []): array
         {
             $options = array_merge([
                 'starting_line' => 1,
@@ -7135,7 +7417,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return integer The height of the terminal output screen.
          */
-        public function getTerminalHeight(mixed $fresh = false): int
+        public function getTerminalHeight($fresh = false): int
         {
             if ($fresh or empty($this->_terminal_height)) {
                 exec("tput lines", $output, $return);
@@ -7169,7 +7451,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return integer The width of the terminal output screen.
          */
-        public function getTerminalWidth(mixed $fresh = false): int
+        public function getTerminalWidth($fresh = false): int
         {
             if ($fresh or empty($this->_terminal_width)) {
                 exec("tput cols", $output, $return);
@@ -7214,7 +7496,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return string The processed output, ready for terminal.
          */
-        public function parseHtmlForTerminal(mixed $dom, int $depth = 0, string $prefix = ""): string
+        public function parseHtmlForTerminal($dom, int $depth = 0, string $prefix = ""): string
         {
             $output = "";
 
@@ -7349,9 +7631,11 @@ if (! class_exists("Console_Abstract")) {
          * @param string $json    The raw JSON/HJSON string to be interpreted.
          * @param mixed  $options Options to pass through to HJSON.  Also supports 'true' for associative array, to match json_decode builtin.
          *
+         * @throws Exception If there is an error parsing the JSON.
+         *
          * @return mixed The decoded data - typically object or array.
          */
-        public function json_decode(string $json, mixed $options = []): mixed
+        public function json_decode(string $json, $options = []): mixed
         {
             $this->log("Running json_decode on console_abstract");
 
@@ -7366,7 +7650,11 @@ if (! class_exists("Console_Abstract")) {
             }
 
             $parser = new HJSONParser();
-            $data   = $parser->parse($json, $options);
+            try {
+                $data   = $parser->parse($json, $options);
+            } catch (Exception $e) {
+                throw new Exception("While parsing JSON:\n" . $e->getMessage());
+            }
             $this->_json_cleanup($data);
             return $data;
         }//end json_decode()
@@ -7379,7 +7667,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return string The encoded HJSON string.
          */
-        public function json_encode(mixed $data, array $options = []): string
+        public function json_encode($data, array $options = []): string
         {
             $this->log("Running json_encode on console_abstract");
 
@@ -7421,7 +7709,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return void Updates $data directly by reference.
          */
-        protected function _json_cleanup(mixed &$data)
+        protected function _json_cleanup(&$data)
         {
             if (is_iterable($data)) {
                 foreach ($data as $key => &$value) {
@@ -7447,6 +7735,7 @@ if (! class_exists("Console_Abstract")) {
          * @param array  $arguments The arguments being passed to the method.
          *
          * @throws Exception Errors every time to prevent infinite loop.
+         *
          * @return mixed Doesn't really return anything - always throws error.
          */
         public function __call(string $method, array $arguments = []): mixed

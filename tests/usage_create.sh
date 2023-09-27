@@ -15,7 +15,7 @@ echo -n "Usage - Create - Tests Starting"
 
 if [ -d "$TEST_DIR" ]; then
     pced "Target directory already exists - cleanup required"
-    "$DIR/cleanup.sh" --pause
+    "$DIR/cleanup.sh" x --no-pause
 fi
 
 pced "Creating new tool"
@@ -30,22 +30,22 @@ pced "Creating new tool"
 
 if [ "$1" != "--no-use-test" ]; then
     pced "Testing version output:"
-    "$TEST_SCRIPT" version
+    "$TEST_SCRIPT" version --no-update-version-url
 
     pced "Testing help output:"
-    "$TEST_SCRIPT" help
+    "$TEST_SCRIPT" help --no-update-version-url
 
     pced "Testing help output for 'test' method:"
-    "$TEST_SCRIPT" help test
+    "$TEST_SCRIPT" help test --no-update-version-url
 
     pced "Testing 'test' method:"
-    "$TEST_SCRIPT" test
+    "$TEST_SCRIPT" test --no-update-version-url
 
     pced "Testing 'test' method with custom message and verbose stamped output:"
-    "$TEST_SCRIPT" test "Custom Message" --verbose --stamp-lines
+    "$TEST_SCRIPT" test "Custom Message" --verbose --stamp-lines --no-update-version-url
 
     pced "Testing 'backup' method by backing up config:"
-    "$TEST_SCRIPT" backup "$TEST_SCRIPT_CONFIG_DIR/config.hjson"
+    "$TEST_SCRIPT" backup "$TEST_SCRIPT_CONFIG_DIR/config.hjson" --no-update-version-url
 
     pced "Usage - Create - Tests Complete"
 fi

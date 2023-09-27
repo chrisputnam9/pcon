@@ -20,7 +20,7 @@ class PCon extends Console_Abstract
      *
      * @var string
      */
-    public const VERSION = "1.5.1";
+    public const VERSION = "1.5.2";
 
     /**
      * Tool shortname - used as name of configurationd directory.
@@ -444,7 +444,7 @@ class PCon extends Console_Abstract
      * @return void
      * @api
      */
-    public function test_colors(mixed $types = null)
+    public function test_colors($types = null)
     {
         $types = $this->prepArg($types, ["foreground","background","other"]);
 
