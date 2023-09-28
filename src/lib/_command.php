@@ -517,7 +517,7 @@ if (!class_exists("Command")) {
          *
          * @return mixed help information, or empty string if none found
          */
-        protected function _help_var(string $specific, string $type = ""): mixed
+        protected function _help_var(string $specific, string $type = "")
         {
             $help = "";
             $specific = str_replace('-', '_', $specific);
@@ -647,7 +647,7 @@ if (!class_exists("Command")) {
          * @throws Exception If the method can't be found on the "main_tool" instance.
          * @return mixed If able to call the method on the "main_tool" (instance of Console_Abstract) then, return the value from calling that method.
          */
-        public function __call(string $method, array $arguments = []): mixed
+        public function __call(string $method, array $arguments = [])
         {
             $callable = [$this->main_tool, $method];
             if (is_callable($callable)) {

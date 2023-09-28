@@ -45,13 +45,12 @@
 
         <!-- For compatibility with PHP 7.4 we have to leave off some type hints (eg. mixed) -->
         <exclude name="Squiz.Commenting.FunctionComment.TypeHintMissing"/>
-        <exclude name="Squiz.Commenting.FunctionComment.WrongParamType"/>
 	</rule>
 
     <rule ref="Generic.Commenting"/>
 
 	<!-- Check for PHP compatibility. -->
-	<config name="testVersion" value="7.4-"/>
+	<config name="testVersion" value="7.4-8.2"/>
 	<rule ref="PHPCompatibility"/>
 
 </ruleset>

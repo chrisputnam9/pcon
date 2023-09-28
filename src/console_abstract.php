@@ -1176,7 +1176,7 @@ if (! class_exists("Console_Abstract")) {
          * @return mixed The version string if output is false, otherwise false.
          * @api
          */
-        public function version(bool $output = true): mixed
+        public function version(bool $output = true)
         {
             $class          = get_called_class();
             $version_string = $class::SHORTNAME . ' version ' . $class::VERSION;
@@ -2418,7 +2418,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return mixed The prepared result.
          */
-        public function prepArg($value, $default, string $force_type = null, bool $trim = true): mixed
+        public function prepArg($value, $default, string $force_type = null, bool $trim = true)
         {
             $a = func_num_args();
             if ($a < 2) {
@@ -2531,9 +2531,9 @@ if (! class_exists("Console_Abstract")) {
          *
          * @uses Console_Abstract::ssl_check to determine if curl should verify peer/host SSLs. Warns if not verifying.
          *
-         * @return CurlHandle The initialized curl handle.
+         * @return CurlHandle The initialized curl handle (at least in later PHP versions).
          */
-        public function getCurl(string $url, bool $fresh_no_cache = false): CurlHandle
+        public function getCurl(string $url, bool $fresh_no_cache = false)
         {
             if (! $this->ssl_check) {
                 $this->warn("Initializing unsafe connection to $url (no SSL check, as configured)", true);
@@ -2561,11 +2561,11 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Execute a curl request, do some basic error processing, and return the response.
          *
-         * @param CurlHandle $curl The curl handle to execute.
+         * @param CurlHandle $curl The curl handle to execute. Type behaves differently in 7.4.
          *
          * @return string The response from the curl request.
          */
-        public function execCurl(CurlHandle $curl): string
+        public function execCurl($curl): string
         {
             $response = curl_exec($curl);
 
@@ -2641,7 +2641,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return mixed The contents of the cache file, or false if file expired, does not exist, or can't be read.
          */
-        public function getCacheContents($subpath, int $expiration = null): mixed
+        public function getCacheContents($subpath, int $expiration = null)
         {
             $expiration = $expiration ?? $this->cache_lifetime;
 
@@ -2677,7 +2677,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return mixed The path to the new cache file, or false if failed to write.
          */
-        public function setCacheContents($subpath, string $contents): mixed
+        public function setCacheContents($subpath, string $contents)
         {
             $config_dir = $this->getConfigDir();
             $cache_dir  = $config_dir . DS . 'cache';
@@ -2709,7 +2709,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return mixed The contents of the temp file, or false if file does not exist or can't be read.
          */
-        public function getTempContents($subpath): mixed
+        public function getTempContents($subpath)
         {
             $config_dir = $this->getConfigDir();
             $temp_dir   = $config_dir . DS . 'temp';
@@ -2737,7 +2737,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return mixed The path to the new temp file, or false if failed to write.
          */
-        public function setTempContents($subpath, string $contents): mixed
+        public function setTempContents($subpath, string $contents)
         {
             $config_dir = $this->getConfigDir();
             $temp_dir   = $config_dir . DS . 'temp';
@@ -3219,7 +3219,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return mixed The decoded data - typically object or array.
          */
-        public function json_decode(string $json, $options = []): mixed
+        public function json_decode(string $json, $options = [])
         {
             $this->log("Running json_decode on console_abstract");
 
@@ -3322,7 +3322,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @return mixed Doesn't really return anything - always throws error.
          */
-        public function __call(string $method, array $arguments = []): mixed
+        public function __call(string $method, array $arguments = [])
         {
             throw new Exception("Invalid method '$method'");
 

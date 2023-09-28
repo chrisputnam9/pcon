@@ -28,6 +28,7 @@ function pced {
     echodiv
     pause
     clear
+    echo "[Current PHP Version is: $(php -v | head -n1 | sed 's/PHP \([0-9\.]*\).*/\1/g')]"
     echo "$1"
     echodiv
     echo
