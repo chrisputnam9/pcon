@@ -1,4 +1,4 @@
-1. Increment version following SemVer in README.md and src/pcon.php
+1. Increment version in README.md and src/pcon.php
 2. Update versions in phpcs.xml and test/full.sh if needed
     - reference [supported PHP versions](https://www.php.net/supported-versions.php) and decide what to support.
 3. Run ./test/full.sh and review output for issues
