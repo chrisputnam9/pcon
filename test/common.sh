@@ -17,7 +17,7 @@ function echodiv {
 function echopackagenote {
     echo
     echodiv
-    echo "ATTENTION: at this point, you should update tests/dist/test-readme.md with the hash output above"
+    echo "ATTENTION: at this point, you should update test/dist/test-readme.md with the hash output above"
     echodiv
     echo "Press any key to continue"
     read -r

@@ -7846,7 +7846,7 @@ class Example_Test_Tool extends Console_Abstract
      * @see PCon::update_version_url
      * @api
      */
-    public $update_version_url = "https://raw.githubusercontent.com/chrisputnam9/pcon/master/tests/dist/test-readme.md";
+    public $update_version_url = "https://raw.githubusercontent.com/chrisputnam9/pcon/master/test/dist/test-readme.md";
 
     /**
      * Help info for test method

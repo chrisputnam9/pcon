@@ -25,7 +25,7 @@ pced "Creating new tool"
     "Example Test Tool" \
     "chrisputnam9" \
     "A simple example tool, used to test PCon tooling." \
-    "https://raw.githubusercontent.com/chrisputnam9/pcon/master/tests/dist/test-readme.md" \
+    "https://raw.githubusercontent.com/chrisputnam9/pcon/master/test/dist/test-readme.md" \
     "_test" \
     "$TMP_DIR" \
     "true"
