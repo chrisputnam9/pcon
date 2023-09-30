@@ -14,7 +14,7 @@ fi
 
 echo "$TEST_DIR will be removed and recreated"
 
-pced "Removing old test dir"
+pced "Removing old test dir - may need admin authentication"
 sudo rm -rvf "$TEST_DIR" "$TEST_SCRIPT_INSTALLED" "$TEST_SCRIPT_CONFIG_DIR"
 
 pced "Cleanup complete"
