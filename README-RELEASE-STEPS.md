@@ -1,6 +1,6 @@
 # Release Steps for PCon
 1. Increment version in [README.md](./README.md) and [src/pcon.php](./src/pcon.php)
-1. Update versions in [phpcs.xml](./phpcs.xml) and [test/full.sh](./test/full.sh) if needed
+1. Update PHP versions in [src/console_abstract.php](./src/console_abstract.php), [phpcs.xml](./phpcs.xml), and [test/full.sh](./test/full.sh) if needed
     - reference [supported PHP versions](https://www.php.net/supported-versions.php) and decide what to support.
 1. Run `./test/full.sh` and review output for issues
     - Be sure to update [test/dist/test-readme.md](./test/dist/test-readme.md) with the new hash as instructed

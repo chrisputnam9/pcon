@@ -622,11 +622,18 @@ if (! class_exists("Console_Abstract")) {
         protected $is_windows = false;
 
         /**
-         * The minimum PHP major version required for this tool
+         * The minimum PHP major version supported by this tool
          *
          * @var integer
          */
-        protected $minimum_php_major_version = 7;
+        protected $minimum_php_version = "7.4";
+
+        /**
+         * The minimum PHP major version supported by the "livefilter" feature
+         *
+         * @var integer
+         */
+        protected $minimum_php_version_livefilter = "8.0";
 
         /**
          * Update behavior - either "DOWNLOAD" or custom text
@@ -809,7 +816,7 @@ if (! class_exists("Console_Abstract")) {
         /**
          * Check requirements
          *
-         *  - PHP Version & Modules
+         *  - Eg. PHP Version & Modules
          *  - Extend in child if needed and pass problems to parent
          *
          * @param array $problems Existing problems passed by child class.
@@ -824,11 +831,9 @@ if (! class_exists("Console_Abstract")) {
 
             $major_problem = false;
 
-            $php_version = explode('.', PHP_VERSION);
-            $major       = (int) $php_version[0];
-            if ($major < $this->minimum_php_major_version) {
-                $problems[] = "This tool is not well tested below PHP " . $this->minimum_php_major_version .
-                    " - please consider upgrading to PHP " . $this->minimum_php_major_version . ".0 or higher";
+            if (version_compare(PHP_VERSION, $this->minimum_php_version) < 0) {
+                $problems[] = "This tool is not well tested below PHP " . $this->minimum_php_version .
+                    "\n   - Please upgrade to PHP " . $this->minimum_php_version . " or higher";
             }
 
             if (! function_exists('curl_version')) {
@@ -845,6 +850,38 @@ if (! class_exists("Console_Abstract")) {
                 $this->error("There are some problems with requirements: \n - " . implode("\n - ", $problems), $major_problem, true);
             }
         }//end checkRequirements()
+
+        /**
+         * Check requirements that need to be informed by config values
+         *
+         *  - Extend in child if needed and pass problems to parent
+         *
+         * @param array $problems Existing problems passed by child class.
+         *
+         * @return void
+         */
+        protected function checkRequirementsAfterConfigLoad(array $problems = [])
+        {
+            $major_problem = false;
+
+            if ($this->livefilter !== "disabled" && $this->livefilter !== false) {
+                if (version_compare(PHP_VERSION, $this->minimum_php_version_livefilter) < 0) {
+                    $problems[] = "Livefilter does not work well below PHP " . $this->minimum_php_version_livefilter .
+                        "\n   - Either upgrade to PHP " . $this->minimum_php_version_livefilter . " or higher" .
+                        "\n   - Or set livefilter to 'disabled' in " . $this->config_file;
+                }
+            }
+
+            if ($this->livefilter && $this->is_windows) {
+                $problems[] = "Livefilter is not supported on Windows";
+                $major_problem = true;
+            }
+
+            if (! empty($problems)) {
+                $this->error("There are some problems with requirements: \n - " . implode("\n - ", $problems), $major_problem, true);
+            }
+        }//end checkRequirementsAfterConfigLoad()
+
 
         /**
          * Run - parse args and run method specified
@@ -868,6 +905,8 @@ if (! class_exists("Console_Abstract")) {
                 $instance->_startup($arg_list);
 
                 $instance->initConfig();
+
+                $instance->checkRequirementsAfterConfigLoad();
 
                 $instance->try_calling($arg_list, true);
 
@@ -2008,7 +2047,12 @@ if (! class_exists("Console_Abstract")) {
                         break;
                     }
                     if ($single_filtered_item || substr($entry, -1) === " ") {
-                        return $filtered_default ? array_shift($filtered_items) : $list[$default];
+                        if (! $filtered_default) {
+                            return $list[$default];
+                        }
+                        if (!empty($filtered_items)) {
+                            return array_shift($filtered_items);
+                        }
                     }
                     // Otherwise treat it as space
                     $char = " ";
