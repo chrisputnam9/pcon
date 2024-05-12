@@ -26,7 +26,7 @@ the same.  Here are some of the reasons I do reach for PHP:
 # Tools Built With PCon
  - [PACLI - Asana CLI](https://github.com/chrisputnam9/pacli)
  - [PBCC - Basecamp Classic CLI](https://github.com/chrisputnam9/pbcc)
- - [PCUCLI - PHP ClickUp CLI](https://github.com/chrisputnam9/pcucli)
+ - [PCUCLI - ClickUp CLI](https://github.com/chrisputnam9/pcucli)
  - [PGH - Github CLI](https://github.com/chrisputnam9/pgh)
  - [PSSH - Shared SSH Config](https://github.com/chrisputnam9/pssh)
  - [PTFX - Internal TFX CLI Utility](https://www.webfx.com/)
