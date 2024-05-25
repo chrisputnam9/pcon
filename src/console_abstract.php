@@ -270,7 +270,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @var string
          */
-        protected $editor_exec = '/usr/bin/vim -c "startinsert" "%s" > `tty`';
+        protected $editor_exec = '/usr/bin/vim -c "startinsert" %s > `tty`';
 
         /**
          * Help info for $editor_modify_exec
@@ -290,7 +290,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @var string
          */
-        protected $editor_modify_exec = '/usr/bin/vim "%s" > `tty`';
+        protected $editor_modify_exec = '/usr/bin/vim %s > `tty`';
 
         /**
          * Help info for $install_path
