@@ -399,7 +399,7 @@ if (! class_exists("Console_Abstract")) {
          * @var string
          * @api
          */
-        public $timezone = "US/Eastern";
+        public $timezone = "America/New_York";
 
         /**
          * Help info for $update_auto
@@ -626,7 +626,7 @@ if (! class_exists("Console_Abstract")) {
          *
          * @var integer
          */
-        protected $minimum_php_version = "7.4";
+        protected $minimum_php_version = "8.0";
 
         /**
          * The minimum PHP major version supported by the "livefilter" feature
