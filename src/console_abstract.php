@@ -2259,6 +2259,35 @@ if (! class_exists("Console_Abstract")) {
         }//end getConfigFile()
 
         /**
+         * Encode a path, using "~" to indicate user's home directory
+         *
+         * @return string Shortened path using "~" if applicable.
+         */
+        public function encodePath(string $path): string
+        {
+            $home = $this->getHomeDir();
+            if (strpos($path, $home) === 0) {
+                $path = str_replace($home, '~', $path, 1);
+            }
+            return $path;
+        }
+
+        /**
+         * Interpret a path, allowing for "~" to indicate the 
+         * current user's home directory
+         *
+         * @return string Full path with interpretation as needed
+         */
+        public function interpretPath(string $path): string
+        {
+            if (substr($path, 0, 1) === '~') {
+                $home = $this->getHomeDir();
+                $path = $home . substr($path, 1);
+            }
+            return $path;
+        }
+
+        /**
          * Get the user's home directory
          *
          * - Attempts to handle situation where user is running via sudo
