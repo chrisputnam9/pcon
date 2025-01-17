@@ -161,6 +161,17 @@ if (! class_exists("Console_Abstract")) {
         ];
 
         /**
+         * Path config options
+         *
+         * - These will be treated as filepaths for processing
+         * - This enables paths that reference '~' as the user's home folder
+         */
+        protected static $PATH_CONFIG_OPTIONS = [
+            'backup_dir',
+            'install_path',
+        ];
+
+        /**
          * Help info for $allow_root
          *
          * @var mixed
@@ -2267,7 +2278,7 @@ if (! class_exists("Console_Abstract")) {
         {
             $home = $this->getHomeDir();
             if (strpos($path, $home) === 0) {
-                $path = str_replace($home, '~', $path, 1);
+                $path = substr_replace($path, '~', 0, strlen($home));
             }
             return $path;
         }
@@ -2430,6 +2441,12 @@ if (! class_exists("Console_Abstract")) {
 
                 $this->config_to_save['__WSC__']['c'][" "] = "\n    /**\n     * " . $this->version(false) . " configuration\n     */\n";
                 foreach ($this->config_to_save as $key => $value) {
+
+                    // While looping, update paths that we encounter
+                    if (in_array($key, static::$PATH_CONFIG_OPTIONS)) {
+                        $this->config_to_save[$key] = $this->encodePath($value);
+                    }
+
                     if ($key != '__WSC__') {
                         $value = '';
                         $help = $this->_help_var($key, 'option');
@@ -2583,8 +2600,9 @@ if (! class_exists("Console_Abstract")) {
 
             $public_properties = $this->getPublicProperties();
             if (in_array($key, $public_properties)) {
-                if (is_string($value)) {
-                    $value = preg_replace('/^\~/', $this->getHomeDir(), $value);
+
+                if (in_array($key, static::$PATH_CONFIG_OPTIONS)) {
+                    $value = $this->interpretPath($value);
                 }
 
                 $this->{$key} = $value;
