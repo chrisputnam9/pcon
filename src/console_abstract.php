@@ -168,6 +168,7 @@ if (! class_exists("Console_Abstract")) {
          */
         protected static $PATH_CONFIG_OPTIONS = [
             'backup_dir',
+            'console_abstract_path',
             'install_path',
         ];
 
@@ -2270,11 +2271,11 @@ if (! class_exists("Console_Abstract")) {
         }//end getConfigFile()
 
         /**
-         * Encode a path, using "~" to indicate user's home directory
+         * Shorten a path, using "~" to indicate user's home directory when present.
          *
          * @return string Shortened path using "~" if applicable.
          */
-        public function encodePath(string $path): string
+        public function shortenPath(string $path): string
         {
             $home = $this->getHomeDir();
             if (strpos($path, $home) === 0) {
@@ -2324,7 +2325,7 @@ if (! class_exists("Console_Abstract")) {
                 if (empty($sudo_user)) {
                     // Windows doesn't have 'HOME' set necessarily
                     if (empty($_SERVER['HOME'])) {
-                        $this->home_dir = $_SERVER['HOMEDRIVE'] . $_SERVER['HOMEDRIVE'];
+                        $this->home_dir = $_SERVER['HOMEDRIVE'] . $_SERVER['HOMEPATH'];
 
                     // Simplest and most typical - get home dir from env vars.
                     } else {
@@ -2444,7 +2445,7 @@ if (! class_exists("Console_Abstract")) {
 
                     // While looping, update paths that we encounter
                     if (in_array($key, static::$PATH_CONFIG_OPTIONS)) {
-                        $this->config_to_save[$key] = $this->encodePath($value);
+                        $this->config_to_save[$key] = $this->shortenPath($value);
                     }
 
                     if ($key != '__WSC__') {
