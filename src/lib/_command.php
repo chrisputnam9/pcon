@@ -586,8 +586,12 @@ if (!class_exists("Command")) {
             while ($class and class_exists($class)) {
                 if (isset($class::$$property)) {
                     $merged_array = array_merge($merged_array, $class::$$property);
-                    $class = get_parent_class($class);
                 }
+                $parent_class = get_parent_class($class);
+                if ($parent_class === $class) {
+                    break;
+                }
+                $class = $parent_class;
             }
 
             // If integer keys, then make sure array values are uniuqe

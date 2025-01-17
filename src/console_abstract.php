@@ -2271,32 +2271,40 @@ if (! class_exists("Console_Abstract")) {
         }//end getConfigFile()
 
         /**
-         * Shorten a path, using "~" to indicate user's home directory when present.
+         * Shorten 1 or more paths, using "~" to indicate user's home directory when present.
          *
-         * @return string Shortened path using "~" if applicable.
+         * @return mixed Shortened path(s) using "~" if applicable.
          */
-        public function shortenPath(string $path): string
+        public function shortenPath(mixed $path_argument): mixed
         {
+            $is_array = is_array($path_argument);
+            $paths = $is_array ? $path_argument : [$path_argument];
             $home = $this->getHomeDir();
-            if (strpos($path, $home) === 0) {
-                $path = substr_replace($path, '~', 0, strlen($home));
+            foreach ($paths as $i => $path) {
+                if (strpos($path, $home) === 0) {
+                    $paths[$i] = substr_replace($path, '~', 0, strlen($home));
+                }
             }
-            return $path;
+            return $is_array ? $paths : $paths[0];
         }
 
         /**
-         * Interpret a path, allowing for "~" to indicate the 
+         * Interpret 1 or more paths, allowing for "~" to indicate the 
          * current user's home directory
          *
-         * @return string Full path with interpretation as needed
+         * @return mixed Full paths with interpretation as needed
          */
-        public function interpretPath(string $path): string
+        public function interpretPath(mixed $path_argument): mixed
         {
-            if (substr($path, 0, 1) === '~') {
-                $home = $this->getHomeDir();
-                $path = $home . substr($path, 1);
+            $is_array = is_array($path_argument);
+            $paths = $is_array ? $path_argument : [$path_argument];
+            $home = $this->getHomeDir();
+            foreach ($paths as $i => $path) {
+                if (substr($path, 0, 1) === '~') {
+                    $paths[$i] = $home . substr($path, 1);
+                }
             }
-            return $path;
+            return $is_array ? $paths : $paths[0];
         }
 
         /**
@@ -2444,7 +2452,8 @@ if (! class_exists("Console_Abstract")) {
                 foreach ($this->config_to_save as $key => $value) {
 
                     // While looping, update paths that we encounter
-                    if (in_array($key, static::$PATH_CONFIG_OPTIONS)) {
+                    $path_config_options = static::getMergedProperty('PATH_CONFIG_OPTIONS');
+                    if (in_array($key, $path_config_options)) {
                         $this->config_to_save[$key] = $this->shortenPath($value);
                     }
 
@@ -2602,7 +2611,8 @@ if (! class_exists("Console_Abstract")) {
             $public_properties = $this->getPublicProperties();
             if (in_array($key, $public_properties)) {
 
-                if (in_array($key, static::$PATH_CONFIG_OPTIONS)) {
+                $path_config_options = static::getMergedProperty('PATH_CONFIG_OPTIONS');
+                if (in_array($key, $path_config_options)) {
                     $value = $this->interpretPath($value);
                 }
 
