@@ -25,13 +25,15 @@ the same.  Here are some of the reasons I do reach for PHP:
 
 # Tools Built With PCon
  - [PACLI - Asana CLI](https://github.com/chrisputnam9/pacli)
- - [PBCC - Basecamp Classic CLI](https://github.com/chrisputnam9/pbcc)
  - [PCUCLI - ClickUp CLI](https://github.com/chrisputnam9/pcucli)
  - [PGH - Github CLI](https://github.com/chrisputnam9/pgh)
  - [PSSH - Shared SSH Config](https://github.com/chrisputnam9/pssh)
  - [PTFX - Internal TFX CLI Utility](https://www.webfx.com/)
- - [PXBRO - XML Browser Tool](https://github.com/chrisputnam9/pxbro) - using a very early version of PCon, hasn't been updated
  - [Quicknote - Personal note/todo helper tool](https://github.com/chrisputnam9/quicknote)
+
+# Inactive Tools (not maintained)
+ - [PBCC - Basecamp Classic CLI](https://github.com/chrisputnam9/pbcc)
+ - [PXBRO - XML Browser Tool](https://github.com/chrisputnam9/pxbro) - using a very early version of PCon, hasn't been updated
 
 # Troubleshooting & Common Issues
 
