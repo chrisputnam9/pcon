@@ -2188,9 +2188,9 @@ if (! class_exists("Console_Abstract")) {
                 if ($single) {
                     $single_hide = $single_hide ? ' -s' : '';
                     if ($this->is_windows) {
-                        $line = `bash -c "read$single_hide -n1 CHAR && echo \$CHAR"`;
+                        $line = shell_exec('bash -c "read'.$single_hide.' -n1 CHAR && echo \$CHAR"');
                     } else {
-                        $line = `bash -c 'read$single_hide -n1 CHAR && echo \$CHAR'`;
+                        $line = shell_exec("bash -c 'read".$single_hide." -n1 CHAR && echo \$CHAR'");
                     }
 
                     // Single char entry doesn't result in a line break on its own

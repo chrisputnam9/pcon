@@ -20,7 +20,7 @@ class PCon extends Console_Abstract
      *
      * @var string
      */
-    public const VERSION = "1.7.1";
+    public const VERSION = "1.7.2";
 
     /**
      * Tool shortname - used as name of configurationd directory.
